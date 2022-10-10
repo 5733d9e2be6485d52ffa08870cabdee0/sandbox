@@ -1,8 +1,12 @@
 package com.redhat.service.smartevents.integration.tests.resources;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.BeforeAll;
 
+import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 import software.tnb.aws.sqs.service.SQS;
 import software.tnb.common.service.ServiceFactory;
 
@@ -28,7 +32,15 @@ public class AwsSqsResource {
 
     public static void createQueue(String queueName) {
         if (!SQS.validation().queueExists(queueName)) {
-            SQS.validation().createQueue(queueName);
+            Map<QueueAttributeName, String> attributes = new HashMap<>();
+            attributes.put(QueueAttributeName.RECEIVE_MESSAGE_WAIT_TIME_SECONDS, "5"); // Default "Receive message wait time" to 5sec to avoid long delays when polling messages from the queue
+            createQueue(queueName, attributes);
+        }
+    }
+
+    public static void createQueue(String queueName, Map<QueueAttributeName, String> attributes) {
+        if (!SQS.validation().queueExists(queueName)) {
+            SQS.validation().createQueueWithAttributes(queueName, attributes);
         }
     }
 
