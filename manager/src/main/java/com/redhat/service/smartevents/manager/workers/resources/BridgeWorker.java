@@ -121,7 +121,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         // If an Error Handler processor exists assume it is to be updated otherwise create it!
         processorService
                 .getErrorHandler(bridge.getId(), bridge.getCustomerId())
-                .ifPresentOrElse((errorHandler) -> {
+                .ifPresentOrElse(errorHandler -> {
                     if (errorHandler.getGeneration() < bridge.getGeneration()) {
                         String errorHandlerName = String.format(ERROR_HANDLER_NAME_TEMPLATE, bridge.getId());
                         ProcessorRequest errorHandlerProcessor = new ProcessorRequest(errorHandlerName, errorHandlerAction);
@@ -198,7 +198,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         String customerId = bridge.getCustomerId();
         processorService
                 .getErrorHandler(bridgeId, customerId)
-                .ifPresent((errorHandler) -> processorService.deleteProcessor(bridgeId, errorHandler.getId(), customerId));
+                .ifPresent(errorHandler -> processorService.deleteProcessor(bridgeId, errorHandler.getId(), customerId));
     }
 
     @Override
