@@ -296,8 +296,7 @@ class ProcessorServiceConnectorTest {
 
     private void assertShardAsksForProcessorToBeDeletedDoesNotInclude(Processor processor) {
         List<Processor> processorsToBeDeleted = processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
-        assertThat(processorsToBeDeleted.stream().map(Processor::getId)).doesNotContain(processor.getId());
-    }
+        assertThat(processorsToBeDeleted.stream().map(Processor::getId)).isNotEmpty().doesNotContain(processor.getId());    }
 
     private void waitForProcessorAndConnectorToFail(final Processor processor) {
         //There will be 4 re-tries at 5s each. Add 5s to be certain everything completes.
