@@ -1,0 +1,101 @@
+name: Check stage cluster
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  run-integration-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: "stable"
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+      - name: Add mask
+        run: |
+          echo "::add-mask::${{ secrets.STAGE_CLUSTER_MANAGER_URL }}"
+          echo "::add-mask::${{ secrets.STAGE_SSO_CLIENT_ID }}"
+          echo "::add-mask::${{ secrets.STAGE_SSO_CLIENT_SECRET }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_TOKEN }}"
+          echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL_SECOND }}"
+          echo "::add-mask::${{ secrets.SLACK_CHANNEL_SECOND }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
+          echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
+          echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
+          echo "::add-mask::${{ secrets.GCHAT_WEBHOOK_URL }}"
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the stable branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "stable"
+      - name: Compile sandbox repo
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install -Dquickly
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
+        env:
+          IT_AWS_ACCESS_KEY_ID: ${{ secrets.IT_AWS_ACCESS_KEY_ID }}
+          IT_AWS_ACCOUNT_ID: ${{ secrets.IT_AWS_ACCOUNT_ID }}
+          IT_AWS_SECRET_ACCESS_KEY: ${{ secrets.IT_AWS_SECRET_ACCESS_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
+          SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+      - name: Run integration tests
+        env:
+          STAGE_CLUSTER_MANAGER_URL: ${{ secrets.STAGE_CLUSTER_MANAGER_URL }}
+          STAGE_SSO_CLIENT_ID: ${{ secrets.STAGE_SSO_CLIENT_ID }}
+          STAGE_SSO_CLIENT_SECRET: ${{ secrets.STAGE_SSO_CLIENT_SECRET }}
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$STAGE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STAGE_SSO_CLIENT_ID -Dbridge.client.secret=$STAGE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          working-directory: integration-tests
+      - name: Get Sheriff Name
+        if: ${{ failure() }}
+        run: |
+          echo "::set-output name=USER_NAME::$(./.github/scripts/sheriff-queue.sh)"
+        id: findUser
+      - name: Send mail with link to failing job
+        uses: dawidd6/action-send-mail@v3
+        if: ${{ failure() }}
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.CI_MAIL_USERNAME }}
+          password: ${{ secrets.CI_MAIL_PASSWORD }}
+          subject: Stage cluster CI - Check failed
+          to: openbridge-dev@redhat.com
+          from: Stage cluster CI
+          html_body: Stage cluster CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/stage-cluster-check.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: scacap/action-surefire-report@v1.0.10
+        with:
+          skip_publishing: false
+          check_name: Test Results
+          fail_on_test_failures: true
+          fail_if_no_tests: false
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: log
+          path: ./integration-tests/target/cucumber-logs/
