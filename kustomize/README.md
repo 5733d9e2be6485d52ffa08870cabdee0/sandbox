@@ -71,7 +71,7 @@ Required Operators:
 
 - Cluster Monitoring
 - Bitnami sealed secrets (via controller deployment below)
-- Openshift Serverless is installed with [this guide](https://docs.openshift.com/container-platform/4.8/serverless/install/install-serverless-operator.html).
+- Openshift Serverless is installed with [this guide](https://github.com/openshift-knative/serverless-operator/blob/main/docs/install-midstream.md).
 - Service Mesh is installed with [this guide](https://docs.openshift.com/container-platform/4.8/service_mesh/v2x/installing-ossm.html)
 
 ## Sealed Secrets
@@ -138,7 +138,7 @@ The command should complete and exit cleanly.
 ## Deploying the infrastructure to another cluster
 
 Assuming that the infrastructure version you'd like to deploy is the `stable` one, then the requirements are the following:
-1) The `OpenShift Serverless` operator is [installed](https://docs.openshift.com/container-platform/4.9/serverless/install/install-serverless-operator.html)
+1) The `OpenShift Serverless` operator is [installed](https://github.com/openshift-knative/serverless-operator/blob/main/docs/install-midstream.md)
 2) Install `Redhat OpenShift distributed tracing platform`, `Kiali`, `Red Hat OpenShift Service Mesh` according to [this documentation](https://docs.openshift.com/container-platform/4.9/service_mesh/v2x/installing-ossm.html).
 3) You have to provide all the secrets/configurations using AWS secret manager. Get in touch with the dev team for that. Assuming you have deployed new AWS secrets `myenv/fleet-manager` and `myenv/fleet-shard`, then 
    1) Replace the `spec/dataFrom/extract/key` of the resources `event-bridge-manager-secrets.yaml` and `addon-smart-events-operator-parameters.yaml` with `myenv/fleet-manager` and `myenv/fleet-shard`.
