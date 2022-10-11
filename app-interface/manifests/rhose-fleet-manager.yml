@@ -286,6 +286,11 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: EVENT_BRIDGE_RESOURCE_PREFIX
+                - name: EVENT_BRIDGE_MANAGER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_MANAGER_URL
               ports:
                 - containerPort: 8080
               livenessProbe:
