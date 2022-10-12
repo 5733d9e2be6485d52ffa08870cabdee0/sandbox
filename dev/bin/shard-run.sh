@@ -13,6 +13,7 @@ export MANAGED_KAFKA_INSTANCE_NAME=rhose-local-development
 
 mvn \
   -Dminikubeip=${MINIKUBE_IP} \
+  -Ddebug=5006 \
   -Dquarkus.http.port=1337 \
   -Devent-bridge.logging.json=false \
   -Devent-bridge.k8s.orchestrator=minikube \

@@ -55,6 +55,15 @@ public class BridgeErrorHelper {
                 });
     }
 
+    public BridgeErrorInstance getBridgeErrorInstance(int errorId, String errorUUID) {
+        return bridgeErrorService.getError(errorId)
+                .map(b -> new BridgeErrorInstance(b, errorUUID))
+                .orElseGet(() -> {
+                    LOGGER.debug("Error Id '{}' not found in error catalog. Falling back to generic ProvisioningFailureException.", errorId);
+                    return new BridgeErrorInstance(deploymentFailedException);
+                });
+    }
+
     public String makeUserMessage(HasErrorInformation hasErrorInformation) {
         Integer errorId = hasErrorInformation.getErrorId();
         String errorUUID = hasErrorInformation.getErrorUUID();

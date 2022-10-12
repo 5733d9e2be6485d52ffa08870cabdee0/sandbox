@@ -54,22 +54,25 @@ public final class ManagedResourceOperationMapper {
     public static ManagedResourceOperation inferOperation(ManagedResource managedResource, ManagedResourceStatusUpdateDTO updateDTO) {
         ManagedResourceStatus updateStatus = updateDTO.getStatus();
         ManagedResourceStatus resourceStatus = managedResource.getStatus();
-        if (resourceStatus.equals(ManagedResourceStatus.DEPROVISION) || resourceStatus.equals(ManagedResourceStatus.DELETING)) {
+        if (resourceStatus.equals(ManagedResourceStatus.DEPROVISION)
+                || resourceStatus.equals(ManagedResourceStatus.DELETING)) {
             if (updateStatus.equals(ManagedResourceStatus.DELETED)) {
                 return ManagedResourceOperation.DELETE;
             } else if (updateStatus.equals(ManagedResourceStatus.FAILED)) {
                 return ManagedResourceOperation.FAILED_DELETE;
             }
         }
-        if (resourceStatus.equals(ManagedResourceStatus.PREPARING) || resourceStatus.equals(ManagedResourceStatus.PROVISIONING)) {
+        if (resourceStatus.equals(ManagedResourceStatus.PREPARING)
+                || resourceStatus.equals(ManagedResourceStatus.PROVISIONING)
+                || resourceStatus.equals(ManagedResourceStatus.FAILED)) {
             if (updateStatus.equals(ManagedResourceStatus.READY)) {
-                if (Objects.isNull(managedResource.getPublishedAt())) {
+                if (Objects.isNull(managedResource.getModifiedAt())) {
                     return ManagedResourceOperation.CREATE;
                 } else {
                     return ManagedResourceOperation.UPDATE;
                 }
             } else if (updateStatus.equals(ManagedResourceStatus.FAILED)) {
-                if (Objects.isNull(managedResource.getPublishedAt())) {
+                if (Objects.isNull(managedResource.getModifiedAt())) {
                     return ManagedResourceOperation.FAILED_CREATE;
                 } else {
                     return ManagedResourceOperation.FAILED_UPDATE;
