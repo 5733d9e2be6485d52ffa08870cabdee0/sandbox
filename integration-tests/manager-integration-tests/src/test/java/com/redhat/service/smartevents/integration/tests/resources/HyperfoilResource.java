@@ -33,6 +33,7 @@ public class HyperfoilResource {
             URL benchmarkResource = HyperfoilResource.class.getClassLoader().getResource(BENCHMARK_CONTENT_FILE);
             Path benchmarkResourcePath = Paths.get(benchmarkResource.toURI());
             Files.writeString(benchmarkResourcePath, benchmarkContent);
+            // Test
         } catch (URISyntaxException | IOException e) {
             throw new RuntimeException("Exception while storing benchmark content into file on classpath", e);
         }
