@@ -31,7 +31,7 @@ jobs:
     name: Build all images and run E2E tests
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Check labels
@@ -45,7 +45,7 @@ jobs:
         with:
           cache-key-prefix: ${{ runner.os }}
       - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Set up KinD
@@ -54,7 +54,7 @@ jobs:
           kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
       - name: External Secret Operator Setup
         uses: ./.github/actions/external-secret-operator-setup
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@v2
       - name: Use built Fleet manager and operator images
         run: |
           kustomize edit set image event-bridge-manager=$FLEET_MANAGER_CONTAINER_NAME

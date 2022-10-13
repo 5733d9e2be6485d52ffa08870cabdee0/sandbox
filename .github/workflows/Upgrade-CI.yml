@@ -36,7 +36,7 @@ jobs:
           echo "FLEET_SHARD_MINIKUBE_CONTAINER_NAME=openbridge/fleet-shard:$ORIGINAL_BRANCH" >> $GITHUB_ENV
           echo "EXECUTOR_CONTAINER_NAME=openbridge/executor:$ORIGINAL_BRANCH" >> $GITHUB_ENV
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "${{ env.ORIGINAL_BRANCH }}"
       - name: Check labels
@@ -50,7 +50,7 @@ jobs:
         with:
           cache-key-prefix: ${{ runner.os }}
       - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "${{ env.ORIGINAL_BRANCH }}"
       - name: Set up KinD
@@ -59,7 +59,7 @@ jobs:
           kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
       - name: External Secret Operator Setup
         uses: ./.github/actions/external-secret-operator-setup
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@v2
       - name: Use built Fleet manager and operator images
         run: |
           kustomize edit set image event-bridge-manager=$FLEET_MANAGER_CONTAINER_NAME
@@ -170,7 +170,7 @@ jobs:
           echo "FLEET_SHARD_MINIKUBE_CONTAINER_NAME=openbridge/fleet-shard:pr" >> $GITHUB_ENV
           echo "EXECUTOR_CONTAINER_NAME=openbridge/executor:pr" >> $GITHUB_ENV
       - name: Checkout to new version
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "${{ env.NEW_BRANCH }}"
       - name: Build all images and resources
