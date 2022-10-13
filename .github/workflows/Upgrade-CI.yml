@@ -166,9 +166,9 @@ jobs:
 
       - name: Change image names
         run: |
-          echo "FLEET_MANAGER_CONTAINER_NAME=openbridge/fleet-manager:$NEW_BRANCH" >> $GITHUB_ENV
-          echo "FLEET_SHARD_MINIKUBE_CONTAINER_NAME=openbridge/fleet-shard:$NEW_BRANCH" >> $GITHUB_ENV
-          echo "EXECUTOR_CONTAINER_NAME=openbridge/executor:$NEW_BRANCH" >> $GITHUB_ENV
+          echo "FLEET_MANAGER_CONTAINER_NAME=openbridge/fleet-manager:pr" >> $GITHUB_ENV
+          echo "FLEET_SHARD_MINIKUBE_CONTAINER_NAME=openbridge/fleet-shard:pr" >> $GITHUB_ENV
+          echo "EXECUTOR_CONTAINER_NAME=openbridge/executor:pr" >> $GITHUB_ENV
       - name: Checkout to new version
         uses: actions/checkout@v2
         with:
