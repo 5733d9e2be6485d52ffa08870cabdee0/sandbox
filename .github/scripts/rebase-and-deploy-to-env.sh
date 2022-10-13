@@ -33,7 +33,7 @@ fi
 # If the deployment targets `prod`, then the feature must be on stable first.
 if [[ "$TARGET_BRANCH" == "prod" ]]; then
   if [ $(git branch --contains $SHA_COMMIT | grep -c "stable") -eq 0 ]; then
-    printf "\U274C In order to deploy to prod branch the feature must be on stable branch first. Please deploy it there first, check that everything is running fine and then promote it to prod."
+    printf "\U274C In order to deploy to prod branch the feature must be on stable branch first. Please deploy the feature to dev and then to stable, check that everything is running fine and then, finally, promote it to prod."
     exit 0
   fi
 fi
