@@ -1,6 +1,19 @@
 name: Check stage cluster
 on:
   workflow_dispatch:
+    inputs:
+      fail-cleanup-disable:
+        description: 'Disable the test cleanup in case of test failure'
+        required: false
+        default: 'false'
+      cleanup-disable:
+        description: 'Disable the whole test cleanup'
+        required: false
+        default: 'false'
+      groups:
+        description: 'Test annotations marking tests to be executed'
+        required: false
+        default: ''
   schedule:
     - cron: '0 0 * * *'
 jobs:
@@ -66,7 +79,7 @@ jobs:
           MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$STAGE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STAGE_SSO_CLIENT_ID -Dbridge.client.secret=$STAGE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups }} -Devent-bridge.manager.url=$STAGE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STAGE_SSO_CLIENT_ID -Dbridge.client.secret=$STAGE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable }} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable }}
           working-directory: integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}

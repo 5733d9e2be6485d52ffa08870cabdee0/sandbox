@@ -173,6 +173,7 @@
             <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
 
             <!-- Additional configuration  -->
+            <fail.cleanup.disable>false</fail.cleanup.disable> <!-- Disable the test cleanup in case of test failure -->
             <cleanup.disable>false</cleanup.disable> <!-- Disable the whole test cleanup -->
             <undefined.placeholder.check.enabled>true</undefined.placeholder.check.enabled> <!-- Check that all placeholders are specified in scenario -->
 
