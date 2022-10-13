@@ -40,6 +40,8 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
     private static final String BRIDGE_EXECUTOR_SECRET_PATH = TEMPLATES_DIR + "/bridge-executor-secret.yaml";
 
+    private static final String OBSERVABILITY_SECRET_PATH = TEMPLATES_DIR + "/observability-secret.yaml";
+
     private static final String SERVICE_MONITOR_PATH = TEMPLATES_DIR + "/service-monitor.yaml";
 
     private static final String ISTIO_GATEWAY_PATH = TEMPLATES_DIR + "/gateway.yaml";
@@ -116,6 +118,14 @@ public class TemplateProviderImpl implements TemplateProvider {
         AuthorizationPolicy authorizationPolicy = loadYaml(AuthorizationPolicy.class, BRIDGE_INGRESS_AUTHORIZATION_POLICY_PATH);
         updateMetadata(resource, authorizationPolicy.getMetadata(), config);
         return authorizationPolicy;
+    }
+
+    @Override
+    public Secret loadObservabilitySecretTemplate(String name, String namespace) {
+        Secret secret = loadYaml(Secret.class, OBSERVABILITY_SECRET_PATH);
+        secret.getMetadata().setName(name);
+        secret.getMetadata().setNamespace(namespace);
+        return secret;
     }
 
     @Override
