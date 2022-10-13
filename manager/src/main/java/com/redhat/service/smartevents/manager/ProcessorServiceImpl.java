@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -268,6 +269,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
+        @CheckForNull
         Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
                 ? resolveSource(updatedSource, customerId, bridgeId, processorId)
                 : resolveAction(updatedAction, customerId, bridgeId, processorId);
