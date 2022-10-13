@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class Hooks {
 
     private static final String DISABLE_CLEANUP = Utils.getSystemProperty("cleanup.disable");
+    private static final String DISABLE_FAIL_CLEANUP = Utils.getSystemProperty("fail.cleanup.disable");
 
     private TestContext context;
 
@@ -75,7 +76,14 @@ public class Hooks {
 
     @After
     public void cleanUp() {
-        if (!Boolean.parseBoolean(DISABLE_CLEANUP)) {
+        boolean disabledCleanup = Boolean.parseBoolean(DISABLE_CLEANUP);
+        boolean disabledFailedCleanup = Boolean.parseBoolean(DISABLE_FAIL_CLEANUP);
+        boolean scenarioFailed = context.getScenario().isFailed();
+        if (disabledCleanup) {
+            context.getScenario().log("Cleanup disabled, all resources stays in the cluster");
+        } else if (disabledFailedCleanup && scenarioFailed) {
+            context.getScenario().log("Failed scenario cleanup disabled and the scenario failed, all resources stays in the cluster");
+        } else {
             // Delete AWS SQS queues
             cleanAwsSQSQueues();
 
