@@ -16,16 +16,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check User Permission
-        uses: actions-cool/check-user-permission@v2.0.1
+        uses: actions-cool/check-user-permission@v2.2.0
         id: checkUser
         with:
           require: 'write'
           check-contributor: true
       - name: Comment on PR if the user has no permission to deploy
         if: steps.checkUser.outputs.require-result == 'false'
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6.3.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -35,7 +35,7 @@ jobs:
               repo: context.repo.repo,
               body: 'You do not have the rights to perform this operation'
             })
-      - uses: actions/github-script@v3
+      - uses: actions/github-script@v6.3.3
         if: steps.checkUser.outputs.require-result == 'true'
         id: get-pr
         with:
@@ -63,10 +63,10 @@ jobs:
           export TARGET_BRANCH=$(printf "${{ github.event.comment.body }}" | cut -d ' ' -f2)
           export SHA_COMMIT="${{ fromJSON(steps.get-pr.outputs.result).merge_commit_sha }}"
           chmod +x ./.github/scripts/rebase-and-deploy-to-env.sh
-          echo ::set-output name=output::$(./.github/scripts/rebase-and-deploy-to-env.sh)
+          run: echo "{output}=$(./.github/scripts/rebase-and-deploy-to-env.sh)"
       - name: Comment on PR
         if: steps.checkUser.outputs.require-result == 'true'
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6.3.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
