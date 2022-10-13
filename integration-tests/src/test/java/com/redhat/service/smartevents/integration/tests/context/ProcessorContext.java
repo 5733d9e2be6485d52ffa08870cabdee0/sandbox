@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.integration.tests.context;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import io.cucumber.java.Scenario;
 
 /**
@@ -11,7 +13,11 @@ public class ProcessorContext {
 
     private boolean deleted;
 
+    @JsonIgnore
     private Scenario scenario;
+
+    public ProcessorContext() {
+    }
 
     public ProcessorContext(Scenario scenario, String id) {
         this.scenario = scenario;

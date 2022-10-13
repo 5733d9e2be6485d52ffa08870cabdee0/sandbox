@@ -84,6 +84,11 @@
       <artifactId>cucumber-picocontainer</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.junit.platform</groupId>
@@ -276,6 +281,30 @@
                 <performance.manager.metrics.test.schema>${performance.manager.metrics.test.schema}</performance.manager.metrics.test.schema>
                 <performance.horreum.results.upload>${performance.horreum.results.upload}</performance.horreum.results.upload>
               </systemProperties>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>upgrade-test</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>**/RunUpgradeTest.java</include>
+              </includes>
             </configuration>
           </plugin>
         </plugins>
