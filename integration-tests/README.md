@@ -56,6 +56,7 @@ Currently, there is a possibility to use these placeholders in feature files:
 - ${bridge.`<Bridge name>`.processor.`<Processor name>`.id} to use actual "Processor id" linked to a specific Bridge
 - ${bridge.`<Bridge name>`.id} to use actual "Bridge id"
 - ${cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
+- ${data.`<Data id>`} to retrieve value stored in the context under this id
 - ${env.`<System property name>`} to use a System property
 - ${manager.authentication.token} to use a token for communication with Manager
 - ${slack.channel.`<Channel name>`.name} to use actual channel name

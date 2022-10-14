@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.integration.tests.steps;
 
 import java.time.Duration;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
@@ -99,5 +100,11 @@ public class PerformanceSteps {
 
         String testDescription = context.getScenario().getName();
         HorreumResource.storeManagerPerformanceData(testName, testDescription, context.getStartTime());
+    }
+
+    @When("^generate (\\d+) random letters into data property \"([^\"]*)\"$")
+    public void generateRandomTextIntoDataProperty(int amountOfLetters, String dataPropertyName) {
+        String generatedString = RandomStringUtils.randomAlphabetic(amountOfLetters);
+        context.setTestData(dataPropertyName, generatedString);
     }
 }
