@@ -4,7 +4,7 @@ Feature: Sending cloud events performance tests
     Given authenticate against Manager
 
   @send-cloud-events-single-bridge
-  Scenario Outline: Creating one single bridge and sending cloud events with <requestsPerSec> requests per second
+  Scenario Outline: Creating one single bridge and sending cloud events of size <messageContentSizeInBytes> with <requestsPerSec> requests per second
     And create a new Bridge "my-perf-single-bridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "my-perf-single-bridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "my-perf-single-bridge" is available within 2 minutes
@@ -23,6 +23,7 @@ Feature: Sending cloud events performance tests
     """
     And the Processor "my-perf-processor" of the Bridge "my-perf-single-bridge" is existing with status "ready" within 3 minutes
 
+    When generate <messageContentSizeInBytes> random letters into data property "random-data"
     When run benchmark with content:
       """text/vnd.yaml
       name: rhose-send-cloud-events-single-bridge
@@ -54,7 +55,7 @@ Feature: Sending cloud events performance tests
                       "timestamp": "${submitted_at}",
                       "data": {
                           "bridgeId": "${bridge.my-perf-single-bridge.id}",
-                          "message": "hello bridge"
+                          "message": "${data.random-data}"
                         }
                     }
                   headers:
@@ -94,13 +95,16 @@ Feature: Sending cloud events performance tests
     And the total of events received for benchmark "rhose-send-cloud-events-single-bridge" run in "steadyState" phase is equal to the total of cloud events sent in:
       | bridge                | metric           |
       | my-perf-single-bridge | send-cloud-event |
-    And store results of benchmark run "rhose-send-cloud-events-single-bridge" in Horreum test "send-cloud-events-single-bridge-<requestsPerSec>-users"
+    And store results of benchmark run "rhose-send-cloud-events-single-bridge" in Horreum test "send-cloud-events-single-bridge-<messageContentSizeInBytes>-message-size-<requestsPerSec>-users"
 
     Examples:
-      | requestsPerSec |
-      | 1              |
-      | 4              |
-      | 8              |
+      | requestsPerSec | messageContentSizeInBytes |
+      | 1              | 10                        |
+      | 4              | 10                        |
+      | 8              | 10                        |
+      | 1              | 50000                     |
+      | 4              | 50000                     |
+      | 8              | 50000                     |
 
   @send-cloud-events-two-bridges
   Scenario Outline: Creating two bridges and sending cloud events with <requestsPerSec> requests per second
