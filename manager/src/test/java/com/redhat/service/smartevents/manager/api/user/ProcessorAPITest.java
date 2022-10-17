@@ -47,6 +47,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
@@ -54,6 +56,7 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SOURCE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
+import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -814,6 +817,34 @@ public class ProcessorAPITest {
         assertThat(updated.getFilters().stream().filter(f -> f.getKey().equals("key2") && f.getValue().equals("value2")).count()).isEqualTo(1);
         assertThat(updated.getTransformationTemplate()).isNull();
         assertRequestedAction(updated);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void basicMetricsForBridgeAndProcessors() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        assertThat(metrics).isNotNull();
+        assertThat(metrics)
+                .contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",} 1.0")
+                .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}")
+                .contains(
+                        "http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/" + bridgeResponse.getId()
+                                + "/processors\",} 2.0")
+                .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/" + bridgeResponse.getId() + "/processors\",}");
     }
 
     private BridgeResponse createBridge() {
