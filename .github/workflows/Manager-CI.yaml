@@ -132,8 +132,8 @@ jobs:
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
           SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
-          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
-          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+          WEBHOOK_SITE_TOKEN: ${{ secrets.WEBHOOK_SITE_TOKEN }}
+          WEBHOOK_SITE_TOKEN_SECOND: ${{ secrets.WEBHOOK_SITE_TOKEN_SECOND }}
       - name: Run integration tests
         env:
           DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
