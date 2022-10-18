@@ -1,11 +1,24 @@
 name: Check stage cluster
 on:
   workflow_dispatch:
+    inputs:
+      fail-cleanup-disable:
+        description: 'Disable the test cleanup in case of test failure'
+        required: false
+        default: 'false'
+      cleanup-disable:
+        description: 'Disable the whole test cleanup'
+        required: false
+        default: 'false'
+      groups:
+        description: 'Test annotations marking tests to be executed'
+        required: false
+        default: ''
   schedule:
     - cron: '0 0 * * *'
 jobs:
   run-integration-tests:
-    timeout-minutes: 30
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
@@ -25,7 +38,7 @@ jobs:
           echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL_SECOND }}"
           echo "::add-mask::${{ secrets.SLACK_CHANNEL_SECOND }}"
-          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_TOKEN }}"
           echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
           echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
           echo "::add-mask::${{ secrets.GCHAT_WEBHOOK_URL }}"
@@ -52,8 +65,8 @@ jobs:
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
           SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
-          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
-          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+          WEBHOOK_SITE_TOKEN: ${{ secrets.WEBHOOK_SITE_TOKEN }}
+          WEBHOOK_SITE_TOKEN_SECOND: ${{ secrets.WEBHOOK_SITE_TOKEN_SECOND }}
       - name: Run integration tests
         env:
           STAGE_CLUSTER_MANAGER_URL: ${{ secrets.STAGE_CLUSTER_MANAGER_URL }}
@@ -66,7 +79,7 @@ jobs:
           MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$STAGE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STAGE_SSO_CLIENT_ID -Dbridge.client.secret=$STAGE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups || ''}} -Devent-bridge.manager.url=$STAGE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STAGE_SSO_CLIENT_ID -Dbridge.client.secret=$STAGE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable || 'false'}} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable || 'false'}}
           working-directory: integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}

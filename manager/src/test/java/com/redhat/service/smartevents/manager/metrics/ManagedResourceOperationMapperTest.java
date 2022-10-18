@@ -19,12 +19,12 @@ public class ManagedResourceOperationMapperTest {
     @ParameterizedTest
     @MethodSource("inferenceTestData")
     void testInference(ManagedResourceStatus managedResourceStatus,
-            boolean isManagedResourcePublished,
+            boolean isManagedResourceModified,
             ManagedResourceStatus updateStatus,
             ManagedResourceOperation operation) {
         ManagedResource managedResource = new ManagedResource();
         managedResource.setStatus(managedResourceStatus);
-        managedResource.setPublishedAt(isManagedResourcePublished ? ZonedDateTime.now() : null);
+        managedResource.setModifiedAt(isManagedResourceModified ? ZonedDateTime.now() : null);
 
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO();
         updateDTO.setStatus(updateStatus);
@@ -37,12 +37,16 @@ public class ManagedResourceOperationMapperTest {
                 { ManagedResourceStatus.READY, false, ManagedResourceStatus.READY, ManagedResourceOperation.UNDETERMINED },
                 { ManagedResourceStatus.PREPARING, false, ManagedResourceStatus.READY, ManagedResourceOperation.CREATE },
                 { ManagedResourceStatus.PROVISIONING, false, ManagedResourceStatus.READY, ManagedResourceOperation.CREATE },
+                { ManagedResourceStatus.FAILED, false, ManagedResourceStatus.READY, ManagedResourceOperation.CREATE },
                 { ManagedResourceStatus.PREPARING, false, ManagedResourceStatus.FAILED, ManagedResourceOperation.FAILED_CREATE },
                 { ManagedResourceStatus.PROVISIONING, false, ManagedResourceStatus.FAILED, ManagedResourceOperation.FAILED_CREATE },
+                { ManagedResourceStatus.FAILED, false, ManagedResourceStatus.FAILED, ManagedResourceOperation.FAILED_CREATE },
                 { ManagedResourceStatus.PREPARING, true, ManagedResourceStatus.READY, ManagedResourceOperation.UPDATE },
                 { ManagedResourceStatus.PROVISIONING, true, ManagedResourceStatus.READY, ManagedResourceOperation.UPDATE },
+                { ManagedResourceStatus.FAILED, true, ManagedResourceStatus.READY, ManagedResourceOperation.UPDATE },
                 { ManagedResourceStatus.PREPARING, true, ManagedResourceStatus.FAILED, ManagedResourceOperation.FAILED_UPDATE },
                 { ManagedResourceStatus.PROVISIONING, true, ManagedResourceStatus.FAILED, ManagedResourceOperation.FAILED_UPDATE },
+                { ManagedResourceStatus.FAILED, true, ManagedResourceStatus.FAILED, ManagedResourceOperation.FAILED_UPDATE },
                 { ManagedResourceStatus.DEPROVISION, false, ManagedResourceStatus.DELETED, ManagedResourceOperation.DELETE },
                 { ManagedResourceStatus.DELETING, false, ManagedResourceStatus.DELETED, ManagedResourceOperation.DELETE },
                 { ManagedResourceStatus.DEPROVISION, false, ManagedResourceStatus.FAILED, ManagedResourceOperation.FAILED_DELETE },

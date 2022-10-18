@@ -96,7 +96,7 @@ mvn clean verify -Pcucumber -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.
 ### Remote system access configuration
 
 To properly run the tests locally you need to specify environment variable to access webhook.site:
-- `WEBHOOK_SITE_UUID` - UUID to be used for tests interacting with webhook.site
+- `WEBHOOK_SITE_TOKEN` - UUID to be used for tests interacting with webhook.site
 
 You can define this environment variable in localconfig.properties file or via the maven command, all environment variables are loaded before running the tests
 

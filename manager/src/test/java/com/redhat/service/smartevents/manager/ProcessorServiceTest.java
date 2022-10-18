@@ -34,6 +34,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.Processo
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
@@ -101,6 +102,7 @@ class ProcessorServiceTest {
     public static final String PROVISIONING_PROCESSOR_NAME = "provisioning-processor-name";
     public static final String FAILED_PROCESSOR_ID = "failed-processor-id";
     public static final String FAILED_PROCESSOR_NAME = "failed-processor-name";
+    public static final String FAILED_BRIDGE_ID = "failed-bridge-id";
     public static final String ERROR_HANDLER_PROCESSOR_ID = "error-handler-processor-id";
     public static final String ERROR_HANDLER_PROCESSOR_NAME = "error-handler-processor-name";
     public static final QueryProcessorResourceInfo QUERY_INFO = new QueryProcessorResourceInfo(0, 100);
@@ -381,6 +383,47 @@ class ProcessorServiceTest {
         assertThat(updated.getStatus()).isEqualTo(READY);
         assertThat(updated.getErrorId()).isNull();
         assertThat(updated.getErrorUUID()).isNull();
+    }
+
+    @Test
+    void testUpdateErrorHandlerProcessorStatusFailedToReadyWithFailedBridge() {
+        Bridge failedBridge = createFailedBridge();
+        failedBridge.setDependencyStatus(FAILED);
+
+        Processor errorHandlerProcessor = createErrorHandlerProcessor();
+        errorHandlerProcessor.setStatus(FAILED);
+        errorHandlerProcessor.setPublishedAt(null);
+        errorHandlerProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        reset(processorDAO, bridgesServiceMock);
+
+        when(processorDAO.findById(DEFAULT_PROCESSOR_ID)).thenReturn(errorHandlerProcessor);
+        when(bridgesServiceMock.getBridge(FAILED_BRIDGE_ID)).thenReturn(failedBridge);
+
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
+        updateDto.setBridgeId(FAILED_BRIDGE_ID);
+
+        Processor updated = processorService.updateProcessorStatus(updateDto);
+
+        assertThat(updated.getStatus()).isEqualTo(READY);
+        assertThat(updated.getErrorId()).isNull();
+        assertThat(updated.getErrorUUID()).isNull();
+        assertThat(failedBridge.getDependencyStatus()).isEqualTo(READY);
+        assertThat(failedBridge.getErrorId()).isNull();
+        assertThat(failedBridge.getErrorUUID()).isNull();
+
+        ArgumentCaptor<ManagedResourceStatusUpdateDTO> statusArgumentCaptor = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
+        verify(bridgesServiceMock).updateBridgeStatus(statusArgumentCaptor.capture());
+
+        ManagedResourceStatusUpdateDTO statusArgument = statusArgumentCaptor.getValue();
+        assertThat(statusArgument).isNotNull();
+        assertThat(statusArgument.getId()).isEqualTo(failedBridge.getId());
+        assertThat(statusArgument.getCustomerId()).isEqualTo(failedBridge.getCustomerId());
+        assertThat(statusArgument.getStatus()).isEqualTo(PREPARING);
+        assertThat(statusArgument.getBridgeErrorInstance()).isNull();
     }
 
     @Test

@@ -1,6 +1,6 @@
 apiVersion: v1
 data:
-  ProcessingErrorsDashboard.json: |-
+  RHOSEKafka.json: |-
     {
       "annotations": {
         "list": [
@@ -12,13 +12,12 @@ data:
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
             "type": "dashboard"
-          }
-        ]
+          }]
       },
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "id": 5,
+      "id": 6,
       "links": [],
       "panels": [
         {
@@ -26,17 +25,18 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
+          "datasource": "Prometheus",
+          "description": "This ingress metric represents all the data that producers are sending to topics in the cluster. The Kafka instance type determines the maximum incoming byte rate.",
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 8,
+            "h": 9,
             "w": 8,
             "x": 0,
             "y": 0
           },
           "hiddenSeries": false,
-          "id": 2,
+          "id": 10,
           "legend": {
             "avg": false,
             "current": false,
@@ -53,6 +53,7 @@ data:
             "dataLinks": []
           },
           "percentage": false,
+          "pluginVersion": "6.6.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -62,197 +63,26 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(increase(http_server_requests_seconds_count{method=\"GET\",outcome=\"SUCCESS\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m]))",
+              "expr": "kafka_namespace:haproxy_server_bytes_in_total:rate5m",
               "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Poll requests for errors over 1 minute average",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 8,
-            "y": 0
-          },
-          "hiddenSeries": false,
-          "id": 21,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "dataLinks": []
-          },
-          "percentage": false,
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(increase(http_server_requests_seconds_count{method=\"GET\",outcome!=\"SUCCESS\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m]))",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Failed poll requests for errors over 1 minute average",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 8,
-            "x": 16,
-            "y": 0
-          },
-          "hiddenSeries": false,
-          "id": 14,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "dataLinks": []
-          },
-          "percentage": false,
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(increase(http_server_requests_seconds_count{method=\"GET\",outcome!=\"SUCCESS\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"GET\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m]))",
-              "refId": "A"
-            }
-          ],
+            }],
           "thresholds": [
             {
               "colorMode": "ok",
               "fill": true,
               "line": true,
               "op": "lt",
-              "value": 0.25,
+              "value": 30000,
               "yaxis": "left"
             },
             {
               "colorMode": "warning",
               "fill": true,
+              "fillColor": "rgba(50, 116, 217, 0.2)",
               "line": true,
+              "lineColor": "rgba(31, 96, 196, 0.6)",
               "op": "gt",
-              "value": 0.25,
+              "value": 30000,
               "yaxis": "left"
             },
             {
@@ -260,14 +90,14 @@ data:
               "fill": true,
               "line": true,
               "op": "gt",
-              "value": 0.5,
+              "value": 45000,
               "yaxis": "left"
             }
           ],
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Unsuccessful poll requests rate over 1 minute average",
+          "title": "Number of incoming bytes per second for the cluster in the last five minutes",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -286,8 +116,8 @@ data:
               "format": "short",
               "label": null,
               "logBase": 1,
-              "max": "1",
-              "min": "0",
+              "max": null,
+              "min": null,
               "show": true
             },
             {
@@ -310,16 +140,17 @@ data:
           "dashLength": 10,
           "dashes": false,
           "datasource": null,
+          "description": "Amount of storage, in bytes, that is currently left in the brokers",
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 8
+            "h": 9,
+            "w": 9,
+            "x": 8,
+            "y": 0
           },
           "hiddenSeries": false,
-          "id": 16,
+          "id": 12,
           "legend": {
             "avg": false,
             "current": false,
@@ -345,7 +176,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(increase(kafka_consumer_fetch_manager_records_consumed_total{topic!=\"\"}[1m]))",
+              "expr": "kafka_broker_quota_softlimitbytes - increase(kafka_broker_quota_totalstorageusedbytes[30s])",
               "refId": "A"
             }
           ],
@@ -353,7 +184,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Messages in error topic over 1 minute average",
+          "title": "Amount of storage left in the brokers",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -369,12 +200,11 @@ data:
           },
           "yaxes": [
             {
-              "decimals": null,
-              "format": "short",
+              "format": "decbytes",
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": "0",
+              "min": null,
               "show": true
             },
             {
@@ -390,38 +220,296 @@ data:
             "align": false,
             "alignLevel": null
           }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "cacheTimeout": null,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "This egress metric represents all the data that consumers are receiving from topics in the cluster. The Kafka instance type determines the maximum outgoing byte rate.",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 9,
+            "w": 7,
+            "x": 17,
+            "y": 0
+          },
+          "hiddenSeries": false,
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pluginVersion": "6.6.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "kafka_namespace:haproxy_server_bytes_out_total:rate5m",
+              "refId": "A"
+            }],
+          "thresholds": [
+            {
+              "colorMode": "ok",
+              "fill": true,
+              "line": true,
+              "op": "lt",
+              "value": 30000,
+              "yaxis": "left"
+            },
+            {
+              "colorMode": "warning",
+              "fill": true,
+              "line": true,
+              "op": "gt",
+              "value": 30000,
+              "yaxis": "left"
+            },
+            {
+              "colorMode": "critical",
+              "fill": true,
+              "line": true,
+              "op": "gt",
+              "value": 45000,
+              "yaxis": "left"
+            }
+          ],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Number of outgoing bytes per second for the cluster in the last five minutes",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": [
+            ]
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "datasource": "Prometheus",
+          "description": "The number of topics we are using",
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 9
+          },
+          "id": 2,
+          "options": {
+            "fieldOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "defaults": {
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "super-light-blue",
+                      "value": 600
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1000
+                    },
+                    {
+                      "color": "red",
+                      "value": 1400
+                    }
+                  ]
+                }
+              },
+              "overrides": [],
+              "values": false
+            },
+            "orientation": "auto",
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "6.6.1",
+          "targets": [
+            {
+              "expr": "kafka_topic:kafka_topic_partitions:count",
+              "refId": "A"
+            }],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "The number of topics we are using",
+          "type": "gauge"
+        },
+        {
+          "datasource": "Prometheus",
+          "description": " This does not include partitions from internal Kafka topics, such as __consumer_offsets and __transaction_state. The Kafka instance type determines the maximum number of partitions",
+          "gridPos": {
+            "h": 9,
+            "w": 9,
+            "x": 8,
+            "y": 9
+          },
+          "id": 4,
+          "options": {
+            "fieldOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "defaults": {
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 100
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 500
+                    },
+                    {
+                      "color": "green",
+                      "value": 1000
+                    }
+                  ]
+                },
+                "unit": "none"
+              },
+              "overrides": [],
+              "values": false
+            },
+            "orientation": "auto",
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "6.6.1",
+          "targets": [
+            {
+              "expr": "  1500 - kafka_topic:kafka_topic_partitions:sum",
+              "instant": false,
+              "refId": "A"
+            }],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": " The number of partitions remaining that we can create ",
+          "type": "gauge"
+        },
+        {
+          "datasource": null,
+          "description": "Offline partitions cannot be used by clients for producing or consuming data. Only the broker that is the current controller in the cluster reports this metric. Any other brokers report 0",
+          "gridPos": {
+            "h": 9,
+            "w": 7,
+            "x": 17,
+            "y": 9
+          },
+          "id": 14,
+          "options": {
+            "fieldOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "defaults": {
+                "mappings": [],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 10
+                    }
+                  ]
+                }
+              },
+              "overrides": [],
+              "values": false
+            },
+            "orientation": "auto",
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "6.6.1",
+          "targets": [
+            {
+              "expr": "sum(kafka_controller_kafkacontroller_offline_partitions_count)",
+              "refId": "A"
+            }],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Number of partitions in the cluster that are currently offline",
+          "type": "gauge"
         }
       ],
-      "refresh": "5s",
       "schemaVersion": 22,
       "style": "dark",
       "tags": [],
       "templating": {
-        "list": [
-          {
-            "current": {
-              "selected": false,
-              "text": "No data sources found",
-              "value": ""
-            },
-            "description": null,
-            "error": null,
-            "hide": 0,
-            "includeAll": false,
-            "label": null,
-            "multi": false,
-            "name": "datasource",
-            "options": [],
-            "query": "prometheus",
-            "refresh": 1,
-            "regex": "/app-sre.*/",
-            "skipUrlSync": false,
-            "type": "datasource"
-          }
-        ]
+        "list": []
       },
       "time": {
-        "from": "now-1h",
+        "from": "now-30m",
         "to": "now"
       },
       "timepicker": {
@@ -439,13 +527,13 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Processing Errors Dashboard",
-      "uid": "wXnp86n4z",
-      "version": 3
+      "title": "RHOSE Kafka",
+      "uid": "mKBp9dI4k",
+      "version": 7
     }
 kind: ConfigMap
 metadata:
-  name: grafana-dashboard-rhose-processing-errors
+  name: grafana-dashboard-rhose-kafka
   labels:
     grafana_dashboard: "true"
   annotations:

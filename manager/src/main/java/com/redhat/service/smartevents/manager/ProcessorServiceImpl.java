@@ -33,6 +33,7 @@ import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
@@ -361,6 +362,19 @@ public class ProcessorServiceImpl implements ProcessorService {
                 break;
 
             case UPDATE:
+                // An UPDATE can follow a FAILED_UPDATE when updating a Processor.
+                // If the User has updated a Processor that was previously failed by k8s it has been observed
+                // that the reconciliation loop can first emit an update with the existing FAILED state. This
+                // can lead to the Bridge being FAILED by the BridgeWorker if the Processor is an Error Handler.
+                // Therefore, if a subsequent READY state is emitted we may need to reflect this in the Bridge.
+                if (processor.getType() == ProcessorType.ERROR_HANDLER) {
+                    if (bridge.getDependencyStatus() == ManagedResourceStatus.FAILED) {
+                        bridge.setErrorId(null);
+                        bridge.setErrorUUID(null);
+                        bridge.setDependencyStatus(ManagedResourceStatus.READY);
+                        bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.PREPARING));
+                    }
+                }
                 metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
                 break;
 

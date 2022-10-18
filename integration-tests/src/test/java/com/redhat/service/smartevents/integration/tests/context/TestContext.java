@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import io.cucumber.java.Scenario;
 
 /**
@@ -25,6 +27,7 @@ public class TestContext {
     private Map<String, String> testData = new HashMap<>();
     private Map<String, String> sqsQueues = new HashMap<>();
 
+    @JsonIgnore
     private Scenario scenario;
 
     public TestContext() {
@@ -105,6 +108,10 @@ public class TestContext {
 
     public Instant getStartTime() {
         return startTime;
+    }
+
+    public void setBridges(Map<String, BridgeContext> bridges) {
+        this.bridges = bridges;
     }
 
     public void setStartTime(Instant startTime) {

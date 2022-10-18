@@ -159,12 +159,17 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
                 notifyManagerOfFailure(bridgeExecutor,
                         new ProvisioningTimeOutException(DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment)));
+                // Don't reschedule reconciliation if we're in a FAILED state
+                return UpdateControl.updateStatus(bridgeExecutor);
             } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
                 notifyManagerOfFailure(bridgeExecutor,
                         new ProvisioningReplicaFailureException(DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment)));
+                // Don't reschedule reconciliation if we're in a FAILED state
+                return UpdateControl.updateStatus(bridgeExecutor);
+            } else {
+                // State may otherwise be recoverable so reschedule
+                return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
             }
-
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
         } else {
             LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready",
                     bridgeExecutor.getMetadata().getName(),
@@ -204,7 +209,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             status.setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeExecutor, bei);
 
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
+            return UpdateControl.updateStatus(bridgeExecutor);
         } else {
             // this is an optional resource
             LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready",

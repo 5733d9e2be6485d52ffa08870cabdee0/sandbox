@@ -62,7 +62,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     OperatorMetricsService metricsService;
 
     @Override
-    @Scheduled(every = "30s")
+    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     public void syncUpdatesFromManager() {
         LOGGER.info("Fetching updates from Manager for Bridges and Processors to deploy and delete");
         doBridges().subscribe().with(

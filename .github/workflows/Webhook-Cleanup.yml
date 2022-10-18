@@ -15,12 +15,12 @@ jobs:
           ref: "main"
       - name: Add mask
         run: |
-          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
-          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID_SECOND }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_TOKEN }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_TOKEN_SECOND }}"
       - name: Run Webhook requests delete script
         env:
-          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
-          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+          WEBHOOK_SITE_TOKEN: ${{ secrets.WEBHOOK_SITE_TOKEN }}
+          WEBHOOK_SITE_TOKEN_SECOND: ${{ secrets.WEBHOOK_SITE_TOKEN_SECOND }}
         run: |
-          ./.github/scripts/delete-webhook-requests.sh $WEBHOOK_SITE_UUID
-          ./.github/scripts/delete-webhook-requests.sh $WEBHOOK_SITE_UUID_SECOND
+          ./.github/scripts/delete-webhook-requests.sh $WEBHOOK_SITE_TOKEN
+          ./.github/scripts/delete-webhook-requests.sh $WEBHOOK_SITE_TOKEN_SECOND

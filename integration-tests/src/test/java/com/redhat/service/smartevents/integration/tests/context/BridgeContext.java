@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import io.cucumber.java.Scenario;
 
 /**
@@ -23,7 +25,11 @@ public class BridgeContext {
 
     private boolean deleted;
 
+    @JsonIgnore
     private Scenario scenario;
+
+    public BridgeContext() {
+    }
 
     public BridgeContext(Scenario scenario, String id, String systemBridgeName) {
         this.scenario = scenario;
@@ -39,6 +45,7 @@ public class BridgeContext {
         return id;
     }
 
+    @JsonIgnore
     public String getEndPointAuthority() {
         return endPoint.map(URL::getAuthority).orElse(null);
     }
@@ -47,10 +54,12 @@ public class BridgeContext {
         return endPoint.map(URL::toString).orElse(null);
     }
 
+    @JsonIgnore
     public String getEndPointBaseUrl() {
         return endPoint.map(url -> url.getProtocol() + "://" + url.getAuthority()).orElse(null);
     }
 
+    @JsonIgnore
     public String getEndPointPath() {
         return endPoint.map(URL::getPath).orElse(null);
     }

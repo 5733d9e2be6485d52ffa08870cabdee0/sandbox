@@ -15,9 +15,9 @@ services:
     credentials:
       tokens:
         first:
-          token: <WEBHOOK_SITE_UUID>
+          token: <WEBHOOK_SITE_TOKEN>
         second:
-          token: <WEBHOOK_SITE_UUID_SECOND>
+          token: <WEBHOOK_SITE_TOKEN_SECOND>
   aws:
     credentials:
       access_key: <IT_AWS_ACCESS_KEY_ID>

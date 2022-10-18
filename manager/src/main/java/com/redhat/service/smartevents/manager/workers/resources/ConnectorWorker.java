@@ -111,20 +111,20 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                     connectorEntity.getId());
             return connectorEntity;
         }
+
+        // If the Connector definition differs to that required we need to patch it.
+        long processorGeneration = getProcessorGeneration(connectorEntity);
+        if (connectorEntity.getGeneration() < processorGeneration) {
+            LOGGER.debug("Managed Connector for '{}' [{}] was found but with a different definition. Patching definition.",
+                    connectorEntity.getName(),
+                    connectorEntity.getId());
+            JsonNode updatedConnectorDefinition = connectorEntity.getDefinition();
+            connectorsApi.updateConnector(connector.getId(), updatedConnectorDefinition);
+            connectorEntity.setGeneration(processorGeneration);
+            return persist(connectorEntity);
+        }
+
         if (status.getState() == ConnectorState.READY) {
-            // If the Connector is ready but differs to that required we need to patch it.
-            long processorGeneration = getProcessorGeneration(connectorEntity);
-            if (connectorEntity.getGeneration() < processorGeneration) {
-                LOGGER.debug("Managed Connector for '{}' [{}] was found but with a different definition. Patching definition.",
-                        connectorEntity.getName(),
-                        connectorEntity.getId());
-                JsonNode updatedConnectorDefinition = connectorEntity.getDefinition();
-                connectorsApi.updateConnector(connector.getId(), updatedConnectorDefinition);
-
-                connectorEntity.setGeneration(connectorEntity.getGeneration() + 1);
-                return persist(connectorEntity);
-            }
-
             LOGGER.debug("Managed Connector for '{}' [{}] is ready.",
                     connectorEntity.getName(),
                     connectorEntity.getId());

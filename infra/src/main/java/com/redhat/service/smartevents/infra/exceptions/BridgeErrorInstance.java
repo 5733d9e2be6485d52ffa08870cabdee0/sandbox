@@ -18,8 +18,12 @@ public class BridgeErrorInstance extends BridgeError {
     }
 
     public BridgeErrorInstance(BridgeError bridgeError) {
+        this(bridgeError, UUID.randomUUID().toString());
+    }
+
+    public BridgeErrorInstance(BridgeError bridgeError, String uuid) {
         super(bridgeError.getId(), bridgeError.getCode(), bridgeError.getReason(), bridgeError.getType());
-        this.uuid = UUID.randomUUID().toString();
+        this.uuid = uuid;
     }
 
     public String getUuid() {
