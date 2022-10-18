@@ -1,10 +1,67 @@
-images:
-  - name: event-bridge-shard-operator
-    newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-    newTag: ocp-2a356529e4161079849b88e3f1135190a685af04-jvm
 apiVersion: kustomize.config.k8s.io/v1beta1
+images:
+- name: event-bridge-shard-operator
+  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
+  newTag: ocp-b187d4d194c2a02be3a29e6cbd46bb932176dea4-jvm
 kind: Kustomization
 namespace: event-bridge-prod
+patchesJson6902:
+- path: patch-with-knative-eventing-namespace.yaml
+  target:
+    group: ''
+    kind: NetworkPolicy
+    name: kafka-broker-receiver
+    version: v1
+- path: patch-with-knative-eventing-namespace.yaml
+  target:
+    group: ''
+    kind: KnativeEventing
+    name: knative-eventing
+    version: v1alpha1
+- path: patch-with-knative-eventing-namespace.yaml
+  target:
+    group: ''
+    kind: KnativeKafka
+    name: knative-kafka
+    version: v1alpha1
+- path: patch-with-knative-eventing-namespace.yaml
+  target:
+    group: ''
+    kind: NetworkPolicy
+    name: eventing-webhook
+    version: v1
+- path: patch-with-knative-eventing-namespace.yaml
+  target:
+    group: ''
+    kind: Gateway
+    name: broker-gateway
+    version: v1alpha3
+- path: patch-with-istio-system-namespace.yaml
+  target:
+    group: ''
+    kind: RequestAuthentication
+    name: jwt-rh-sso
+    version: v1beta1
+- path: patch-with-istio-system-namespace.yaml
+  target:
+    group: ''
+    kind: ServiceMeshControlPlane
+    name: basic
+    version: v2
+- path: patch-with-istio-system-namespace.yaml
+  target:
+    group: ''
+    kind: ServiceMeshMemberRoll
+    name: default
+    version: v1
+- path: patch-with-knative-eventing-namespace.yaml
+  target:
+    group: ''
+    kind: VirtualService
+    name: broker-virtual-service
+    version: v1alpha3
+patchesStrategicMerge:
+- patches/deploy-config.yaml
 resources:
 - ../../base/shard
 - ../../base-openshift/shard
@@ -12,63 +69,3 @@ resources:
 - secrets
 - shard
 - awssm-secret.yaml
-patchesStrategicMerge:
-- patches/deploy-config.yaml
-patchesJson6902:
-  # due to the issue https://github.com/kubernetes-sigs/kustomize/issues/880 we have to patch all the resources here
-  # resources in /kustomize/base-openshift/shard/knative/
-  - target:
-      group: ""
-      version: v1
-      kind: NetworkPolicy
-      name: kafka-broker-receiver
-    path: patch-with-knative-eventing-namespace.yaml
-  - target:
-      group: ""
-      version: v1alpha1
-      kind: KnativeEventing
-      name: knative-eventing
-    path: patch-with-knative-eventing-namespace.yaml
-  - target:
-      group: ""
-      version: v1alpha1
-      kind: KnativeKafka
-      name: knative-kafka
-    path: patch-with-knative-eventing-namespace.yaml
-  - target:
-      group: ""
-      version: v1
-      kind: NetworkPolicy
-      name: eventing-webhook
-    path: patch-with-knative-eventing-namespace.yaml
-  # resources in /kustomize/base-openshift/shard/service-mesh/
-  - target:
-      group: ""
-      version: v1alpha3
-      kind: Gateway
-      name: broker-gateway
-    path: patch-with-knative-eventing-namespace.yaml
-  - target:
-      group: ""
-      version: v1beta1
-      kind: RequestAuthentication
-      name: jwt-rh-sso
-    path: patch-with-istio-system-namespace.yaml
-  - target:
-      group: ""
-      version: v2
-      kind: ServiceMeshControlPlane
-      name: basic
-    path: patch-with-istio-system-namespace.yaml
-  - target:
-      group: ""
-      version: v1
-      kind: ServiceMeshMemberRoll
-      name: default
-    path: patch-with-istio-system-namespace.yaml
-  - target:
-      group: ""
-      version: v1alpha3
-      kind: VirtualService
-      name: broker-virtual-service
-    path: patch-with-knative-eventing-namespace.yaml
