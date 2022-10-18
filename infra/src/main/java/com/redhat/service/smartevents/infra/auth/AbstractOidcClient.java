@@ -53,7 +53,13 @@ public abstract class AbstractOidcClient implements com.redhat.service.smarteven
     protected void init() {
         this.client = oidcClients.newClient(getOidcClientConfig()).await().atMost(timeout);
         retrieveTokens();
-        this.executorService.scheduleWithFixedDelay(() -> checkAndRefresh(), timeout.toSeconds(), timeout.toSeconds(), TimeUnit.SECONDS);
+        this.executorService.scheduleWithFixedDelay(() -> {
+            try {
+                checkAndRefresh();
+            } catch (Exception e) {
+                LOGGER.warn("OidcClient '{}' raised an exception during the checkAndRefresh procedure.", this.name, e);
+            }
+        }, timeout.toSeconds(), timeout.toSeconds(), TimeUnit.SECONDS);
     }
 
     @PreDestroy
