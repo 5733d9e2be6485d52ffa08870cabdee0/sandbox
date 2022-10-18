@@ -5,7 +5,7 @@ on:
     paths:
       - '.github/workflows/Operator-CI.yaml'
       - 'shard-operator/**'
-      - 'shard-operator-integration-tests/**'
+      - 'integration-tests/shard-operator-integration-tests/**'
 jobs:
   event-bridge-build:
     env:
@@ -93,13 +93,13 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Dit.shard.kafka.bootstrap.servers=$IT_SHARD_KAFKA_BOOTSTRAP_SERVERS -Dit.shard.kafka.user=$IT_SHARD_KAFKA_USER -Dit.shard.kafka.password=$IT_SHARD_KAFKA_PASSWORD -Dit.shard.kafka.topic.name=$IT_SHARD_KAFKA_TOPIC_NAME -Dit.shard.kafka.protocol=SASL_SSL -Dit.shard.kafka.sasl.mechanism=PLAIN
-          working-directory: shard-operator-integration-tests
+          working-directory: integration-tests/shard-operator-integration-tests
       - name: Archive test logs
         if: always()
         uses: actions/upload-artifact@v2
         with:
           name: cucumber-logs
-          path: shard-operator-integration-tests/target/logs/**/*.*
+          path: integration-tests/shard-operator-integration-tests/target/logs/**/*.*
       - name: Print operator log
         if: always()
         run: |

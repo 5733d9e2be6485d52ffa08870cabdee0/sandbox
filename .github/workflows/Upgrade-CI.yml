@@ -151,7 +151,7 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pupgrade-test -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dgroups=upgradetest1 -Dcleanup.disable
-          working-directory: integration-tests
+          working-directory: integration-tests/manager-integration-tests
 
       - name: Print info about the original cluster
         run: |
@@ -258,7 +258,7 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pupgrade-test -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dgroups=upgradetest2
-          working-directory: integration-tests
+          working-directory: integration-tests/manager-integration-tests
 
       - name: Print info about the upgraded cluster
         run: |
@@ -281,4 +281,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: log
-          path: ./integration-tests/target/cucumber-logs/
+          path: ./integration-tests/manager-integration-tests/target/cucumber-logs/

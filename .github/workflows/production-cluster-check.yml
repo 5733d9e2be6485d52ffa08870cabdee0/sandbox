@@ -80,7 +80,7 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups }} -Devent-bridge.manager.url=$PROD_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$PROD_SSO_CLIENT_ID -Dbridge.client.secret=$PROD_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable }} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable }}
-          working-directory: integration-tests
+          working-directory: integration-tests/manager-integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}
         run: |
@@ -111,4 +111,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: log
-          path: ./integration-tests/target/cucumber-logs/
+          path: ./integration-tests/manager-integration-tests/target/cucumber-logs/
