@@ -21,6 +21,7 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
@@ -448,7 +449,11 @@ public class BridgesServiceTest {
         assertThat(response.getStatusMessage()).isNull();
     }
 
-    //TODO: Add test for bridges-QUOTA
+    @Test
+    void testOrganisationWithNoQuota() {
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        assertThatExceptionOfType(NoQuotaAvailable.class).isThrownBy(() -> bridgesService.createBridge(DEFAULT_CUSTOMER_ID, "organisation_with_no_quota", DEFAULT_USER_NAME, request));
+    }
 
     protected Bridge createPersistBridge(ManagedResourceStatus status) {
         Bridge b = Fixtures.createBridge();

@@ -18,7 +18,7 @@ import dev.bf2.ffm.ams.core.models.AccountInfo;
 import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.ResourceCreated;
 
-// TODO: Replace with https://github.com/bf2fc6cc711aee1a0c2a/ffm-fleet-manager-java-sdk/blob/b0a109f5f4704abc14aa44cdd6ee2c20425e649a/ams/ams-core/src/main/java/dev/bf2/ffm/ams/core/AccountManagementService.java#L13 when available
+// TODO: Remove this class and replace with https://github.com/bf2fc6cc711aee1a0c2a/ffm-fleet-manager-java-sdk/blob/b0a109f5f4704abc14aa44cdd6ee2c20425e649a/ams/ams-core/src/main/java/dev/bf2/ffm/ams/core/AccountManagementService.java#L13 when https://issues.redhat.com/browse/MGDOBR-1166 is started
 @ApplicationScoped
 public class AccountManagementServiceImpl implements AccountManagementService {
 

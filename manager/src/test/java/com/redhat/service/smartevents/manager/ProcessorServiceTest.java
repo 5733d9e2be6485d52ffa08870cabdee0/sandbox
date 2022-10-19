@@ -30,6 +30,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyE
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
@@ -222,7 +223,12 @@ class ProcessorServiceTest {
         assertThat(processor.getName()).isEqualTo("name");
     }
 
-    //TODO: Add test for processors-QUOTA
+    @Test
+    void testCreateProcessorOrganizationWithNoQuota() {
+        ProcessorRequestForTests request = new ProcessorRequestForTests("name", createKafkaTopicAction());
+        assertThatExceptionOfType(NoQuotaAvailable.class)
+                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, "organisation_with_no_quota", request));
+    }
 
     private Processor doTestCreateProcessor(ProcessorRequest request, ProcessorType type) {
         Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, DEFAULT_ORGANISATION_ID, request);

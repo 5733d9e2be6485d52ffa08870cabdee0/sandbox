@@ -49,6 +49,7 @@ import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
 import dev.bf2.ffm.ams.core.AccountManagementService;
 import dev.bf2.ffm.ams.core.models.AccountInfo;
 import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
+import dev.bf2.ffm.ams.core.models.TermsRequest;
 
 import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
 
@@ -379,13 +380,23 @@ public class BridgesServiceImpl implements BridgesService {
     private CreateResourceRequest craftAMSCreateResourceRequest(String organisationId) {
         AccountInfo accountInfo = new AccountInfo.Builder()
                 .withOrganizationId(organisationId)
-                // TODO: add other properties when we switch to AMS
+                // TODO: properly populate these when we switch to AMS - https://issues.redhat.com/browse/MGDOBR-1166.
+                .withAccountUsername("TODO")
+                .withAccountId(0L)
+                .withAdminRole(Boolean.FALSE)
                 .build();
 
         return new CreateResourceRequest.Builder()
                 .withCount(1)
                 .withAccountInfo(accountInfo)
-                // TODO: add other properties when we switch to AMS
+                // TODO: properly populate these when we switch to AMS - https://issues.redhat.com/browse/MGDOBR-1166.
+                .withProductId("TODO")
+                .withCloudProviderId("TODO")
+                .withAvailabilityZoneType("TODO")
+                .withResourceName("TODO")
+                .withBillingModel("TODO")
+                .withClusterId("TODO")
+                .withTermRequest(new TermsRequest.Builder().withEventCode("TODO").withSiteCode("TODO").build())
                 .build();
     }
 
