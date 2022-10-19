@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Base64;
@@ -44,6 +45,10 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
+
+import dev.bf2.ffm.ams.core.AccountManagementService;
+import dev.bf2.ffm.ams.core.models.AccountInfo;
+import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 
 import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
 
@@ -93,6 +98,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
+    @Inject
+    AccountManagementService accountManagementService;
+
     @PostConstruct
     void init() {
         if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
@@ -111,6 +119,10 @@ public class BridgesServiceImpl implements BridgesService {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
 
+        // Create resource on AMS - raise an exception is the organisation is out of quota
+        CreateResourceRequest createResourceRequest = craftAMSCreateResourceRequest(organisationId);
+        String subscriptionId = accountManagementService.createResource(createResourceRequest).await().atMost(Duration.ofSeconds(2)).getSubscriptionId();
+
         Bridge bridge = bridgeRequest.toEntity();
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -122,6 +134,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setCloudProvider(bridgeRequest.getCloudProvider());
         bridge.setRegion(bridgeRequest.getRegion());
         bridge.setEndpoint(dnsService.buildBridgeEndpoint(bridge.getId(), customerId));
+        bridge.setSubscriptionId(subscriptionId);
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
@@ -294,6 +307,7 @@ public class BridgesServiceImpl implements BridgesService {
                 break;
 
             case DELETE:
+                accountManagementService.deleteResource(bridge.getSubscriptionId());
                 bridgeDAO.deleteById(bridge.getId());
                 metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 break;
@@ -360,6 +374,19 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
 
         return response;
+    }
+
+    private CreateResourceRequest craftAMSCreateResourceRequest(String organisationId) {
+        AccountInfo accountInfo = new AccountInfo.Builder()
+                .withOrganizationId(organisationId)
+                // TODO: add other properties when we switch to AMS
+                .build();
+
+        return new CreateResourceRequest.Builder()
+                .withCount(1)
+                .withAccountInfo(accountInfo)
+                // TODO: add other properties when we switch to AMS
+                .build();
     }
 
 }

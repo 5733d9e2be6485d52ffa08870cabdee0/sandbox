@@ -38,6 +38,12 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return find("#BRIDGE.findByIdAndCustomerId", params).firstResult();
     }
 
+    public List<Bridge> findByOrganisationId(String organisationId) {
+        Parameters params = Parameters
+                .with("organisationId", organisationId);
+        return find("#BRIDGE.findByOrganisationId", params).list();
+    }
+
     public ListResult<Bridge> findByCustomerId(String customerId, QueryResourceInfo queryInfo) {
         Parameters parameters = Parameters.with("customerId", customerId);
         PanacheQuery<Bridge> query = find("#BRIDGE.findByCustomerId", parameters);

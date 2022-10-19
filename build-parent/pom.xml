@@ -40,6 +40,7 @@
     <version.enforcer.plugin>3.0.0</version.enforcer.plugin>
     <restrict-imports.plugin.version>1.4.0</restrict-imports.plugin.version>
 
+    <version.dev.bf2.ffm>0.0.1-SNAPSHOT</version.dev.bf2.ffm>
     <version.io.cloudevents>2.3.0</version.io.cloudevents>
     <version.org.testcontainer>1.16.3</version.org.testcontainer>
     <version.com.github.tomakehurst.wiremock>2.30.1</version.com.github.tomakehurst.wiremock>
@@ -75,6 +76,13 @@
     <!-- See https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html-->
     <argLine></argLine>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>sonatype-oss-snapshots1</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -154,6 +162,11 @@
         <groupId>com.redhat.cloud</groupId>
         <artifactId>kafka-management-sdk</artifactId>
         <version>${version.com.redhat.cloud}</version>
+      </dependency>
+      <dependency>
+        <groupId>dev.bf2.ffm</groupId>
+        <artifactId>ams-core</artifactId>
+        <version>${version.dev.bf2.ffm}</version>
       </dependency>
       <dependency>
         <groupId>com.amazonaws.secretsmanager</groupId>

@@ -448,6 +448,8 @@ public class BridgesServiceTest {
         assertThat(response.getStatusMessage()).isNull();
     }
 
+    //TODO: Add test for bridges-QUOTA
+
     protected Bridge createPersistBridge(ManagedResourceStatus status) {
         Bridge b = Fixtures.createBridge();
         b.setStatus(status);

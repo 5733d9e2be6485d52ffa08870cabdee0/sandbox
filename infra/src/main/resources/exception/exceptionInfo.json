@@ -226,5 +226,11 @@
     "id": 39,
     "reason": "A Managed Connector failed to be provisioned for your request.",
     "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable",
+    "id": 40,
+    "reason": "The requested resource could not be deployed because you are out of available quota.",
+    "type": "USER"
   }
 ]
