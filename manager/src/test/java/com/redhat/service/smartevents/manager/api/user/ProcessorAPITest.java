@@ -839,11 +839,9 @@ public class ProcessorAPITest {
 
         assertThat(metrics).isNotNull();
         assertThat(metrics)
-                .contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",} 1.0")
+                .contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}")
                 .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}")
-                .contains(
-                        "http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/" + bridgeResponse.getId()
-                                + "/processors\",} 2.0")
+                .contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/" + bridgeResponse.getId() + "/processors\",}")
                 .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/" + bridgeResponse.getId() + "/processors\",}");
     }
 
