@@ -121,15 +121,15 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     public Processor createProcessor(String bridgeId, String customerId, String owner, String organisationId, ProcessorRequest processorRequest) {
 
+        // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
+        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+
         // Check processors limits
         long totalProcessors = processorDAO.findUserVisibleByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo()).getTotal();
         if (totalProcessors + 1 > processorsQuotaService.getProcessorsQuota(organisationId)) {
             throw new NoQuotaAvailable(
                     String.format("There are already '%d' processors attached to the bridge '%s': you reached the limit for your organisation settings.", totalProcessors, bridgeId));
         }
-
-        // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
-        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
         return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest, 0);
     }
