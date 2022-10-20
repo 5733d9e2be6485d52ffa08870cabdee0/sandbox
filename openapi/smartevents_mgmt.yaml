@@ -133,6 +133,12 @@ paths:
           description: Unauthorized.
         "403":
           description: Forbidden.
+        "406":
+          description: Not acceptable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorsList'
         "500":
           description: Internal error.
           content:
@@ -399,6 +405,12 @@ paths:
           description: Forbidden.
         "404":
           description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorsList'
+        "406":
+          description: Not acceptable.
           content:
             application/json:
               schema:
