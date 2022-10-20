@@ -40,7 +40,7 @@
     <version.enforcer.plugin>3.0.0</version.enforcer.plugin>
     <restrict-imports.plugin.version>1.4.0</restrict-imports.plugin.version>
 
-    <version.dev.bf2.ffm>0.0.1-SNAPSHOT</version.dev.bf2.ffm>
+    <version.dev.bf2.ffm>0.0.1</version.dev.bf2.ffm>
     <version.io.cloudevents>2.3.0</version.io.cloudevents>
     <version.org.testcontainer>1.16.3</version.org.testcontainer>
     <version.com.github.tomakehurst.wiremock>2.30.1</version.com.github.tomakehurst.wiremock>
