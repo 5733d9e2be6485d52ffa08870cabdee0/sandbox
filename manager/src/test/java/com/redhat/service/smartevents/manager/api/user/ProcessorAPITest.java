@@ -129,7 +129,7 @@ public class ProcessorAPITest {
 
         when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("organisation-with-no-quota");
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction()))
-                .then().statusCode(406).body("kind", Matchers.equalTo("Errors"));
+                .then().statusCode(402).body("kind", Matchers.equalTo("Errors"));
     }
 
     @Test

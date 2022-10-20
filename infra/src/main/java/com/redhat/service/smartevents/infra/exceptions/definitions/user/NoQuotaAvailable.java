@@ -16,6 +16,6 @@ public class NoQuotaAvailable extends ExternalUserException {
 
     @Override
     public int getStatusCode() {
-        return Response.Status.NOT_ACCEPTABLE.getStatusCode();
+        return Response.Status.PAYMENT_REQUIRED.getStatusCode();
     }
 }

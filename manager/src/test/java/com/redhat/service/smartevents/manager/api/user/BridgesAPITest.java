@@ -134,7 +134,7 @@ public class BridgesAPITest {
     public void createBridgeOrganisationWithNoQuota() {
         when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("organisation-with-no-quota");
         TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
-                .then().statusCode(406).body("kind", Matchers.equalTo("Errors"));
+                .then().statusCode(402).body("kind", Matchers.equalTo("Errors"));
     }
 
     @Test
