@@ -77,13 +77,6 @@
     <argLine></argLine>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>sonatype-oss-snapshots1</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
-  </repositories>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
