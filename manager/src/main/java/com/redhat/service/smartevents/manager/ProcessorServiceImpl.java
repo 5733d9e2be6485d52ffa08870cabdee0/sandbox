@@ -173,6 +173,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
+        if (source == null)
+            throw new ItemNotFoundException("Source is null");
         return gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, customerId, bridgeId, processorId);
     }
