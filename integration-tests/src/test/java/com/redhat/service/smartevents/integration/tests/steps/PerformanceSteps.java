@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
+import java.io.IOException;
 import java.time.Duration;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -51,6 +52,12 @@ public class PerformanceSteps {
                         () -> assertThat(HyperfoilResource.isRunCompleted(runId))
                                 .as("Waiting for performance run to finish")
                                 .isTrue());
+
+        try {
+            HyperfoilResource.storeBenchmarkReport(perfTestName, runId);
+        } catch (IOException e) {
+            context.getScenario().log(String.format("Failed to store benchmark report into filesystem: %s", e.getMessage()));
+        }
     }
 
     @And("^the benchmark run \"([^\"]*)\" was executed successfully$")
