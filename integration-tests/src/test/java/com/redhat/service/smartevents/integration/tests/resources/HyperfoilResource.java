@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +22,7 @@ public class HyperfoilResource {
 
     private static final String HYPERFOIL_URL = System.getProperty("performance.hyperfoil.url");
     private static final String BENCHMARK_CONTENT_FILE = "benchmark.hf.yaml";
+    private static final String BENCHMARK_REPORT_DESTINATION_FOLDER_PATH = "target/hyperfoil-runs";
 
     // Creating validation object directly as TNB Hyperfoil default service starts/stops Hyperfoil, causing tests to fail on environment without Docker environment
     public static HyperfoilValidation validation = new HyperfoilValidation(HYPERFOIL_URL);
@@ -64,6 +66,14 @@ public class HyperfoilResource {
     public static boolean containsFailedRunPhase(String idRun) {
         Run run = validation.getRun(idRun);
         return run.getPhases().stream().anyMatch(Phase::getFailed);
+    }
+
+    public static void storeBenchmarkReport(String perfTestName, String runId) throws IOException {
+        String generateReport = validation.generateReport(validation.getRun(runId));
+        String filename = String.format("%s-%s-%s.html", perfTestName, runId, LocalDateTime.now());
+        Path destination = Paths.get(BENCHMARK_REPORT_DESTINATION_FOLDER_PATH, filename);
+        Files.createDirectories(destination.getParent());
+        Files.writeString(destination, generateReport);
     }
 
     public static int getTotalRequestsSent(String idRun, String phase, String metric) {
