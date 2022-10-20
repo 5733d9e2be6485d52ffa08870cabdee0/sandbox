@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pperiodical-slack-check -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dremote.cluster.bridge.endpoint=$REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT -Dtest.credentials.file=e2e-test-config.yaml
-          working-directory: integration-tests
+          working-directory: integration-tests/manager-integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}
         run: |

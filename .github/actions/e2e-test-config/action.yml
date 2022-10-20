@@ -17,5 +17,5 @@ runs:
         sed -i "s|<SLACK_CHANNEL_SECOND>|$SLACK_CHANNEL_SECOND|" e2e-test-config.yaml
         sed -i "s|<WEBHOOK_SITE_TOKEN>|$WEBHOOK_SITE_TOKEN|" e2e-test-config.yaml
         sed -i "s|<WEBHOOK_SITE_TOKEN_SECOND>|$WEBHOOK_SITE_TOKEN_SECOND|" e2e-test-config.yaml
-        cp e2e-test-config.yaml ../integration-tests
+        cp e2e-test-config.yaml ../integration-tests/manager-integration-tests
       working-directory: .github
