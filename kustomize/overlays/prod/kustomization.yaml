@@ -33,6 +33,12 @@ patchesJson6902:
 - path: patch-with-knative-eventing-namespace.yaml
   target:
     group: ''
+    kind: NetworkPolicy
+    name: kafka-webhook-eventing
+    version: v1
+- path: patch-with-knative-eventing-namespace.yaml
+  target:
+    group: ''
     kind: Gateway
     name: broker-gateway
     version: v1alpha3
