@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -156,8 +155,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
         Action resolvedAction = processorType == ProcessorType.SOURCE
-                ? resolveSource(Optional.ofNullable(processorRequest.getSource()), customerId, bridge.getId(), newProcessor.getId())
-                : resolveAction(Optional.ofNullable(processorRequest.getAction()), customerId, bridge.getId(), newProcessor.getId());
+                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
+                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
@@ -179,14 +178,17 @@ public class ProcessorServiceImpl implements ProcessorService {
         return newProcessor;
     }
 
-    //error- cannot resolve method getType in Optional && `action` requires Action type.Provided optional.
-    private Action resolveAction(Optional<Action> action, String customerId, String bridgeId, String processorId) {
+    private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
+        if(action == null)
+            throw new ItemNotFoundException("Action is null");
         return gatewayConfigurator.getActionResolver(action.getType())
                 .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
                 .orElse(action);
     }
 
-    private Action resolveSource(Optional<Source> source, String customerId, String bridgeId, String processorId) {
+    private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
+        if(source == null)
+            throw new ItemNotFoundException("Source is null");
         return gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, customerId, bridgeId, processorId);
     }
@@ -264,13 +266,12 @@ public class ProcessorServiceImpl implements ProcessorService {
         // if it remains unchanged (since the caller can't know the current real value)
         // thus, before comparing the requested action/source with the existing one, we must unmask
         // the sensitive fields with the original values (if those are unchanged) or with the new ones
-        Optional<Action> updatedAction = Optional.ofNullable(mergeGatewaySecrets(processorRequest.getAction(), existingAction));
-        Optional<Source> updatedSource = Optional.ofNullable(mergeGatewaySecrets(processorRequest.getSource(), existingSource));
+        Action updatedAction = mergeGatewaySecrets(processorRequest.getAction(), existingAction);
+        Source updatedSource = mergeGatewaySecrets(processorRequest.getSource(), existingSource);
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        @Nullable
         Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
                 ? resolveSource(updatedSource, customerId, bridgeId, processorId)
                 : resolveAction(updatedAction, customerId, bridgeId, processorId);
