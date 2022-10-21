@@ -79,7 +79,7 @@ jobs:
           MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups }} -Devent-bridge.manager.url=$PROD_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$PROD_SSO_CLIENT_ID -Dbridge.client.secret=$PROD_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable }} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable }}
+          maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups || ''}} -Devent-bridge.manager.url=$PROD_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$PROD_SSO_CLIENT_ID -Dbridge.client.secret=$PROD_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable || 'false'}} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable || 'false'}}
           working-directory: integration-tests/manager-integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}
