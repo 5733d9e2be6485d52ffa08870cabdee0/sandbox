@@ -2,13 +2,7 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -23,19 +17,11 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.*;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.models.dto.*;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
@@ -179,7 +165,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
-        if(action == null) {
+        if (action == null) {
             return null;
         }
         return gatewayConfigurator.getActionResolver(action.getType())
@@ -188,7 +174,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
-        if(source == null) {
+        if (source == null) {
             return null;
         }
         return gatewayConfigurator.getSourceResolver(source.getType())
