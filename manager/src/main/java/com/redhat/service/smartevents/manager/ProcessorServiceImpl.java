@@ -179,16 +179,16 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
-        //if (action == null)
-            //throw new ItemNotFoundException("Action is null");
+        if (action == null)
+            throw new ItemNotFoundException("Action is null");
         return gatewayConfigurator.getActionResolver(action.getType())
                 .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
                 .orElse(action);
     }
 
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
-       // if (source == null)
-         //   throw new ItemNotFoundException("Source is null");
+        if (source == null)
+            throw new ItemNotFoundException("Source is null");
         return gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, customerId, bridgeId, processorId);
     }
