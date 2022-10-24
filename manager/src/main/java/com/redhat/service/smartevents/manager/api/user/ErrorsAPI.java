@@ -20,6 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorListResponse;
@@ -34,6 +35,7 @@ import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 @Path(APIConstants.ERROR_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RegisterRestClient
 public class ErrorsAPI {
 
     @Inject

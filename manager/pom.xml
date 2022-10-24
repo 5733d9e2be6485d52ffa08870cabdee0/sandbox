@@ -107,6 +107,10 @@
       <groupId>io.quarkiverse.loggingjson</groupId>
       <artifactId>quarkus-logging-json</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.microprofile.rest.client</groupId>
+      <artifactId>microprofile-rest-client-api</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

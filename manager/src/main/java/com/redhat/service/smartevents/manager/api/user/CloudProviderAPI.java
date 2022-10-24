@@ -18,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
@@ -35,6 +36,7 @@ import com.redhat.service.smartevents.manager.models.CloudProvider;
 @Path(APIConstants.CLOUD_PROVIDERS_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RegisterRestClient
 public class CloudProviderAPI {
 
     @Inject

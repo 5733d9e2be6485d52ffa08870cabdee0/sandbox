@@ -114,7 +114,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
         // This time-out needs to be (at least) as long as the Controller's configured timeout
         // See application.properties#event-bridge.ingress.deployment.timeout-seconds
-        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
+        assertThat(latch.await(90, TimeUnit.SECONDS)).isTrue();
         assertJsonRequest(expectedJsonUpdateProvisioningRequest, APIConstants.SHARD_API_BASE_PATH);
 
         if (isSuccessful) {
@@ -207,7 +207,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
         // This time-out needs to be (at least) as long as the Controller's configured timeout
         // See application.properties#event-bridge.executor.deployment.timeout-seconds
-        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
+        assertThat(latch.await(90, TimeUnit.SECONDS)).isTrue();
 
         if (isSuccessful) {
             assertJsonRequest(

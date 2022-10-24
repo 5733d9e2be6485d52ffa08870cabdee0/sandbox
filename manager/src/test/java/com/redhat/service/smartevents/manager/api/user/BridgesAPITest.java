@@ -42,6 +42,8 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_API_BASE_PATH;
@@ -60,6 +62,7 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGIO
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createKafkaAction;
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -701,6 +704,28 @@ public class BridgesAPITest {
         //Attempt to update Bridge name
         Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME + "-updated", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
         bridgeUpdateResponse.then().statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testBasicMetricsForBridges() {
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+                .then().statusCode(202);
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        assertThat(metrics).isNotNull();
+        assertThat(metrics)
+                .contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}")
+                .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}");
     }
 
     private void createErrorHandler(BridgeResponse bridgeResponse, Action errorHandler, ManagedResourceStatus errorHandlerStatus) {
