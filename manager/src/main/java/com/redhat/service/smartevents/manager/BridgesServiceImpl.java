@@ -20,10 +20,12 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.AMSFailException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
@@ -47,8 +49,10 @@ import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
 
 import dev.bf2.ffm.ams.core.AccountManagementService;
+import dev.bf2.ffm.ams.core.exceptions.TermsRequiredException;
 import dev.bf2.ffm.ams.core.models.AccountInfo;
 import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
+import dev.bf2.ffm.ams.core.models.ResourceCreated;
 import dev.bf2.ffm.ams.core.models.TermsRequest;
 
 import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
@@ -121,8 +125,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         // Create resource on AMS - raise an exception is the organisation is out of quota
-        CreateResourceRequest createResourceRequest = craftAMSCreateResourceRequest(organisationId);
-        String subscriptionId = accountManagementService.createResource(createResourceRequest).await().atMost(Duration.ofSeconds(2)).getSubscriptionId();
+        String subscriptionId = createResourceOnAMS(organisationId);
 
         Bridge bridge = bridgeRequest.toEntity();
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
@@ -377,7 +380,7 @@ public class BridgesServiceImpl implements BridgesService {
         return response;
     }
 
-    private CreateResourceRequest craftAMSCreateResourceRequest(String organisationId) {
+    private String createResourceOnAMS(String organisationId) {
         AccountInfo accountInfo = new AccountInfo.Builder()
                 .withOrganizationId(organisationId)
                 // TODO: properly populate these when we switch to AMS - https://issues.redhat.com/browse/MGDOBR-1166.
@@ -386,7 +389,7 @@ public class BridgesServiceImpl implements BridgesService {
                 .withAdminRole(Boolean.FALSE)
                 .build();
 
-        return new CreateResourceRequest.Builder()
+        CreateResourceRequest createResourceRequest = new CreateResourceRequest.Builder()
                 .withCount(1)
                 .withAccountInfo(accountInfo)
                 // TODO: properly populate these when we switch to AMS - https://issues.redhat.com/browse/MGDOBR-1166.
@@ -398,6 +401,15 @@ public class BridgesServiceImpl implements BridgesService {
                 .withClusterId("TODO")
                 .withTermRequest(new TermsRequest.Builder().withEventCode("TODO").withSiteCode("TODO").build())
                 .build();
-    }
 
+        try {
+            ResourceCreated resourceCreated = accountManagementService.createResource(createResourceRequest).await().atMost(Duration.ofSeconds(5));
+            return resourceCreated.getSubscriptionId();
+        } catch (TermsRequiredException e) {
+            throw new TermsNotAcceptedYetException("Terms must be accepted in order to use the service.");
+        } catch (Exception e) {
+            LOGGER.warn("An error occurred with AMS for the organisation '{}'", organisationId, e);
+            throw new AMSFailException("Could not check if organization has quota to create the resource.");
+        }
+    }
 }

@@ -232,5 +232,17 @@
     "id": 40,
     "reason": "The requested resource could not be deployed because you are out of available quota.",
     "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.TermsNotAcceptedYetException",
+    "id": 41,
+    "reason": "Terms not accepted yet.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.AMSFailException",
+    "id": 42,
+    "reason": "An error with AMS occurred.",
+    "type": "PLATFORM"
   }
 ]
