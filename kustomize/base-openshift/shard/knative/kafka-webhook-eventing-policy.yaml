@@ -1,0 +1,15 @@
+# https://issues.redhat.com/browse/SRVKE-1216
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: kafka-webhook-eventing
+  #  Due to https://github.com/kubernetes-sigs/kustomize/issues/880 we have to override it in overlays/<ENV>/kustomization.yaml
+  #  namespace: knative-eventing
+  labels:
+    app: kafka-webhook-eventing
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka-webhook-eventing
+  ingress:
+    - {}
