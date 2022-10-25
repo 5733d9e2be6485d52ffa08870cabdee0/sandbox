@@ -305,7 +305,7 @@ public class BridgeDAOTest {
         for (int i = 0; i < 10; i++) {
             String id = String.valueOf(i);
             Bridge bridge = buildBridge(id, id);
-            bridge.setStatus(i % 2 == 0 ? READY : ACCEPTED);
+            bridge.setStatus(ACCEPTED);
             bridgeDAO.persist(bridge);
         }
 
