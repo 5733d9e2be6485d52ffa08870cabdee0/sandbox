@@ -25,6 +25,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyE
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -407,6 +408,8 @@ public class BridgesServiceImpl implements BridgesService {
             return resourceCreated.getSubscriptionId();
         } catch (TermsRequiredException e) {
             throw new TermsNotAcceptedYetException("Terms must be accepted in order to use the service.");
+        } catch (NoQuotaAvailable e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.warn("An error occurred with AMS for the organisation '{}'", organisationId, e);
             throw new AMSFailException("Could not check if organization has quota to create the resource.");

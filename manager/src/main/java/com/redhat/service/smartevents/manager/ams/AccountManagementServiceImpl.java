@@ -59,7 +59,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
 
     private boolean organisationHasBridgesQuota(String organisationId) {
         long organisationQuota = quotaConfigurationProvider.getOrganisationQuotas(organisationId).getBridgesQuota();
-        int organisationConsumption = bridgeDAO.findByOrganisationId(organisationId).size();
+        long organisationConsumption = bridgeDAO.countByOrganisationId(organisationId);
         LOGGER.debug("Organization id '{}' has '{}' bridge instances where the limit is '{}'", organisationId, organisationConsumption, organisationQuota);
         return organisationConsumption + 1 > organisationQuota;
     }

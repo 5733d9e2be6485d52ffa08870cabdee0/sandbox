@@ -35,8 +35,8 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
                 query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
-        @NamedQuery(name = "BRIDGE.findByOrganisationId",
-                query = "from Bridge where organisation_id=:organisationId order by submitted_at desc")
+        @NamedQuery(name = "BRIDGE.countByOrganisationId",
+                query = "select count(*) from Bridge where organisation_id=:organisationId")
 })
 @Entity
 @FilterDefs({
