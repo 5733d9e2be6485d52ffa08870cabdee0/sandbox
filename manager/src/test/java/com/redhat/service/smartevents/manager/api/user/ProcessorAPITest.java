@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,6 +56,10 @@ import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_AT
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SOURCE;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -118,6 +123,16 @@ public class ProcessorAPITest {
         // Results are sorted descending by default. The first created is the last to be listed.
         assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
         assertThat(listResponse.getItems().get(1).getId()).isEqualTo(p1.getId());
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void createProcessorOrganisationWithNoQuota() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("organisation-with-no-quota");
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction()))
+                .then().statusCode(402).body("kind", Matchers.equalTo("Errors"));
     }
 
     @Test

@@ -91,6 +91,10 @@
       <artifactId>connector-management-sdk</artifactId>
     </dependency>
     <dependency>
+      <groupId>dev.bf2.ffm</groupId>
+      <artifactId>ams-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkiverse.amazonservices</groupId>
       <artifactId>quarkus-amazon-secretsmanager</artifactId>
     </dependency>

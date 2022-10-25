@@ -30,6 +30,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyE
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
@@ -72,6 +73,7 @@ import static com.redhat.service.smartevents.infra.models.processors.ProcessorTy
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
@@ -181,14 +183,14 @@ class ProcessorServiceTest {
     @MethodSource("createProcessorParams")
     void testCreateProcessor_bridgeNotActive(ProcessorRequest request) {
         assertThatExceptionOfType(BridgeLifecycleException.class)
-                .isThrownBy(() -> processorService.createProcessor(NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
+                .isThrownBy(() -> processorService.createProcessor(NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, DEFAULT_ORGANISATION_ID, request));
     }
 
     @ParameterizedTest
     @MethodSource("createProcessorParams")
     void testCreateProcessor_bridgeDoesNotExist(ProcessorRequest request) {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.createProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
+                .isThrownBy(() -> processorService.createProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, DEFAULT_ORGANISATION_ID, request));
     }
 
     @ParameterizedTest
@@ -196,7 +198,7 @@ class ProcessorServiceTest {
     void testCreateProcessor_processorWithSameNameAlreadyExists(ProcessorRequestForTests request) {
         request.setName(DEFAULT_PROCESSOR_NAME);
         assertThatExceptionOfType(AlreadyExistingItemException.class)
-                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
+                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, DEFAULT_ORGANISATION_ID, request));
     }
 
     @ParameterizedTest
@@ -221,8 +223,15 @@ class ProcessorServiceTest {
         assertThat(processor.getName()).isEqualTo("name");
     }
 
+    @Test
+    void testCreateProcessorOrganizationWithNoQuota() {
+        ProcessorRequestForTests request = new ProcessorRequestForTests("name", createKafkaTopicAction());
+        assertThatExceptionOfType(NoQuotaAvailable.class)
+                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, "organisation_with_no_quota", request));
+    }
+
     private Processor doTestCreateProcessor(ProcessorRequest request, ProcessorType type) {
-        Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request);
+        Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, DEFAULT_ORGANISATION_ID, request);
         doAssertProcessorCreation(processor, request, type);
         return processor;
     }

@@ -115,7 +115,7 @@ class ProcessorServiceConnectorTest {
         when(connectorsApiClient.createConnector(any(ConnectorRequest.class))).thenReturn(externalConnector);
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), b.getOwner(), processorRequest);
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), b.getOwner(), b.getOrganisationId(), processorRequest);
 
         //There will be 2 re-tries at 5s each. Add 5s to be certain everything completes.
         await().atMost(15, SECONDS).untilAsserted(() -> {
@@ -146,7 +146,7 @@ class ProcessorServiceConnectorTest {
                 new InternalPlatformException(RhoasServiceImpl.createFailureErrorMessageFor("errorTopic"), new RuntimeException("error")));
         when(connectorsApiClient.createConnector(any(ConnectorRequest.class))).thenReturn(new Connector());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), b.getOwner(), processorRequest);
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), b.getOwner(), b.getOrganisationId(), processorRequest);
 
         waitForProcessorAndConnectorToFail(processor);
 
@@ -164,7 +164,7 @@ class ProcessorServiceConnectorTest {
         doThrow(new InternalPlatformException(RhoasServiceImpl.createFailureErrorMessageFor("errorDeletingConnector"), new RuntimeException("error")))
                 .when(connectorsApiClient).deleteConnector(anyString());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), b.getOwner(), processorRequest);
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), b.getOwner(), b.getOrganisationId(), processorRequest);
 
         waitForProcessorAndConnectorToFail(processor);
     }

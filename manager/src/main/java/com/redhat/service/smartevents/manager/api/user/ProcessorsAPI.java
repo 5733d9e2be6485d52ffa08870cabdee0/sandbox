@@ -105,6 +105,7 @@ public class ProcessorsAPI {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Not enough quota.", responseCode = "402", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
@@ -115,7 +116,8 @@ public class ProcessorsAPI {
     public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         String owner = identityResolver.resolveOwner(jwt);
-        Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
+        String organisationId = identityResolver.resolveOrganisationId(jwt);
+        Processor processor = processorService.createProcessor(bridgeId, customerId, owner, organisationId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
     }
 

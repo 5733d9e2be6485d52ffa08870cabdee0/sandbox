@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -64,6 +65,7 @@ import static com.redhat.service.smartevents.manager.utils.TestUtils.createKafka
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -128,6 +130,14 @@ public class BridgesAPITest {
     public void createBridgeNoAuthentication() {
         TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void createBridgeOrganisationWithNoQuota() {
+        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("organisation-with-no-quota");
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+                .then().statusCode(402).body("kind", Matchers.equalTo("Errors"));
     }
 
     @Test

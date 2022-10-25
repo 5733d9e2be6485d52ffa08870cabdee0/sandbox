@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
@@ -61,6 +62,7 @@ public class Fixtures {
         b.setDefinition(new BridgeDefinition());
         b.setCloudProvider(TestConstants.DEFAULT_CLOUD_PROVIDER);
         b.setRegion(TestConstants.DEFAULT_REGION);
+        b.setSubscriptionId(UUID.randomUUID().toString());
         return b;
     }
 

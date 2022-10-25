@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Base64;
@@ -19,10 +20,13 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.AMSFailException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
@@ -44,6 +48,13 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
+
+import dev.bf2.ffm.ams.core.AccountManagementService;
+import dev.bf2.ffm.ams.core.exceptions.TermsRequiredException;
+import dev.bf2.ffm.ams.core.models.AccountInfo;
+import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
+import dev.bf2.ffm.ams.core.models.ResourceCreated;
+import dev.bf2.ffm.ams.core.models.TermsRequest;
 
 import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
 
@@ -93,6 +104,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
+    @Inject
+    AccountManagementService accountManagementService;
+
     @PostConstruct
     void init() {
         if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
@@ -111,6 +125,9 @@ public class BridgesServiceImpl implements BridgesService {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
 
+        // Create resource on AMS - raise an exception is the organisation is out of quota
+        String subscriptionId = createResourceOnAMS(organisationId);
+
         Bridge bridge = bridgeRequest.toEntity();
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -122,6 +139,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setCloudProvider(bridgeRequest.getCloudProvider());
         bridge.setRegion(bridgeRequest.getRegion());
         bridge.setEndpoint(dnsService.buildBridgeEndpoint(bridge.getId(), customerId));
+        bridge.setSubscriptionId(subscriptionId);
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
@@ -294,6 +312,7 @@ public class BridgesServiceImpl implements BridgesService {
                 break;
 
             case DELETE:
+                accountManagementService.deleteResource(bridge.getSubscriptionId());
                 bridgeDAO.deleteById(bridge.getId());
                 metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 break;
@@ -362,4 +381,38 @@ public class BridgesServiceImpl implements BridgesService {
         return response;
     }
 
+    private String createResourceOnAMS(String organisationId) {
+        AccountInfo accountInfo = new AccountInfo.Builder()
+                .withOrganizationId(organisationId)
+                // TODO: properly populate these when we switch to AMS - https://issues.redhat.com/browse/MGDOBR-1166.
+                .withAccountUsername("TODO")
+                .withAccountId(0L)
+                .withAdminRole(Boolean.FALSE)
+                .build();
+
+        CreateResourceRequest createResourceRequest = new CreateResourceRequest.Builder()
+                .withCount(1)
+                .withAccountInfo(accountInfo)
+                // TODO: properly populate these when we switch to AMS - https://issues.redhat.com/browse/MGDOBR-1166.
+                .withProductId("TODO")
+                .withCloudProviderId("TODO")
+                .withAvailabilityZoneType("TODO")
+                .withResourceName("TODO")
+                .withBillingModel("TODO")
+                .withClusterId("TODO")
+                .withTermRequest(new TermsRequest.Builder().withEventCode("TODO").withSiteCode("TODO").build())
+                .build();
+
+        try {
+            ResourceCreated resourceCreated = accountManagementService.createResource(createResourceRequest).await().atMost(Duration.ofSeconds(5));
+            return resourceCreated.getSubscriptionId();
+        } catch (TermsRequiredException e) {
+            throw new TermsNotAcceptedYetException("Terms must be accepted in order to use the service.");
+        } catch (NoQuotaAvailable e) {
+            throw e;
+        } catch (Exception e) {
+            LOGGER.warn("An error occurred with AMS for the organisation '{}'", organisationId, e);
+            throw new AMSFailException("Could not check if organization has quota to create the resource.");
+        }
+    }
 }

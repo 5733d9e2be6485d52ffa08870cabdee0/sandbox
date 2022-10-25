@@ -27,6 +27,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyE
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -42,6 +43,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+import com.redhat.service.smartevents.manager.ams.ProcessorsQuotaService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
@@ -91,6 +93,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
+    @Inject
+    ProcessorsQuotaService processorsQuotaService;
+
     @Transactional
     @Override
     public Processor getProcessor(String bridgeId, String processorId, String customerId) {
@@ -114,9 +119,17 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     @Transactional
-    public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
+    public Processor createProcessor(String bridgeId, String customerId, String owner, String organisationId, ProcessorRequest processorRequest) {
+
         // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+
+        // Check processors limits
+        long totalProcessors = processorDAO.findUserVisibleByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo()).getTotal();
+        if (totalProcessors + 1 > processorsQuotaService.getProcessorsQuota(organisationId)) {
+            throw new NoQuotaAvailable(
+                    String.format("There are already '%d' processors attached to the bridge '%s': you reached the limit for your organisation settings.", totalProcessors, bridgeId));
+        }
 
         return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest, 0);
     }

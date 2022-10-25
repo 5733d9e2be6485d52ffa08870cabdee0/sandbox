@@ -26,6 +26,7 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -297,6 +298,22 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges.getTotal()).isEqualTo(5);
         assertThat(retrievedBridges.getPage()).isEqualTo(2);
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("0");
+    }
+
+    @Test
+    public void testCountByOrganisationId() {
+        for (int i = 0; i < 10; i++) {
+            String id = String.valueOf(i);
+            Bridge bridge = buildBridge(id, id);
+            bridge.setStatus(ACCEPTED);
+            bridgeDAO.persist(bridge);
+        }
+
+        long countBridges = bridgeDAO.countByOrganisationId(DEFAULT_ORGANISATION_ID);
+        assertThat(countBridges).isEqualTo(10);
+
+        countBridges = bridgeDAO.countByOrganisationId("random");
+        assertThat(countBridges).isEqualTo(0);
     }
 
     private Bridge buildBridge(String id, String name) {

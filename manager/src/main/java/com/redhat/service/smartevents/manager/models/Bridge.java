@@ -34,7 +34,9 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
-                query = "from Bridge where customer_id=:customerId order by submitted_at desc")
+                query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
+        @NamedQuery(name = "BRIDGE.countByOrganisationId",
+                query = "select count(*) from Bridge where organisation_id=:organisationId")
 })
 @Entity
 @FilterDefs({
@@ -70,6 +72,9 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     @Column(name = "region", nullable = false, updatable = false)
     private String region;
+
+    @Column(name = "subscription_id", nullable = false, updatable = false)
+    private String subscriptionId;
 
     public Bridge() {
     }
@@ -132,6 +137,14 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getSubscriptionId() {
+        return subscriptionId;
+    }
+
+    public void setSubscriptionId(String subscriptionId) {
+        this.subscriptionId = subscriptionId;
     }
 
     /*
