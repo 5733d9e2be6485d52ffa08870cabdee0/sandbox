@@ -4,7 +4,7 @@ description: 'Prepare test configuration for E2E tests'
 runs:
   using: "composite"
   steps:
-    - name: Configure test config file for E2E tests and copy it to integration-tests module
+    - name: Configure test config file for E2E tests and copy it to manager-integration-tests module
       shell: bash
       run: |
         sed -i "s|<IT_AWS_ACCESS_KEY_ID>|$IT_AWS_ACCESS_KEY_ID|" e2e-test-config.yaml
@@ -17,5 +17,5 @@ runs:
         sed -i "s|<SLACK_CHANNEL_SECOND>|$SLACK_CHANNEL_SECOND|" e2e-test-config.yaml
         sed -i "s|<WEBHOOK_SITE_TOKEN>|$WEBHOOK_SITE_TOKEN|" e2e-test-config.yaml
         sed -i "s|<WEBHOOK_SITE_TOKEN_SECOND>|$WEBHOOK_SITE_TOKEN_SECOND|" e2e-test-config.yaml
-        cp e2e-test-config.yaml ../integration-tests
+        cp e2e-test-config.yaml ../integration-tests/manager-integration-tests
       working-directory: .github
