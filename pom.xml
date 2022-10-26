@@ -60,7 +60,6 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-        <module>shard-operator-integration-tests</module>
         <module>integration-tests</module>
         <module>use-cases</module>
       </modules>
