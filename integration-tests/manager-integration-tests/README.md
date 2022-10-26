@@ -70,7 +70,7 @@ Currently, there is a possibility to use these placeholders in feature files:
 
 ### Local testing
 
-If you deployed application locally (by [running manager and operator locally](../dev/README.md)) you can use [run-local-tests.sh](run-local-tests.sh) script to launch the tests with all local parameters set automatically.
+If you deployed application locally (by [running manager and operator locally](../../dev/README.md)) you can use [run-local-tests.sh](run-local-tests.sh) script to launch the tests with all local parameters set automatically.
 
 Script has 3 options:
 - `-t TAGS`  
@@ -114,7 +114,7 @@ By Default test runs with those authentication parameters for Keycloak:
 <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
 ```
 
-You can update the parameters needs to configure in `integration-tests/pom.xml` or via the maven command.
+You can update the parameters needs to configure in `integration-tests/manager-integration-tests/pom.xml` or via the maven command.
 
 ### Performance testing
 
@@ -123,7 +123,7 @@ In order to be able to run the [performance tests scenarios](src/test/resources/
 - [Hyperfoil v0.21](https://hyperfoil.io/) - Benchmark framework for microservices (*)
 - [webhook-perf-test](https://github.com/afalhambra/webhook-perf-test) - Dummy app to consume cloud events from webhook Processor
 
-There is a dedicated Maven profile named `performance` located in `integration-tests/pom.xml`. There you can see the following system properties needed 
+There is a dedicated Maven profile named `performance` located in `integration-tests/manager-integration-tests/pom.xml`. There you can see the following system properties needed 
 to run these performance test scenarios:
 
 ```xml

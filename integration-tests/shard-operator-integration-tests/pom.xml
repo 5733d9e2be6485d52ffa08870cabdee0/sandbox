@@ -5,9 +5,9 @@
 
   <parent>
     <groupId>com.redhat.service.smartevents</groupId>
-    <artifactId>build-parent</artifactId>
+    <artifactId>integration-tests</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../build-parent/pom.xml</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
