@@ -150,7 +150,7 @@ public class BridgeExecutorServiceTest {
                             .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                             .get();
                     assertThat(deployment).isNotNull();
-                    assertThat(deployment.getSpec().getProgressDeadlineSeconds()).isEqualTo(60);
+                    assertThat(deployment.getSpec().getProgressDeadlineSeconds()).isEqualTo(30);
                     List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
                     assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.CUSTOMER_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                             .isGreaterThan(0);
