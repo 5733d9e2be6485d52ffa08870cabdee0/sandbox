@@ -21,7 +21,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
@@ -35,7 +34,6 @@ import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Processing Errors", description = "The API that allow the user to retrieve processing errors of a specific bridge instance.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
