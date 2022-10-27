@@ -192,12 +192,18 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
+        if (action == null) {
+            return null;
+        }
         return gatewayConfigurator.getActionResolver(action.getType())
                 .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
                 .orElse(action);
     }
 
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
+        if (source == null) {
+            return null;
+        }
         return gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, customerId, bridgeId, processorId);
     }
