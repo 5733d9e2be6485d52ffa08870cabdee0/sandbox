@@ -21,7 +21,7 @@ import org.mockito.ArgumentCaptor;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.processors.ProcessorDefinition;
@@ -790,7 +790,7 @@ class ProcessorServiceTest {
         ProcessorResponse r = processorService.toResponse(p);
         assertThat(r).isNotNull();
 
-        assertThat(r.getHref()).isEqualTo(APIConstants.V1_USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
+        assertThat(r.getHref()).isEqualTo(V1APIConstants.V1_USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
         assertThat(r.getName()).isEqualTo(p.getName());
         assertThat(r.getStatus()).isEqualTo(p.getStatus());
         assertThat(r.getType()).isEqualTo(p.getType());
@@ -821,7 +821,7 @@ class ProcessorServiceTest {
         ProcessorResponse r = processorService.toResponse(p);
         assertThat(r).isNotNull();
 
-        assertThat(r.getHref()).isEqualTo(APIConstants.V1_USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
+        assertThat(r.getHref()).isEqualTo(V1APIConstants.V1_USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
         assertThat(r.getName()).isEqualTo(p.getName());
         assertThat(r.getStatus()).isEqualTo(p.getStatus());
         assertThat(r.getType()).isEqualTo(p.getType());

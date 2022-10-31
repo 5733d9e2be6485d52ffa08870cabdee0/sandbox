@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
@@ -524,7 +524,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         if (processor.getBridge() != null) {
-            processorResponse.setHref(APIConstants.V1_USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
+            processorResponse.setHref(V1APIConstants.V1_USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
         }
 
         processorResponse.setStatusMessage(bridgeErrorHelper.makeUserMessage(processor));

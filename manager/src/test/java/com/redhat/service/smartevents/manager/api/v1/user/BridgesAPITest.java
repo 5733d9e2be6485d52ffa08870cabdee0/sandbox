@@ -48,7 +48,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.infra.api.APIConstants.V1_USER_API_BASE_PATH;
+import static com.redhat.service.smartevents.infra.api.v1.V1APIConstants.V1_USER_API_BASE_PATH;
 import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.READY;

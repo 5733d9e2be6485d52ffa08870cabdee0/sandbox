@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.manager.TestConstants;
@@ -109,7 +110,7 @@ class ProcessingErrorsAPITest {
 
     private static Response getProcessingErrors() {
         return jsonRequest()
-                .get(APIConstants.V1_USER_API_BASE_PATH + DEFAULT_BRIDGE_ID + "/errors");
+                .get(V1APIConstants.V1_USER_API_BASE_PATH + DEFAULT_BRIDGE_ID + "/errors");
     }
 
 }

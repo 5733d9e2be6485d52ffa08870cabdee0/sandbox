@@ -30,7 +30,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.redhat.service.smartevents.infra.api.APIConstants.V1_SHARD_API_BASE_PATH;
+import static com.redhat.service.smartevents.infra.api.v1.V1APIConstants.V1_SHARD_API_BASE_PATH;
 import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.shard.operator.TestSupport.KAFKA_CONNECTION_DTO;
 import static java.util.concurrent.TimeUnit.SECONDS;

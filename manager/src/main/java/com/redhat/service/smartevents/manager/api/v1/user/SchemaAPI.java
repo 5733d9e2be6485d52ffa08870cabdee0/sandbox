@@ -26,7 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.manager.api.v1.models.responses.ProcessorCatalogResponse;
@@ -42,7 +42,7 @@ import io.quarkus.security.Authenticated;
                 scheme = "Bearer")
 })
 @SecurityRequirement(name = "bearer")
-@Path(APIConstants.V1_SCHEMA_API_BASE_PATH)
+@Path(V1APIConstants.V1_SCHEMA_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
@@ -78,7 +78,7 @@ public class SchemaAPI {
                                 x.getName(),
                                 x.getDescription(),
                                 ACTION_TYPE,
-                                APIConstants.V1_ACTIONS_SCHEMA_API_BASE_PATH + x.getId()))
+                                V1APIConstants.V1_ACTIONS_SCHEMA_API_BASE_PATH + x.getId()))
                         .collect(Collectors.toList()));
         entries.addAll(processorCatalogService
                 .getSourcesCatalog()
@@ -87,7 +87,7 @@ public class SchemaAPI {
                         x.getName(),
                         x.getDescription(),
                         SOURCE_TYPE,
-                        APIConstants.V1_SOURCES_SCHEMA_API_BASE_PATH + x.getId()))
+                        V1APIConstants.V1_SOURCES_SCHEMA_API_BASE_PATH + x.getId()))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();

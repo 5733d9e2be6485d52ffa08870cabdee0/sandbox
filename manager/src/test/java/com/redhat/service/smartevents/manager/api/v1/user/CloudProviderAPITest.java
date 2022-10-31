@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.manager.api.v1.user;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.manager.api.v1.models.responses.CloudProviderListResponse;
 import com.redhat.service.smartevents.manager.api.v1.models.responses.CloudProviderResponse;
 import com.redhat.service.smartevents.manager.api.v1.models.responses.CloudRegionListResponse;
@@ -20,7 +20,7 @@ public class CloudProviderAPITest {
     @Test
     public void listCloudProviders() {
         CloudProviderListResponse cloudProviders = given()
-                .basePath(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH)
+                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH)
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -37,7 +37,7 @@ public class CloudProviderAPITest {
         assertThat(cloudProviderResponse.getName()).isEqualTo("aws");
         assertThat(cloudProviderResponse.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(cloudProviderResponse.isEnabled()).isTrue();
-        assertThat(cloudProviderResponse.getHref()).isEqualTo(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws");
+        assertThat(cloudProviderResponse.getHref()).isEqualTo(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws");
 
         cloudProviderResponse = cloudProviders.getItems().get(1);
         assertThat(cloudProviderResponse.getKind()).isEqualTo("CloudProvider");
@@ -45,13 +45,13 @@ public class CloudProviderAPITest {
         assertThat(cloudProviderResponse.getName()).isEqualTo("gcp");
         assertThat(cloudProviderResponse.getDisplayName()).isEqualTo("Google Compute Cloud");
         assertThat(cloudProviderResponse.isEnabled()).isFalse();
-        assertThat(cloudProviderResponse.getHref()).isEqualTo(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/gcp");
+        assertThat(cloudProviderResponse.getHref()).isEqualTo(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/gcp");
     }
 
     @Test
     public void getCloudProvider() {
         CloudProviderResponse cloudProvider = given()
-                .basePath(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws")
+                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -62,13 +62,13 @@ public class CloudProviderAPITest {
         assertThat(cloudProvider.getName()).isEqualTo("aws");
         assertThat(cloudProvider.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(cloudProvider.isEnabled()).isTrue();
-        assertThat(cloudProvider.getHref()).isEqualTo(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws");
+        assertThat(cloudProvider.getHref()).isEqualTo(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws");
     }
 
     @Test
     public void listCloudProviderRegions() {
         CloudRegionListResponse cloudRegions = given()
-                .basePath(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws/regions")
+                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws/regions")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -95,7 +95,7 @@ public class CloudProviderAPITest {
     @Test
     public void listCloudProviderRegions_unknownCloudProvider() {
         int fourOhFour = given()
-                .basePath(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/azure/regions")
+                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/azure/regions")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -107,7 +107,7 @@ public class CloudProviderAPITest {
     @Test
     public void getCloudProvider_unknownCloudProvider() {
         int fourOhFour = given()
-                .basePath(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/foobar")
+                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/foobar")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()

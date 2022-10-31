@@ -8,7 +8,7 @@ import javax.transaction.Transactional;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -84,6 +84,6 @@ public class ProcessingErrorServiceImpl implements ProcessingErrorService {
     }
 
     private String getErrorEndpoint(String bridgeId) {
-        return eventBridgeManagerUrl + APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/errors";
+        return eventBridgeManagerUrl + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/errors";
     }
 }

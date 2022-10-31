@@ -17,7 +17,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.api.v1.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.KafkaConnectionDTO;
@@ -370,7 +370,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setPublishedAt(bridge.getPublishedAt());
         response.setModifiedAt(bridge.getModifiedAt());
         response.setStatus(bridge.getStatus());
-        response.setHref(APIConstants.V1_USER_API_BASE_PATH + bridge.getId());
+        response.setHref(V1APIConstants.V1_USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());

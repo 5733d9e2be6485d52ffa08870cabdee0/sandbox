@@ -20,7 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
@@ -33,7 +33,7 @@ import com.redhat.service.smartevents.manager.persistence.v1.dao.CloudProviderDA
 import com.redhat.service.smartevents.manager.persistence.v1.models.CloudProvider;
 
 @Tag(name = "Cloud Providers", description = "List Supported Cloud Providers and Regions")
-@Path(APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH)
+@Path(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RegisterRestClient

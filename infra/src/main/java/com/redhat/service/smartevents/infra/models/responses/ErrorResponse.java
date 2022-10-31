@@ -8,7 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,7 +27,7 @@ public class ErrorResponse extends BaseResponse {
         response.setId(Integer.toString(bridgeError.getId()));
         response.setCode(bridgeError.getCode());
         response.setReason(bridgeError.getReason());
-        response.setHref(APIConstants.V1_ERROR_API_BASE_PATH + bridgeError.getId());
+        response.setHref(V1APIConstants.V1_ERROR_API_BASE_PATH + bridgeError.getId());
         return response;
     }
 

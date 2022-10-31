@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.integration.tests.resources;
 
 import java.io.InputStream;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.manager.api.v1.models.responses.ProcessorListResponse;
@@ -15,7 +15,7 @@ public class ProcessorResource {
     public static Response createProcessorResponse(String token, String bridgeId, InputStream processorRequest) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(processorRequest)
-                .post(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors");
+                .post(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors");
     }
 
     public static ProcessorResponse createProcessor(String token, String bridgeId, InputStream processorRequest) {
@@ -30,7 +30,7 @@ public class ProcessorResource {
     public static Response updateProcessorResponse(String token, String bridgeId, String processorId, InputStream processorRequest) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(processorRequest)
-                .put(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + "{bridgeId}/processors/{processorId}", bridgeId, processorId);
+                .put(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + "{bridgeId}/processors/{processorId}", bridgeId, processorId);
     }
 
     public static ProcessorResponse updateProcessor(String token, String bridgeId, String processorId, InputStream processorRequest) {
@@ -53,7 +53,7 @@ public class ProcessorResource {
 
     public static Response getProcessorResponse(String token, String bridgeId, String processorId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .get(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors/"
+                .get(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors/"
                         + processorId);
     }
 
@@ -66,7 +66,7 @@ public class ProcessorResource {
 
     public static Response deleteProcessorResponse(String token, String bridgeId, String processorId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .delete(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors/"
+                .delete(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors/"
                         + processorId);
     }
 
@@ -81,6 +81,6 @@ public class ProcessorResource {
 
     public static Response getProcessorListResponse(String token, String bridgeId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .get(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors/");
+                .get(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors/");
     }
 }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.api.v1.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -151,7 +151,7 @@ class ProcessingErrorServiceImplTest {
         assertThat(resolvedErrorHandler.getParameter(ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_KAFKA_CLIENT_SECRET))
                 .isEqualTo(TEST_CLIENT_SECRET);
 
-        String expectedErrorEndpoint = TEST_MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + DEFAULT_BRIDGE_ID + "/errors";
+        String expectedErrorEndpoint = TEST_MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + DEFAULT_BRIDGE_ID + "/errors";
 
         assertThat(errorHandler.getParameter("endpoint")).isEqualTo(expectedErrorEndpoint);
     }

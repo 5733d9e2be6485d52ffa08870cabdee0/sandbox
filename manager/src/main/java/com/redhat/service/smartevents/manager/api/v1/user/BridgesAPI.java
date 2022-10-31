@@ -28,7 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
@@ -48,7 +48,7 @@ import io.quarkus.security.Authenticated;
                 scheme = "Bearer")
 })
 @SecurityRequirement(name = "bearer")
-@Path(APIConstants.V1_USER_API_BASE_PATH)
+@Path(V1APIConstants.V1_USER_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated

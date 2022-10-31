@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.manager.api.v1.models.responses;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.models.responses.BaseResponse;
 import com.redhat.service.smartevents.manager.persistence.v1.models.CloudProvider;
 
@@ -29,7 +29,7 @@ public class CloudProviderResponse extends BaseResponse {
         this.name = name;
         this.displayName = displayName;
         this.enabled = enabled;
-        this.href = APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/" + id;
+        this.href = V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/" + id;
     }
 
     public String getDisplayName() {

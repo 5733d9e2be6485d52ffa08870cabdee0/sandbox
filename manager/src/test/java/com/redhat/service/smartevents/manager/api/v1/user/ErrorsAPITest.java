@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.models.responses.ErrorListResponse;
 import com.redhat.service.smartevents.infra.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.test.exceptions.ExceptionHelper;
@@ -28,7 +28,7 @@ class ErrorsAPITest {
 
     @Test
     void testGetList() {
-        ErrorListResponse response = given().contentType(ContentType.JSON).when().get(APIConstants.V1_ERROR_API_BASE_PATH).as(ErrorListResponse.class);
+        ErrorListResponse response = given().contentType(ContentType.JSON).when().get(V1APIConstants.V1_ERROR_API_BASE_PATH).as(ErrorListResponse.class);
         assertThat(exceptionClasses).hasSize((int) response.getTotal());
         assertThat(response.getItems().isEmpty()).isFalse();
         for (ErrorResponse item : response.getItems()) {

@@ -13,7 +13,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorManagedResourceStatusUpdateDTO;
@@ -115,10 +115,10 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         // This time-out needs to be (at least) as long as the Controller's configured timeout
         // See application.properties#event-bridge.ingress.deployment.timeout-seconds
         assertThat(latch.await(90, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateProvisioningRequest, APIConstants.V1_SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateProvisioningRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
 
         if (isSuccessful) {
-            assertJsonRequest(expectedJsonUpdateAvailableRequest, APIConstants.V1_SHARD_API_BASE_PATH);
+            assertJsonRequest(expectedJsonUpdateAvailableRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
         }
     }
 
@@ -144,7 +144,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, APIConstants.V1_SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
     }
 
     @Test
@@ -166,8 +166,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, APIConstants.V1_SHARD_API_BASE_PATH);
-        assertJsonRequest(expectedJsonUpdateRequest, APIConstants.V1_SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
     }
 
     @Test
@@ -212,7 +212,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         if (isSuccessful) {
             assertJsonRequest(
                     objectMapper.writeValueAsString(new ProcessorManagedResourceStatusUpdateDTO(processor.getId(), processor.getCustomerId(), processor.getBridgeId(), ManagedResourceStatus.READY)),
-                    APIConstants.V1_SHARD_API_BASE_PATH + "processors");
+                    V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
         }
     }
 
@@ -242,7 +242,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.V1_SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
     }
 
     @Test
@@ -270,8 +270,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.V1_SHARD_API_BASE_PATH + "processors");
-        assertJsonRequest(expectedJsonUpdateRequest, APIConstants.V1_SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateRequest, V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
     }
 
     @Test

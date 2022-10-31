@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.integration.tests.resources;
 
 import java.io.InputStream;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.manager.api.v1.models.requests.BridgeRequest;
@@ -34,18 +34,18 @@ public class BridgeResource {
     public static Response addBridgeResponse(String token, String bridgeName, String cloudProvider, String region) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(new BridgeRequest(bridgeName, cloudProvider, region))
-                .post(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH);
+                .post(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH);
     }
 
     public static Response addBridgeResponse(String token, InputStream bridgeRequest) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(bridgeRequest)
-                .post(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH);
+                .post(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH);
     }
 
     public static Response updateBridgeResponse(String token, String bridgeId, InputStream bridgeRequest) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .body(bridgeRequest).put(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId);
+                .body(bridgeRequest).put(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId);
     }
 
     public static BridgeResponse updateBridge(String token, String bridgeId, InputStream bridgeRequest) {
@@ -58,12 +58,12 @@ public class BridgeResource {
 
     public static Response getBridgeDetailsResponse(String token, String bridgeId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .get(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId);
+                .get(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId);
     }
 
     public static BridgeResponse getBridgeDetails(String token, String bridgeId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .get(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId)
+                .get(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200)
@@ -87,7 +87,7 @@ public class BridgeResource {
 
     public static Response getBridgeListResponse(String token) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .get(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH);
+                .get(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH);
     }
 
     public static void deleteBridge(String token, String bridgeId) {
@@ -99,6 +99,6 @@ public class BridgeResource {
 
     public static Response deleteBridgeResponse(String token, String bridgeId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .delete(BridgeUtils.MANAGER_URL + APIConstants.V1_USER_API_BASE_PATH + bridgeId);
+                .delete(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH + bridgeId);
     }
 }

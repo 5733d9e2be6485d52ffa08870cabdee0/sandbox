@@ -26,7 +26,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
@@ -52,7 +52,7 @@ import static java.util.stream.Collectors.toList;
                 scheme = "Bearer")
 })
 @SecurityRequirement(name = "bearer")
-@Path(APIConstants.V1_SHARD_API_BASE_PATH)
+@Path(V1APIConstants.V1_SHARD_API_BASE_PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
