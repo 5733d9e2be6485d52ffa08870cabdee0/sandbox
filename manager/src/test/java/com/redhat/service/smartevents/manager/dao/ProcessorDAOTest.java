@@ -34,7 +34,6 @@ import static com.redhat.service.smartevents.infra.models.QueryProcessorFilterIn
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
-import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SOURCE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -317,7 +316,7 @@ public class ProcessorDAOTest {
     @Test
     void testGetProcessorsFilterByType() {
         Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo", SOURCE);
+        Processor p = createProcessor(b, "foo", SINK);
         createProcessor(b, "bar");
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
@@ -348,7 +347,7 @@ public class ProcessorDAOTest {
     @Test
     void testGetProcessorsFilterByNameAndType() {
         Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo", SOURCE);
+        Processor p = createProcessor(b, "foo", SINK);
         createProcessor(b, "bar");
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
@@ -363,7 +362,7 @@ public class ProcessorDAOTest {
     @Transactional
     void testGetProcessorsFilterByStatusAndType() {
         Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo", SOURCE);
+        Processor p = createProcessor(b, "foo", SINK);
         createProcessor(b, "bar");
         p.setStatus(READY);
         processorDAO.persist(p);
@@ -380,7 +379,7 @@ public class ProcessorDAOTest {
     @Transactional
     void testGetProcessorsFilterByNameAndStatusAndType() {
         Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo", SOURCE);
+        Processor p = createProcessor(b, "foo", SINK);
         createProcessor(b, "bar");
         p.setStatus(READY);
         processorDAO.persist(p);
@@ -421,7 +420,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
 
         IntStream.range(0, 5).forEach(i -> {
-            Processor p = createProcessor(b, String.format("foo%s", i), SOURCE);
+            Processor p = createProcessor(b, String.format("foo%s", i), SINK);
             p.setStatus(READY);
             processorDAO.persist(p);
         });

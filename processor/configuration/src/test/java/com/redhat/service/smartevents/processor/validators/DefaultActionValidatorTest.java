@@ -16,69 +16,14 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
-import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
-import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
-import com.redhat.service.smartevents.processor.sources.azure.AzureEventHubSource;
-import com.redhat.service.smartevents.processor.sources.google.GooglePubSubSource;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
+public class DefaultActionValidatorTest extends AbstractGatewayValidatorTest {
 
     @Inject
-    DefaultGatewayValidator validator;
-
-    @Test
-    void testAwsS3Source() {
-        Map<String, String> invalidParams = new HashMap<>();
-        invalidParams.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
-        invalidParams.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
-        invalidParams.put(AwsS3Source.ACCESS_KEY_PARAMETER, "access-key");
-        assertValidationIsInvalid(sourceWith(AwsS3Source.TYPE, invalidParams), List.of("$.aws_secret_key: is missing but it is required"));
-
-        Map<String, String> validParams = new HashMap<>();
-        validParams.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
-        validParams.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
-        validParams.put(AwsS3Source.ACCESS_KEY_PARAMETER, "access-key");
-        validParams.put(AwsS3Source.SECRET_KEY_PARAMETER, "access-key");
-        assertValidationIsValid(sourceWith(AwsS3Source.TYPE, validParams));
-    }
-
-    @Test
-    void testSlackSource() {
-        Map<String, String> invalidParams = new HashMap<>();
-        invalidParams.put(SlackSource.TOKEN_PARAM, "t");
-        assertValidationIsInvalid(sourceWith(SlackSource.TYPE, invalidParams), List.of("$.slack_channel: is missing but it is required"));
-
-        Map<String, String> validParams = new HashMap<>();
-        validParams.put(SlackSource.CHANNEL_PARAM, "channel");
-        validParams.put(SlackSource.TOKEN_PARAM, "token");
-        assertValidationIsValid(sourceWith(SlackSource.TYPE, validParams));
-    }
-
-    @Test
-    void testGooglePubSubSource() {
-        Map<String, String> params = new HashMap<>();
-        params.put(GooglePubSubSource.GCP_SERVICE_ACCOUNT_KEY_PARAM, "key");
-        params.put(GooglePubSubSource.GCP_PROJECT_ID_PARAM, "id");
-        params.put(GooglePubSubSource.GCP_SUBSCRIPTION_NAME, "sub");
-        assertValidationIsValid(sourceWith(GooglePubSubSource.TYPE, params));
-    }
-
-    @Test
-    void testAzureEventHubSource() {
-        Map<String, String> params = new HashMap<>();
-        params.put(AzureEventHubSource.AZURE_NAMESPACE_NAME, "namespace");
-        params.put(AzureEventHubSource.AZURE_EVENTHUB_NAME, "name");
-        params.put(AzureEventHubSource.AZURE_SHARED_ACCESS_NAME, "sharedAccessName");
-        params.put(AzureEventHubSource.AZURE_SHARD_ACCESS_KEY, "sharedAccessKey");
-        params.put(AzureEventHubSource.AZURE_BLOB_ACCOUNT_NAME, "blobAccountName");
-        params.put(AzureEventHubSource.AZURE_BLOB_ACCESS_KEY, "blobAccessKey");
-        params.put(AzureEventHubSource.AZURE_BLOB_CONTAINER_NAME, "blobContainerName");
-        assertValidationIsValid(sourceWith(AzureEventHubSource.TYPE, params));
-    }
+    DefaultActionValidator validator;
 
     @Test
     void testGooglePubsubAction() {
@@ -106,25 +51,6 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         validParams.put(SlackAction.CHANNEL_PARAM, "t");
         validParams.put(SlackAction.WEBHOOK_URL_PARAM, "https://slack.webhook");
         assertValidationIsValid(actionWith(SlackAction.TYPE, validParams));
-    }
-
-    @Test
-    void testAwsSqsSource() {
-        Map<String, String> params = new HashMap<>();
-        params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
-        params.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
-        params.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "QUEUENAME");
-
-        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, params));
-
-        Map<String, String> validParams = new HashMap<>();
-        validParams.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
-        validParams.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
-        validParams.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        validParams.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "https://sqs.foijsdfds-iuiu-9.amazonaws.com/432432738888/iuyiuy");
-
-        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, validParams));
     }
 
     @Test
@@ -203,7 +129,7 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
     }
 
     @Override
-    protected GatewayValidator getValidator() {
+    protected ActionValidator getValidator() {
         return validator;
     }
 }

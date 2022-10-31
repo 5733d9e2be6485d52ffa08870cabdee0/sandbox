@@ -7,42 +7,41 @@ import java.util.stream.Collectors;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayNotRecognisedException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersNotValidException;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
-public abstract class AbstractGatewayValidator implements GatewayValidator {
+public abstract class AbstractActionValidator implements ActionValidator {
 
     static final String GATEWAY_TYPE_NOT_RECOGNISED_ERROR = "%s of type '%s' is not recognised.";
     static final String GATEWAY_PARAMETERS_MISSING_ERROR = "%s parameters must be supplied";
 
     private ProcessorCatalogService processorCatalogService;
 
-    protected AbstractGatewayValidator() {
+    protected AbstractActionValidator() {
     }
 
-    protected AbstractGatewayValidator(ProcessorCatalogService processorCatalogService) {
+    protected AbstractActionValidator(ProcessorCatalogService processorCatalogService) {
         this.processorCatalogService = processorCatalogService;
     }
 
-    protected ValidationResult applyAdditionalValidations(Gateway gateway) {
+    protected ValidationResult applyAdditionalValidations(Action action) {
         return ValidationResult.valid();
     }
 
     @Override
-    public final ValidationResult isValid(Gateway gateway) {
-        if (gateway.getParameters() == null) {
+    public final ValidationResult isValid(Action action) {
+        if (action.getParameters() == null) {
             return ValidationResult.invalid(new ProcessorGatewayParametersMissingException(String.format(GATEWAY_PARAMETERS_MISSING_ERROR,
-                    gateway.getClass().getName())));
+                    action.getClass().getName())));
         }
-        if (processorCatalogService.getActionsCatalog().stream().noneMatch(x -> x.getId().equals(gateway.getType())) &&
-                processorCatalogService.getSourcesCatalog().stream().noneMatch(x -> x.getId().equals(gateway.getType()))) {
+        if (processorCatalogService.getActionsCatalog().stream().noneMatch(x -> x.getId().equals(action.getType()))) {
             return ValidationResult.invalid(new ProcessorGatewayNotRecognisedException(String.format(GATEWAY_TYPE_NOT_RECOGNISED_ERROR,
-                    gateway.getClass().getSimpleName(),
-                    gateway.getType())));
+                    action.getClass().getSimpleName(),
+                    action.getType())));
         }
 
-        com.networknt.schema.ValidationResult catalogValidationResults = processorCatalogService.validate(gateway.getType(), gateway.getProcessorType(), gateway.getParameters());
+        com.networknt.schema.ValidationResult catalogValidationResults = processorCatalogService.validate(action.getType(), action.getProcessorType(), action.getParameters());
 
         List<ValidationResult.Violation> allViolations = new ArrayList<>();
 
@@ -55,7 +54,7 @@ public abstract class AbstractGatewayValidator implements GatewayValidator {
         }
 
         // Additional validation
-        ValidationResult additionalValidationResults = applyAdditionalValidations(gateway);
+        ValidationResult additionalValidationResults = applyAdditionalValidations(action);
         if (!additionalValidationResults.isValid()) {
             allViolations.addAll(additionalValidationResults.getViolations());
         }

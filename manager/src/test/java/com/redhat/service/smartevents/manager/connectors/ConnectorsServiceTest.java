@@ -16,8 +16,6 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
@@ -28,7 +26,6 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.processor.GatewayConnector;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -48,8 +45,6 @@ class ConnectorsServiceTest {
     private static final String TEST_PROCESSOR_NAME = "TestProcessor";
     private static final String TEST_ACTION_CHANNEL = "testchannel";
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
-    private static final String TEST_SOURCE_CHANNEL = "testchannelsrc";
-    private static final String TEST_SOURCE_TOKEN = "test-token";
 
     @Inject
     ConnectorsService connectorsService;
@@ -122,9 +117,7 @@ class ConnectorsServiceTest {
 
         connectorsService.updateConnectorEntity(processor);
 
-        if (processor.getType() == ProcessorType.SOURCE) {
-            verify(gatewayConnector).connectorPayload(processor.getDefinition().getRequestedSource(), connectorEntity.getTopicName(), "TopicNameError");
-        } else if (processor.getType() == ProcessorType.SINK) {
+        if (processor.getType() == ProcessorType.SINK) {
             verify(gatewayConnector).connectorPayload(processor.getDefinition().getRequestedAction(), connectorEntity.getTopicName(), "TopicNameError");
         }
 
@@ -134,15 +127,14 @@ class ConnectorsServiceTest {
 
     private static Stream<Arguments> connectorProcessors() {
         Object[][] arguments = {
-                { processorWith(slackAction()), SlackAction.TYPE },
-                { processorWith(slackSource()), SlackSource.TYPE }
+                { processorWith(slackAction()), SlackAction.TYPE }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
 
     private static ConnectorEntity connectorEntityWith(Processor processor) {
         ConnectorEntity connectorEntity = new ConnectorEntity();
-        connectorEntity.setType(processor.getType() == ProcessorType.SOURCE ? ConnectorType.SOURCE : ConnectorType.SINK);
+        connectorEntity.setType(ConnectorType.SINK);
         connectorEntity.setId(TEST_CONNECTOR_ID);
         connectorEntity.setConnectorExternalId(TEST_CONNECTOR_EXTERNAL_ID);
         connectorEntity.setProcessor(processor);
@@ -150,18 +142,13 @@ class ConnectorsServiceTest {
         return connectorEntity;
     }
 
-    private static Processor processorWith(Gateway gateway) {
+    private static Processor processorWith(Action gateway) {
         Processor processor = new Processor();
         processor.setBridge(new Bridge());
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition();
-        if (gateway instanceof Action) {
-            processorDefinition.setRequestedAction((Action) gateway);
-            processor.setType(ProcessorType.SINK);
-        } else {
-            processorDefinition.setRequestedSource((Source) gateway);
-            processor.setType(ProcessorType.SOURCE);
-        }
+        processorDefinition.setRequestedAction((Action) gateway);
+        processor.setType(ProcessorType.SINK);
 
         processor.setId(TEST_PROCESSOR_ID);
         processor.setName(TEST_PROCESSOR_NAME);
@@ -175,15 +162,6 @@ class ConnectorsServiceTest {
         action.setMapParameters(Map.of(
                 SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
                 SlackAction.WEBHOOK_URL_PARAM, TEST_ACTION_WEBHOOK));
-        return action;
-    }
-
-    private static Source slackSource() {
-        Source action = new Source();
-        action.setType(SlackSource.TYPE);
-        action.setMapParameters(Map.of(
-                SlackSource.CHANNEL_PARAM, TEST_SOURCE_CHANNEL,
-                SlackSource.TOKEN_PARAM, TEST_SOURCE_TOKEN));
         return action;
     }
 

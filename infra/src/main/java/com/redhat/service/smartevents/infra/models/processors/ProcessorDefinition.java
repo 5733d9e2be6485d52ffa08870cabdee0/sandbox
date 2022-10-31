@@ -6,7 +6,6 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 public class ProcessorDefinition {
 
@@ -18,9 +17,6 @@ public class ProcessorDefinition {
 
     @JsonProperty("requestedAction")
     private Action requestedAction;
-
-    @JsonProperty("requestedSource")
-    private Source requestedSource;
 
     @JsonProperty("resolvedAction")
     private Action resolvedAction;
@@ -36,13 +32,6 @@ public class ProcessorDefinition {
         this.filters = filters;
         this.transformationTemplate = transformationTemplate;
         this.requestedAction = requestedAction;
-        this.resolvedAction = resolvedAction;
-    }
-
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Source requestedSource, Action resolvedAction) {
-        this.filters = filters;
-        this.transformationTemplate = transformationTemplate;
-        this.requestedSource = requestedSource;
         this.resolvedAction = resolvedAction;
     }
 
@@ -70,14 +59,6 @@ public class ProcessorDefinition {
         this.requestedAction = requestedAction;
     }
 
-    public Source getRequestedSource() {
-        return requestedSource;
-    }
-
-    public void setRequestedSource(Source requestedSource) {
-        this.requestedSource = requestedSource;
-    }
-
     public Action getResolvedAction() {
         return resolvedAction;
     }
@@ -96,11 +77,11 @@ public class ProcessorDefinition {
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
         return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction);
+                && Objects.equals(resolvedAction, that.resolvedAction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction);
+        return Objects.hash(filters, transformationTemplate, requestedAction, resolvedAction);
     }
 }

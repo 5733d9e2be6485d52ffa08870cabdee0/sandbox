@@ -39,8 +39,6 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.ams.ProcessorsQuotaService;
@@ -55,7 +53,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
-import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.ActionConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
 
 import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
@@ -67,7 +65,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
     @Inject
-    GatewayConfigurator gatewayConfigurator;
+    ActionConfigurator actionConfigurator;
     @Inject
     GatewaySecretsHandler gatewaySecretsHandler;
     @Inject
@@ -167,13 +165,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
-        Action resolvedAction = processorType == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
-                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+        Action resolvedAction = resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
-        ProcessorDefinition definition = processorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+        ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
 
         newProcessor.setDefinition(definition);
 
@@ -195,17 +189,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (action == null) {
             return null;
         }
-        return gatewayConfigurator.getActionResolver(action.getType())
+        return actionConfigurator.getActionResolver(action.getType())
                 .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
                 .orElse(action);
-    }
-
-    private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
-        if (source == null) {
-            return null;
-        }
-        return gatewayConfigurator.getSourceResolver(source.getType())
-                .resolve(source, customerId, bridgeId, processorId);
     }
 
     @Override
@@ -259,7 +245,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         Set<BaseFilter> existingFilters = existingDefinition.getFilters();
         String existingTransformationTemplate = existingDefinition.getTransformationTemplate();
         Action existingAction = existingDefinition.getRequestedAction();
-        Source existingSource = existingDefinition.getRequestedSource();
         Action existingResolvedAction = existingDefinition.getResolvedAction();
 
         // Validate update.
@@ -273,23 +258,17 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (existingProcessor.getType() == ProcessorType.SINK && !Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
             throw new BadRequestException("It is not possible to update the Processor's Action Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SOURCE && !Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
-            throw new BadRequestException("It is not possible to update the Processor's Source Type.");
-        }
 
         // for sensitive fields we may receive either a string with the new value or an empty object
         // if it remains unchanged (since the caller can't know the current real value)
         // thus, before comparing the requested action/source with the existing one, we must unmask
         // the sensitive fields with the original values (if those are unchanged) or with the new ones
         Action updatedAction = mergeGatewaySecrets(processorRequest.getAction(), existingAction);
-        Source updatedSource = mergeGatewaySecrets(processorRequest.getSource(), existingSource);
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
-                ? resolveSource(updatedSource, customerId, bridgeId, processorId)
-                : resolveAction(updatedAction, customerId, bridgeId, processorId);
+        Action updatedResolvedAction = resolveAction(updatedAction, customerId, bridgeId, processorId);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
@@ -298,14 +277,11 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (Objects.equals(existingFilters, updatedFilters)
                 && Objects.equals(existingTransformationTemplate, updatedTransformationTemplate)
                 && Objects.equals(existingAction, updatedAction)
-                && Objects.equals(existingSource, updatedSource)
                 && Objects.equals(existingResolvedAction, updatedResolvedAction)) {
             return existingProcessor;
         }
 
-        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
-                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
-                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
+        ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
 
         // Create new definition copying existing properties
         existingProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -330,22 +306,22 @@ public class ProcessorServiceImpl implements ProcessorService {
         return existingProcessor;
     }
 
-    private <T extends Gateway> T mergeGatewaySecrets(T requestedGateway, T existingGateway) {
-        if (requestedGateway == null || requestedGateway.getParameters() == null) {
-            return requestedGateway;
+    private Action mergeGatewaySecrets(Action requestedAction, Action existingAction) {
+        if (requestedAction == null || requestedAction.getParameters() == null) {
+            return requestedAction;
         }
         Map<String, String> secretValues = new HashMap<>();
-        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedGateway.getParameters().fields();
+        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedAction.getParameters().fields();
         while (parametersIterator.hasNext()) {
             Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
             if (parameterEntry.getValue().equals(emptyObjectNode())) {
                 // this parameter is an unchanged sensitive field,
                 // so we must replace it with the current real value
-                secretValues.put(parameterEntry.getKey(), existingGateway.getParameter(parameterEntry.getKey()));
+                secretValues.put(parameterEntry.getKey(), existingAction.getParameter(parameterEntry.getKey()));
             }
         }
-        secretValues.forEach((key, value) -> requestedGateway.getParameters().set(key, new TextNode(value)));
-        return requestedGateway;
+        secretValues.forEach((key, value) -> requestedAction.getParameters().set(key, new TextNode(value)));
+        return requestedAction;
     }
 
     @Transactional
@@ -491,8 +467,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         switch (processor.getType()) {
             case ERROR_HANDLER:
                 return resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
-            case SOURCE:
-                return resourceNamesProvider.getProcessorTopicName(processor.getId());
             default:
                 return resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
         }
@@ -517,9 +491,6 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             if (definition.getRequestedAction() != null) {
                 processorResponse.setAction(gatewaySecretsHandler.mask(definition.getRequestedAction()));
-            }
-            if (definition.getRequestedSource() != null) {
-                processorResponse.setSource(gatewaySecretsHandler.mask(definition.getRequestedSource()));
             }
         }
 

@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -33,9 +32,6 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
 
     @JsonProperty("action")
     private Action action;
-
-    @JsonProperty("source")
-    private Source source;
 
     @JsonProperty("status_message")
     private String statusMessage;
@@ -70,14 +66,6 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
 
     public void setAction(Action action) {
         this.action = action;
-    }
-
-    public Source getSource() {
-        return source;
-    }
-
-    public void setSource(Source source) {
-        this.source = source;
     }
 
     public String getStatusMessage() {

@@ -11,7 +11,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.Unsuppor
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
-import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.ActionConfigurator;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
@@ -27,8 +27,8 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
     }
 
     @Inject
-    public ErrorHandlerConstraintValidator(GatewayConfigurator gatewayConfigurator) {
-        super(gatewayConfigurator);
+    public ErrorHandlerConstraintValidator(ActionConfigurator actionConfigurator) {
+        super(actionConfigurator);
     }
 
     @Override

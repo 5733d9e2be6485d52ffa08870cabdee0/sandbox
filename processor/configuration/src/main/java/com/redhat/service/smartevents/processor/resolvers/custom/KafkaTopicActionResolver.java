@@ -9,7 +9,8 @@ import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 @ApplicationScoped
-public class KafkaTopicActionResolver implements KafkaTopicAction, CustomGatewayResolver<Action> {
+public class KafkaTopicActionResolver implements KafkaTopicAction,
+        CustomActionResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;

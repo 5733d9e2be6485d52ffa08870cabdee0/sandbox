@@ -3,9 +3,7 @@
 When a new `Processor` is requested using the endpoint `/api/smartevents_mgmt/v1/bridges/{id}/processors` it is possible to specify one or more `Filters` to apply to `Events` sent to your Bridge
 instance.
 
-For **source processors** (containing a [Source](SOURCES.md)), if the `Filter` you provide matches an `Event` then it is injected in the system.
-
-For **sink processors** (containing an [Action](ACTIONS.md)), if the `Filter` you provide matches an `Event` then the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) of the
+For **sink processors** containing an [Action](ACTIONS.md), if the `Filter` you provide matches an `Event` then the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) of the
 associated `Processor` are invoked.
 
 If you do not specify a `Filter` definition for your `Processor`, then your `Processor` will match all `Events`.

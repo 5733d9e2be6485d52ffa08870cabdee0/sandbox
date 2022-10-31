@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.manager.api.user.validators.processors;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -21,21 +19,16 @@ import org.mockito.verification.VerificationMode;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersNotValidException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.ProcessorRequestForTests;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.validators.GatewayValidator;
+import com.redhat.service.smartevents.processor.ActionConfigurator;
+import com.redhat.service.smartevents.processor.validators.ActionValidator;
 
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_CLASS_PARAM;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_TYPE_MISSING_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MISSING_GATEWAY_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MULTIPLE_GATEWAY_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MISSING_ACTION_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.TYPE_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,9 +48,9 @@ class ProcessorGatewayConstraintValidatorTest {
     ProcessorGatewayConstraintValidator constraintValidator;
 
     @Mock
-    GatewayConfigurator gatewayConfiguratorMock;
+    ActionConfigurator actionConfiguratorMock;
     @Mock
-    GatewayValidator validatorMock;
+    ActionValidator validatorMock;
     @Mock
     HibernateConstraintValidatorContext validatorContextMock;
     @Mock
@@ -66,14 +59,13 @@ class ProcessorGatewayConstraintValidatorTest {
     @BeforeEach
     public void beforeEach() {
         lenient().when(validatorMock.isValid(any(Action.class))).thenReturn(ValidationResult.valid());
-        lenient().when(validatorMock.isValid(any(Source.class))).thenReturn(ValidationResult.valid());
 
-        lenient().when(gatewayConfiguratorMock.getValidator(any(String.class))).thenReturn(validatorMock);
+        lenient().when(actionConfiguratorMock.getValidator(any(String.class))).thenReturn(validatorMock);
 
         lenient().when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
         lenient().when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
 
-        constraintValidator = new ProcessorGatewayConstraintValidator(gatewayConfiguratorMock);
+        constraintValidator = new ProcessorGatewayConstraintValidator(actionConfiguratorMock);
     }
 
     @Test
@@ -81,98 +73,79 @@ class ProcessorGatewayConstraintValidatorTest {
         ProcessorRequest p = new ProcessorRequest();
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verify(gatewayConfiguratorMock, never()).getValidator(any());
+        verify(actionConfiguratorMock, never()).getValidator(any());
         verify(validatorMock, never()).isValid(any());
-        verifyErrorMessage(MISSING_GATEWAY_ERROR);
-    }
-
-    @Test
-    void isValid_multipleGatewaysIsNotValid() {
-        ProcessorRequestForTests p = new ProcessorRequestForTests();
-        p.setAction(buildTestAction());
-        p.setSource(buildTestSource());
-
-        assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verify(gatewayConfiguratorMock, never()).getValidator(any());
-        verify(validatorMock, never()).isValid(any());
-        verifyErrorMessage(MULTIPLE_GATEWAY_ERROR);
+        verifyErrorMessage(MISSING_ACTION_ERROR);
     }
 
     @ParameterizedTest
     @MethodSource("gateways")
-    void isValid(Gateway gateway) {
-        ProcessorRequest p = buildTestRequest(gateway);
+    void isValid(Action action) {
+        ProcessorRequest p = buildTestRequest(action);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
-        verifyGetValidatorCall(times(1), gateway.getType());
+        verifyGetValidatorCall(times(1), action.getType());
         verifyIsValidCall(times(1));
     }
 
     @ParameterizedTest
     @MethodSource("gateways")
-    void isValid_gatewayWithNullParametersIsNotValid(Gateway gateway) {
-        gateway.setParameters(null);
-        ProcessorRequest p = buildTestRequest(gateway);
+    void isValid_gatewayWithNullParametersIsNotValid(Action action) {
+        action.setParameters(null);
+        ProcessorRequest p = buildTestRequest(action);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
         verifyGetValidatorCall(never(), ArgumentMatchers::anyString);
         verifyIsValidCall(never());
-        verifyErrorMessage(GATEWAY_PARAMETERS_MISSING_ERROR, gateway, false);
+        verifyErrorMessage(GATEWAY_PARAMETERS_MISSING_ERROR, action, false);
     }
 
     @ParameterizedTest
     @MethodSource("gateways")
-    void isValid_gatewayWithEmptyParamsIsValid(Gateway gateway) {
-        gateway.setMapParameters(new HashMap<>());
-        ProcessorRequest p = buildTestRequest(gateway);
+    void isValid_gatewayWithEmptyParamsIsValid(Action action) {
+        action.setMapParameters(new HashMap<>());
+        ProcessorRequest p = buildTestRequest(action);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
-        verifyGetValidatorCall(times(1), gateway.getType());
+        verifyGetValidatorCall(times(1), action.getType());
         verifyIsValidCall(times(1));
     }
 
     @ParameterizedTest
     @MethodSource("gateways")
-    void isValid_nullGatewayTypeIsNotValid(Gateway gateway) {
-        gateway.setType(null);
-        ProcessorRequest p = buildTestRequest(gateway);
+    void isValid_nullGatewayTypeIsNotValid(Action action) {
+        action.setType(null);
+        ProcessorRequest p = buildTestRequest(action);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
         verifyGetValidatorCall(never(), ArgumentMatchers::anyString);
         verifyIsValidCall(never());
-        verifyErrorMessage(GATEWAY_TYPE_MISSING_ERROR, gateway, false);
+        verifyErrorMessage(GATEWAY_TYPE_MISSING_ERROR, action, false);
     }
 
     @ParameterizedTest
     @MethodSource("gateways")
-    void isValid_messageFromGatewayValidatorAddedOnFailure(Gateway gateway) {
+    void isValid_messageFromGatewayValidatorAddedOnFailure(Action action) {
         ProcessorGatewayParametersNotValidException exception = new ProcessorGatewayParametersNotValidException("This is a test error message returned from validator");
         lenient().when(validatorMock.isValid(any())).thenReturn(ValidationResult.invalid(exception));
 
-        ProcessorRequest p = buildTestRequest(gateway);
+        ProcessorRequest p = buildTestRequest(action);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(times(1), gateway.getType());
+        verifyGetValidatorCall(times(1), action.getType());
         verifyIsValidCall(times(1));
         verifyErrorMessage(exception.getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("gateways")
-    void isValid_sourceWithTransformationIsNotValid(Gateway gateway) {
-        ProcessorRequestForTests p = buildTestRequest(gateway);
+    void isValid_sourceWithTransformationIsNotValid(Action action) {
+        ProcessorRequestForTests p = buildTestRequest(action);
         p.setTransformationTemplate("template");
 
-        if (p.getType() == ProcessorType.SOURCE) {
-            assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-            verifyGetValidatorCall(never(), ArgumentMatchers::anyString);
-            verifyIsValidCall(never());
-            verifyErrorMessage(SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR);
-        } else {
-            assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
-            verifyGetValidatorCall(times(1), gateway.getType());
-            verifyIsValidCall(times(1));
-        }
+        assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
+        verifyGetValidatorCall(times(1), action.getType());
+        verifyIsValidCall(times(1));
     }
 
     private void verifyGetValidatorCall(VerificationMode mode, String argument) {
@@ -180,7 +153,7 @@ class ProcessorGatewayConstraintValidatorTest {
     }
 
     private void verifyGetValidatorCall(VerificationMode mode, Supplier<String> argumentSupplier) {
-        verify(gatewayConfiguratorMock, mode).getValidator(argumentSupplier.get());
+        verify(actionConfiguratorMock, mode).getValidator(argumentSupplier.get());
     }
 
     private void verifyIsValidCall(VerificationMode mode) {
@@ -197,16 +170,12 @@ class ProcessorGatewayConstraintValidatorTest {
         assertThat(messageCap.getValue()).isEqualTo(expectedMessage);
     }
 
-    private void verifyErrorMessage(String expectedMessage, Gateway gateway, boolean verifyTypeParam) {
+    private void verifyErrorMessage(String expectedMessage, Action action, boolean verifyTypeParam) {
         verifyErrorMessage(expectedMessage);
-        verify(validatorContextMock).addMessageParameter(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName());
+        verify(validatorContextMock).addMessageParameter(GATEWAY_CLASS_PARAM, action.getClass().getSimpleName());
         if (verifyTypeParam) {
-            verify(validatorContextMock).addMessageParameter(TYPE_PARAM, gateway.getType());
+            verify(validatorContextMock).addMessageParameter(TYPE_PARAM, action.getType());
         }
-    }
-
-    private static Stream<Arguments> gateways() {
-        return Stream.of(buildTestAction(), buildTestSource()).map(Arguments::of);
     }
 
     private static Action buildTestAction() {
@@ -218,22 +187,10 @@ class ProcessorGatewayConstraintValidatorTest {
         return action;
     }
 
-    private static Source buildTestSource() {
-        Source source = new Source();
-        source.setType(TEST_SOURCE_TYPE);
-        Map<String, String> params = new HashMap<>();
-        params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
-        source.setMapParameters(params);
-        return source;
-    }
-
-    private static ProcessorRequestForTests buildTestRequest(Gateway gateway) {
+    private static ProcessorRequestForTests buildTestRequest(Action action) {
         ProcessorRequestForTests p = new ProcessorRequestForTests();
-        if (gateway instanceof Action) {
-            p.setAction((Action) gateway);
-        }
-        if (gateway instanceof Source) {
-            p.setSource((Source) gateway);
+        if (action instanceof Action) {
+            p.setAction(action);
         }
         return p;
     }

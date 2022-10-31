@@ -55,11 +55,9 @@ import io.restassured.response.Response;
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SOURCE;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
+import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.ERROR_HANDLER;
+import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -207,9 +205,9 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
-        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createSlackSource())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createWebhookAction())).as(ProcessorResponse.class);
 
-        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByType(bridgeResponse.getId(), SOURCE).as(ProcessorListResponse.class);
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByType(bridgeResponse.getId(), SINK).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
         assertThat(listResponse.getSize()).isEqualTo(1L);
         assertThat(listResponse.getTotal()).isEqualTo(1L);
@@ -254,9 +252,9 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
-        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createSlackSource())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createWebhookAction())).as(ProcessorResponse.class);
 
-        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNameAndType(bridgeResponse.getId(), "myProcessor", SOURCE).as(ProcessorListResponse.class);
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNameAndType(bridgeResponse.getId(), "myProcessor", SINK).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
         assertThat(listResponse.getSize()).isEqualTo(1L);
         assertThat(listResponse.getTotal()).isEqualTo(1L);
@@ -270,17 +268,15 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         ProcessorResponse p1 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
-        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createSlackSource())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createWebhookAction())).as(ProcessorResponse.class);
 
         setProcessorStatus(p1.getId(), READY);
         setProcessorStatus(p2.getId(), READY);
 
-        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByStatusAndType(bridgeResponse.getId(), READY, SOURCE).as(ProcessorListResponse.class);
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByStatusAndType(bridgeResponse.getId(), READY, ERROR_HANDLER).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
-        assertThat(listResponse.getSize()).isEqualTo(1L);
-        assertThat(listResponse.getTotal()).isEqualTo(1L);
-
-        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+        assertThat(listResponse.getSize()).isEqualTo(0L);
+        assertThat(listResponse.getTotal()).isEqualTo(0L);
     }
 
     @Test

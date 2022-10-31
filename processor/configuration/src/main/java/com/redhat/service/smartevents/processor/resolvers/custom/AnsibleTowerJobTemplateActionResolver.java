@@ -13,7 +13,8 @@ import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobT
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class AnsibleTowerJobTemplateActionResolver implements AnsibleTowerJobTemplateAction, CustomGatewayResolver<Action> {
+public class AnsibleTowerJobTemplateActionResolver implements AnsibleTowerJobTemplateAction,
+        CustomActionResolver<Action> {
 
     public static final String LAUNCH_JOB_TEMPLATE_ENDPOINT_FORMAT = "%s/api/v2/job_templates/%s/launch/";
 

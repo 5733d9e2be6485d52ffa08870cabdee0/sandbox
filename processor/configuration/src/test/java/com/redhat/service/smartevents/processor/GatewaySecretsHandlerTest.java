@@ -7,9 +7,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -45,20 +43,4 @@ class GatewaySecretsHandlerTest {
         assertThat(maskedAction.getParameter(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(TEST_USERNAME);
         assertThat(maskedAction.getParameters().get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(emptyObjectNode());
     }
-
-    @Test
-    void testSource() {
-        Source source = new Source();
-        source.setType(SlackSource.TYPE);
-        source.setMapParameters(Map.of(
-                SlackSource.CHANNEL_PARAM, TEST_CHANNEL,
-                SlackSource.TOKEN_PARAM, TEST_TOKEN));
-
-        Source maskedAction = secretsHandler.mask(source);
-
-        assertThat(maskedAction.getType()).isEqualTo(SlackSource.TYPE);
-        assertThat(maskedAction.getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL);
-        assertThat(maskedAction.getParameters().get(SlackSource.TOKEN_PARAM)).isEqualTo(emptyObjectNode());
-    }
-
 }

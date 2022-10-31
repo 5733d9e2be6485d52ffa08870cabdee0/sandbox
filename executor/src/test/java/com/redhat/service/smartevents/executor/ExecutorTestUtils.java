@@ -10,14 +10,12 @@ import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -50,16 +48,6 @@ public class ExecutorTestUtils {
         map.put("ce_id", CLOUD_EVENT_ID);
         map.put("ce_subject", CLOUD_EVENT_SUBJECT);
         return map;
-    }
-
-    public static ProcessorDTO createSourceProcessor() {
-        Source requestedSource = new Source();
-        requestedSource.setType(SlackSource.TYPE);
-
-        Action resolvedAction = new Action();
-        resolvedAction.setType(WebhookAction.TYPE);
-
-        return createProcessor(ProcessorType.SOURCE, new ProcessorDefinition(null, null, requestedSource, resolvedAction));
     }
 
     public static ProcessorDTO createSinkProcessorWithSameAction() {

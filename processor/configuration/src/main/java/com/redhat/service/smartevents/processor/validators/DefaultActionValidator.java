@@ -6,9 +6,9 @@ import javax.inject.Inject;
 import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 @ApplicationScoped
-public class DefaultGatewayValidator extends AbstractGatewayValidator {
+public class DefaultActionValidator extends AbstractActionValidator {
     @Inject
-    public DefaultGatewayValidator(ProcessorCatalogService processorCatalogService) {
+    public DefaultActionValidator(ProcessorCatalogService processorCatalogService) {
         super(processorCatalogService);
     }
 }

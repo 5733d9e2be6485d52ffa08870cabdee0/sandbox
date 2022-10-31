@@ -30,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProcessorCatalogServiceTest {
 
     private static final List<String> availableActions = List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1", "aws_lambda_sink_0.1");
-    private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1");
 
     @Inject
     ProcessorCatalogService processorCatalogService;
@@ -38,28 +37,19 @@ public class ProcessorCatalogServiceTest {
     @Test
     public void testSchemasAreIncludedInCatalog() {
         File actionsDir = new File("src/main/resources/schemas/actions/");
-        File sourcesDir = new File("src/main/resources/schemas/sources/");
         List<String> actions = Arrays.stream(Objects.requireNonNull(actionsDir.listFiles())).map(File::getName).collect(Collectors.toList());
-        List<String> sources = Arrays.stream(Objects.requireNonNull(sourcesDir.listFiles())).map(File::getName).collect(Collectors.toList());
 
         assertThat(actions).contains("catalog.json");
-        assertThat(sources).contains("catalog.json");
 
         assertThat(processorCatalogService.getActionsCatalog())
                 .withFailMessage("An action processor json schema file was not added to the catalog.json file.")
                 .hasSize(actions.size() - 1);
-        assertThat(processorCatalogService.getSourcesCatalog())
-                .withFailMessage("A source processor json schema file was not added to the catalog.json file.")
-                .hasSize(sources.size() - 1);
     }
 
     @Test
     public void testSchemasAreAvailable() {
         for (String action : availableActions) {
             assertThat(processorCatalogService.getActionJsonSchema(action)).isNotNull();
-        }
-        for (String source : availableSources) {
-            assertThat(processorCatalogService.getSourceJsonSchema(source)).isNotNull();
         }
     }
 
@@ -126,40 +116,4 @@ public class ProcessorCatalogServiceTest {
         };
         return Stream.of(arguments).map(Arguments::of);
     }
-
-    @ParameterizedTest
-    @MethodSource("createSourcePasswordProperties")
-    public void testSourcePasswordProperties(String id, List<String> expectedResult) {
-        List<String> actualResult = processorCatalogService.getSourcePasswordProperties(id);
-        assertThat(actualResult).isEqualTo(expectedResult);
-
-        // test twice to test memoization
-        List<String> actualResult2 = processorCatalogService.getSourcePasswordProperties(id);
-        assertThat(actualResult2).isEqualTo(expectedResult);
-    }
-
-    @Test
-    public void testSourcePasswordPropertiesCompleteness() {
-        List<String> definedSourceIds = createSourcePasswordProperties()
-                .map(arg -> (String) arg.get()[0])
-                .sorted()
-                .collect(Collectors.toList());
-        List<String> serviceSourceIds = processorCatalogService.getSourcesCatalog().stream()
-                .map(ProcessorCatalogEntry::getId)
-                .sorted()
-                .collect(Collectors.toList());
-        assertThat(definedSourceIds).isEqualTo(serviceSourceIds);
-    }
-
-    private static Stream<Arguments> createSourcePasswordProperties() {
-        Object[][] arguments = {
-                { "aws_s3_source_0.1", List.of("aws_access_key", "aws_secret_key") },
-                { "aws_sqs_source_0.1", List.of("aws_access_key", "aws_secret_key") },
-                { "azure_eventhubs_source_0.1", List.of("azure_shared_access_key", "azure_blob_access_key") },
-                { "google_pubsub_source_0.1", List.of("gcp_service_account_key") },
-                { "slack_source_0.1", List.of("slack_token") }
-        };
-        return Stream.of(arguments).map(Arguments::of);
-    }
-
 }

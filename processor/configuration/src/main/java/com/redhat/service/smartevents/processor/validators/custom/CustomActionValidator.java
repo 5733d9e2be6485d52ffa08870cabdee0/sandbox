@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.processor.validators.custom;
 
 import com.redhat.service.smartevents.processor.GatewayBean;
-import com.redhat.service.smartevents.processor.validators.GatewayValidator;
+import com.redhat.service.smartevents.processor.validators.ActionValidator;
 
 /**
  * for additional checks, implement this class like
@@ -36,6 +36,6 @@ import com.redhat.service.smartevents.processor.validators.GatewayValidator;
  *
  * </pre>
  */
-public interface CustomGatewayValidator extends GatewayBean,
-        GatewayValidator {
+public interface CustomActionValidator extends GatewayBean,
+        ActionValidator {
 }

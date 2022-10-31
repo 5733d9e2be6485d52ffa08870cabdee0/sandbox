@@ -9,7 +9,7 @@ import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 @ApplicationScoped
-public class SinkConnectorResolver implements GatewayResolver<Action> {
+public class SinkConnectorResolver implements ActionResolver {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;

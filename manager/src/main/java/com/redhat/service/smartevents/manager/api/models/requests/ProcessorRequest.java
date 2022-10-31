@@ -11,8 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidProcessorGateway;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
@@ -36,21 +34,12 @@ public class ProcessorRequest {
     @Valid
     protected Action action;
 
-    @JsonProperty("source")
-    @Valid
-    protected Source source;
-
     public ProcessorRequest() {
     }
 
     public ProcessorRequest(String name, Action action) {
         this.name = name;
         this.action = action;
-    }
-
-    public ProcessorRequest(String name, Source source) {
-        this.name = name;
-        this.source = source;
     }
 
     public ProcessorRequest(String name, Set<BaseFilter> filters, String transformationTemplate, Action action) {
@@ -62,9 +51,6 @@ public class ProcessorRequest {
 
     @JsonIgnore
     public ProcessorType getType() {
-        if (getSource() != null) {
-            return ProcessorType.SOURCE;
-        }
         if (getAction() != null) {
             return ProcessorType.SINK;
         }
@@ -85,17 +71,5 @@ public class ProcessorRequest {
 
     public Action getAction() {
         return action;
-    }
-
-    public Source getSource() {
-        return source;
-    }
-
-    @JsonIgnore
-    public Gateway getGateway() {
-        if (action != null) {
-            return action;
-        }
-        return source;
     }
 }

@@ -10,40 +10,35 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.models.ProcessorCatalogEntry;
-import com.redhat.service.smartevents.processor.resolvers.GatewayResolver;
+import com.redhat.service.smartevents.processor.resolvers.ActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.SinkConnectorResolver;
-import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
-import com.redhat.service.smartevents.processor.resolvers.custom.CustomGatewayResolver;
-import com.redhat.service.smartevents.processor.validators.DefaultGatewayValidator;
-import com.redhat.service.smartevents.processor.validators.GatewayValidator;
-import com.redhat.service.smartevents.processor.validators.custom.CustomGatewayValidator;
+import com.redhat.service.smartevents.processor.resolvers.custom.CustomActionResolver;
+import com.redhat.service.smartevents.processor.validators.ActionValidator;
+import com.redhat.service.smartevents.processor.validators.DefaultActionValidator;
+import com.redhat.service.smartevents.processor.validators.custom.CustomActionValidator;
 
 @ApplicationScoped
-public class GatewayConfiguratorImpl implements GatewayConfigurator {
+public class ActionConfiguratorImpl implements ActionConfigurator {
 
     @Inject
-    Instance<CustomGatewayValidator> customValidators;
+    Instance<CustomActionValidator> customValidators;
 
     @Inject
-    Instance<CustomGatewayResolver<Action>> actionResolvers;
+    Instance<CustomActionResolver<Action>> actionResolvers;
 
     @Inject
-    DefaultGatewayValidator defaultGatewayValidator;
+    DefaultActionValidator defaultGatewayValidator;
 
     @Inject
     SinkConnectorResolver sinkConnectorResolver;
 
     @Inject
-    SourceConnectorResolver sourceConnectorResolver;
-
-    @Inject
     ProcessorCatalogService processorCatalogService;
 
     @Override
-    public GatewayValidator getValidator(String actionType) {
-        Optional<CustomGatewayValidator> customValidator = getOptionalBean(customValidators, actionType);
+    public ActionValidator getValidator(String actionType) {
+        Optional<CustomActionValidator> customValidator = getOptionalBean(customValidators, actionType);
         if (customValidator.isPresent()) {
             return customValidator.get();
         }
@@ -51,7 +46,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     }
 
     @Override
-    public Optional<? extends GatewayResolver<Action>> getActionResolver(String actionType) {
+    public Optional<? extends ActionResolver> getActionResolver(String actionType) {
         Optional<ProcessorCatalogEntry> catalogEntry = processorCatalogService.getActionsCatalog().stream().filter(x -> x.getId().equals(actionType)).findFirst();
         if (catalogEntry.isEmpty()) {
             throw new ItemNotFoundException(String.format("Action of type '%s' not recognized", actionType));
@@ -65,22 +60,13 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
         return getOptionalBean(actionResolvers, actionType);
     }
 
-    @Override
-    public GatewayResolver<Source> getSourceResolver(String sourceType) {
-        return sourceConnectorResolver;
-    }
-
     private static <T extends GatewayBean> Optional<T> getOptionalBean(Instance<T> instances, String sourceType) {
         return instances.stream()
                 .filter(a -> a.accept(sourceType))
                 .findFirst();
     }
 
-    Collection<CustomGatewayValidator> getCustomValidators() {
-        return customValidators.stream().collect(Collectors.toList());
-    }
-
-    Collection<CustomGatewayResolver<Action>> getActionResolvers() {
+    Collection<CustomActionResolver<Action>> getActionResolvers() {
         return actionResolvers.stream().collect(Collectors.toList());
     }
 }

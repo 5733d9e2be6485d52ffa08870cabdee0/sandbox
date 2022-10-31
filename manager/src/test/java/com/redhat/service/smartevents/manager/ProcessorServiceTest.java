@@ -18,14 +18,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
@@ -43,7 +40,6 @@ import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
@@ -55,8 +51,8 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -173,8 +169,7 @@ class ProcessorServiceTest {
 
     private static Stream<Arguments> createProcessorParams() {
         Object[][] arguments = {
-                { new ProcessorRequestForTests(NEW_PROCESSOR_NAME, createKafkaTopicAction()), SINK },
-                { new ProcessorRequestForTests(NEW_PROCESSOR_NAME, createSlackSource()), ProcessorType.SOURCE }
+                { new ProcessorRequestForTests(NEW_PROCESSOR_NAME, createKafkaTopicAction()), SINK }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
@@ -267,13 +262,6 @@ class ProcessorServiceTest {
         ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction());
         Processor processor = processorService.createErrorHandlerProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest);
         doAssertProcessorCreation(processor, processorRequest, ERROR_HANDLER);
-    }
-
-    @Test
-    void testCreateErrorHandlerProcessorFailure() {
-        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createSlackSource());
-        assertThatExceptionOfType(InternalPlatformException.class).isThrownBy(
-                () -> processorService.createErrorHandlerProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest));
     }
 
     @Test
@@ -569,17 +557,14 @@ class ProcessorServiceTest {
         Object[] arguments = {
                 new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createKafkaTopicAction()),
                 new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createdMaskedWebhookAction()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createMaskedSlackSource())
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createdMaskedWebhookAction())
         };
         return Stream.of(arguments).map(Arguments::of);
     }
 
     private static Stream<Arguments> updateProcessorGatewayParams() {
         Object[] arguments = {
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource())
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createWebhookAction())
         };
         return Stream.of(arguments).map(Arguments::of);
     }
@@ -653,37 +638,10 @@ class ProcessorServiceTest {
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
-        if (request.getType() == ProcessorType.SOURCE) {
-            Source dummyNewSource = new Source();
-            dummyNewSource.setType("DummySource");
-            request.setSource(dummyNewSource);
-        } else if (request.getType() == SINK) {
+        if (request.getType() == SINK) {
             Action dummyNewAction = new Action();
             dummyNewAction.setType("DummyAction");
             request.setAction(dummyNewAction);
-        }
-
-        assertThatExceptionOfType(BadRequestException.class)
-                .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
-    }
-
-    @ParameterizedTest
-    @MethodSource("updateProcessorParams")
-    void testUpdateProcessorWithGatewayWithOppositeType(ProcessorRequestForTests request) {
-        Processor existingProcessor = createReadyProcessorFromRequest(request);
-        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
-                .thenReturn(existingProcessor);
-
-        if (request.getType() == ProcessorType.SOURCE) {
-            Action dummyNewAction = new Action();
-            dummyNewAction.setType("DummyAction");
-            request.setAction(dummyNewAction);
-            request.setSource(null);
-        } else if (request.getType() == SINK) {
-            Source dummyNewSource = new Source();
-            dummyNewSource.setType("DummySource");
-            request.setSource(dummyNewSource);
-            request.setAction(null);
         }
 
         assertThatExceptionOfType(BadRequestException.class)
@@ -698,13 +656,7 @@ class ProcessorServiceTest {
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
-        if (request.getType() == ProcessorType.SOURCE) {
-            Source updatedSource = createSlackSource();
-            updatedSource.setMapParameters(Map.of(
-                    SlackSource.CHANNEL_PARAM, "test-channel-updated",
-                    SlackSource.TOKEN_PARAM, "test-token-updated"));
-            request.setSource(updatedSource);
-        } else if (request.getType() == SINK) {
+        if (request.getType() == SINK) {
             Action updatedAction = createWebhookAction();
             updatedAction.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/updated"));
             request.setAction(updatedAction);
@@ -807,13 +759,13 @@ class ProcessorServiceTest {
         Bridge b = Fixtures.createBridge();
         Processor p = Fixtures.createProcessor(b, READY);
 
-        Source source = new Source();
-        source.setType(SlackSource.TYPE);
-        source.setMapParameters(Map.of(
-                SlackSource.CHANNEL_PARAM, "mychannel",
-                SlackSource.TOKEN_PARAM, "mytoken"));
+        Action action = new Action();
+        action.setType(SlackAction.TYPE);
+        action.setMapParameters(Map.of(
+                SlackAction.CHANNEL_PARAM, "mychannel",
+                SlackAction.WEBHOOK_URL_PARAM, "http://whatever.com"));
 
-        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", source, null);
+        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action, null);
         p.setDefinition(definition);
 
         ProcessorResponse r = processorService.toResponse(p);
@@ -828,9 +780,9 @@ class ProcessorServiceTest {
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
-        assertThat(r.getSource().getType()).isEqualTo(SlackSource.TYPE);
-        assertThat(r.getSource().getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo("mychannel");
-        assertThat(r.getSource().getParameters().get(SlackSource.TOKEN_PARAM)).isEqualTo(emptyObjectNode());
+        assertThat(r.getAction().getType()).isEqualTo(SlackAction.TYPE);
+        assertThat(r.getAction().getParameter(SlackAction.CHANNEL_PARAM)).isEqualTo("mychannel");
+        assertThat(r.getAction().getParameters().get(SlackAction.WEBHOOK_URL_PARAM)).isEqualTo(emptyObjectNode());
     }
 
     private static Bridge createReadyBridge() {
@@ -855,9 +807,7 @@ class ProcessorServiceTest {
     }
 
     private static Processor createReadyProcessorFromRequest(ProcessorRequest request) {
-        ProcessorDefinition definition = request.getType() == ProcessorType.SOURCE
-                ? new ProcessorDefinition(request.getFilters(), request.getTransformationTemplate(), request.getSource(), createSlackSourceResolvedAction())
-                : new ProcessorDefinition(request.getFilters(), request.getTransformationTemplate(), request.getAction(), request.getAction());
+        ProcessorDefinition definition = new ProcessorDefinition(request.getFilters(), request.getTransformationTemplate(), request.getAction(), request.getAction());
 
         Processor processor = Fixtures.createProcessor(createReadyBridge(), READY);
         processor.setId(DEFAULT_PROCESSOR_ID);
@@ -905,32 +855,4 @@ class ProcessorServiceTest {
         webhookAction.getParameters().set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode());
         return webhookAction;
     }
-
-    private static Source createSlackSource() {
-        Source source = new Source();
-        source.setType(SlackSource.TYPE);
-        source.setMapParameters(Map.of(
-                SlackSource.CHANNEL_PARAM, "test-channel",
-                SlackSource.TOKEN_PARAM, "test-token"));
-        return source;
-    }
-
-    private static Source createMaskedSlackSource() {
-        Source source = new Source();
-        source.setType(SlackSource.TYPE);
-        source.setParameters(new ObjectNode(JsonNodeFactory.instance, Map.of(
-                SlackSource.CHANNEL_PARAM, new TextNode("test-channel"),
-                SlackSource.TOKEN_PARAM, emptyObjectNode())));
-        return source;
-    }
-
-    private static Action createSlackSourceResolvedAction() {
-        Action action = new Action();
-        action.setType(WebhookAction.TYPE);
-        action.setMapParameters(Map.of(
-                WebhookAction.ENDPOINT_PARAM, "https://bridge.redhat.com",
-                WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true"));
-        return action;
-    }
-
 }

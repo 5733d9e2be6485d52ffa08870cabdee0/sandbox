@@ -33,7 +33,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
      */
 
     private static final String IDS_PARAM = "ids";
-    private static final Set<ProcessorType> USER_VISIBLE_PROCESSOR_TYPES = Set.of(ProcessorType.SOURCE, ProcessorType.SINK);
+    private static final Set<ProcessorType> USER_VISIBLE_PROCESSOR_TYPES = Set.of(ProcessorType.SINK);
     private static final Set<ProcessorType> HIDDEN_PROCESSOR_TYPES = Set.of(ProcessorType.ERROR_HANDLER);
     private static final String BY_TYPE_FILTER_NAME = "byType";
     private static final String BY_TYPE_FILTER_PARAM = "ptype";

@@ -162,18 +162,6 @@
     "type": "USER"
   },
   {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMultipleGatewayException",
-    "id": 28,
-    "reason": "A Processor cannot have both a Source and an Action Gateway defined.",
-    "type": "USER"
-  },
-  {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorTransformationTemplateUnsupportedException",
-    "id": 29,
-    "reason": "Processor Source Gateways do not support Transformation Templates.",
-    "type": "USER"
-  },
-  {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.UnsupportedErrorHandlerGatewayException",
     "id": 30,
     "reason": "The specified ErrorHandler Action is unsupported.",

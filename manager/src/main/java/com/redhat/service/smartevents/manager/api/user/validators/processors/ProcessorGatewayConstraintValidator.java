@@ -7,59 +7,38 @@ import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMissingGatewayException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMultipleGatewayException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorTransformationTemplateUnsupportedException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.ActionConfigurator;
 
 @ApplicationScoped
 public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintValidator<ValidProcessorGateway, ProcessorRequest> {
 
-    static final String MISSING_GATEWAY_ERROR = "Processor must have either \"action\" or \"source\"";
-    static final String MULTIPLE_GATEWAY_ERROR = "Processor can't have both \"action\" and \"source\"";
-    static final String SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR = "Source processors don't support transformations";
+    static final String MISSING_ACTION_ERROR = "Processor must have an \"action\" definition";
 
     protected ProcessorGatewayConstraintValidator() {
         //CDI proxy
     }
 
     @Inject
-    public ProcessorGatewayConstraintValidator(GatewayConfigurator gatewayConfigurator) {
-        super(gatewayConfigurator);
+    public ProcessorGatewayConstraintValidator(ActionConfigurator actionConfigurator) {
+        super(actionConfigurator);
     }
 
     @Override
     public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
         Action action = value.getAction();
-        Source source = value.getSource();
 
-        if (action == null && source == null) {
+        if (action == null) {
             addConstraintViolation(context,
-                    MISSING_GATEWAY_ERROR,
+                    MISSING_ACTION_ERROR,
                     Collections.emptyMap(),
                     ProcessorMissingGatewayException::new);
             return false;
         }
-        if (action != null && source != null) {
-            addConstraintViolation(context,
-                    MULTIPLE_GATEWAY_ERROR,
-                    Collections.emptyMap(),
-                    ProcessorMultipleGatewayException::new);
-            return false;
-        }
 
         // Currently, source processors don't support transformation
-        if (value.getType() == ProcessorType.SOURCE && value.getTransformationTemplate() != null) {
-            addConstraintViolation(context,
-                    SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR,
-                    Collections.emptyMap(),
-                    ProcessorTransformationTemplateUnsupportedException::new);
-            return false;
-        }
 
-        return isValidGateway(value.getGateway(), context);
+        return isValidGateway(value.getAction(), context);
     }
 }

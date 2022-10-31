@@ -10,10 +10,10 @@ import org.hibernate.validator.internal.engine.messageinterpolation.util.Interpo
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayUnclassifiedException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMissingGatewayException;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.validators.GatewayValidator;
+import com.redhat.service.smartevents.processor.ActionConfigurator;
+import com.redhat.service.smartevents.processor.validators.ActionValidator;
 
 abstract class BaseGatewayConstraintValidator<A extends Annotation, T> extends BaseConstraintValidator<A, T> {
 
@@ -23,33 +23,33 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> extends B
     static final String GATEWAY_CLASS_PARAM = "gatewayClass";
     static final String TYPE_PARAM = "type";
 
-    GatewayConfigurator gatewayConfigurator;
+    ActionConfigurator actionConfigurator;
 
     BaseGatewayConstraintValidator() {
         //CDI proxy
     }
 
-    BaseGatewayConstraintValidator(GatewayConfigurator gatewayConfigurator) {
-        this.gatewayConfigurator = gatewayConfigurator;
+    BaseGatewayConstraintValidator(ActionConfigurator actionConfigurator) {
+        this.actionConfigurator = actionConfigurator;
     }
 
-    protected boolean isValidGateway(Gateway gateway, ConstraintValidatorContext context) {
-        if (gateway.getType() == null) {
+    protected boolean isValidGateway(Action action, ConstraintValidatorContext context) {
+        if (action.getType() == null) {
             addConstraintViolation(context, GATEWAY_TYPE_MISSING_ERROR,
-                    Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()),
+                    Collections.singletonMap(GATEWAY_CLASS_PARAM, action.getClass().getSimpleName()),
                     ProcessorMissingGatewayException::new);
             return false;
         }
 
-        if (gateway.getParameters() == null) {
+        if (action.getParameters() == null) {
             addConstraintViolation(context, GATEWAY_PARAMETERS_MISSING_ERROR,
-                    Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()),
+                    Collections.singletonMap(GATEWAY_CLASS_PARAM, action.getClass().getSimpleName()),
                     ProcessorGatewayParametersMissingException::new);
             return false;
         }
 
-        GatewayValidator validator = gatewayConfigurator.getValidator(gateway.getType());
-        ValidationResult v = validator.isValid(gateway);
+        ActionValidator validator = actionConfigurator.getValidator(action.getType());
+        ValidationResult v = validator.isValid(action);
 
         if (!v.isValid()) {
             for (ValidationResult.Violation violation : v.getViolations()) {

@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -51,9 +50,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     // Connector should always be marked for creation in the same transaction as a Processor
     public void createConnectorEntity(Processor processor) {
         switch (processor.getType()) {
-            case SOURCE:
-                createConnectorEntity(processor, processor.getDefinition().getRequestedSource());
-                break;
 
             case SINK:
                 createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
@@ -73,17 +69,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
 
         persistConnectorEntity(processor, topicName, ConnectorType.SINK, action.getType(), gatewayConnector.connectorPayload(action, topicName, errorHandlerTopicName));
-    }
-
-    @Transactional(Transactional.TxType.MANDATORY)
-    // Connector should always be marked for creation in the same transaction as a Processor
-    protected void createConnectorEntity(Processor processor, Source source) {
-        if (!processorCatalogService.isConnector(ProcessorType.SOURCE, source.getType())) {
-            return;
-        }
-        String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
-        persistConnectorEntity(processor, topicName, ConnectorType.SOURCE, source.getType(), gatewayConnector.connectorPayload(source, topicName, errorHandlerTopicName));
     }
 
     private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {
@@ -127,9 +112,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
         JsonNode updatedConnectionDefinition = null;
 
-        if (processor.getType() == ProcessorType.SOURCE) {
-            updatedConnectionDefinition = gatewayConnector.connectorPayload(processor.getDefinition().getRequestedSource(), topicName, errorHandlerTopicName);
-        } else if (processor.getType() == ProcessorType.SINK) {
+        if (processor.getType() == ProcessorType.SINK) {
             updatedConnectionDefinition = gatewayConnector.connectorPayload(processor.getDefinition().getRequestedAction(), topicName, errorHandlerTopicName);
         }
 

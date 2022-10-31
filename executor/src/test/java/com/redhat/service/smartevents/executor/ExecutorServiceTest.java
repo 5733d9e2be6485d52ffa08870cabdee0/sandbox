@@ -27,7 +27,6 @@ import static com.redhat.service.smartevents.executor.ExecutorTestUtils.PLAIN_EV
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createCloudEventHeaders;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSinkProcessorWithResolvedAction;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSinkProcessorWithSameAction;
-import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSourceProcessor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
@@ -89,10 +88,6 @@ class ExecutorServiceTest {
 
     private static Stream<Arguments> executorServiceTestArgs() {
         Object[][] arguments = {
-                { createSourceProcessor(), BROKEN_JSON, null, never(), null, null, false },
-                { createSourceProcessor(), null, null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
-                { createSourceProcessor(), "", null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
-                { createSourceProcessor(), PLAIN_EVENT_JSON, null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
                 { createSinkProcessorWithSameAction(), BROKEN_JSON, null, never(), null, null, false },
                 { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, null, never(), null, null, false },
                 { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, createCloudEventHeaders(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true },

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 
 @ApplicationScoped
 public class GatewayConnector {
@@ -35,7 +35,7 @@ public class GatewayConnector {
     protected GatewayConnector() {
     }
 
-    public JsonNode connectorPayload(Gateway gateway, String topicName) {
+    public JsonNode connectorPayload(Action action, String topicName) {
         ObjectNode definition = mapper.createObjectNode();
 
         if (logEnabled) {
@@ -45,13 +45,13 @@ public class GatewayConnector {
         }
 
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
-        definition.setAll(gateway.getParameters());
+        definition.setAll(action.getParameters());
 
         return definition;
     }
 
-    public JsonNode connectorPayload(Gateway gateway, String topicName, String errorHandlerTopicName) {
-        ObjectNode definition = (ObjectNode) connectorPayload(gateway, topicName);
+    public JsonNode connectorPayload(Action action, String topicName, String errorHandlerTopicName) {
+        ObjectNode definition = (ObjectNode) connectorPayload(action, topicName);
 
         addErrorHandlerPayload(errorHandlerTopicName, definition);
 

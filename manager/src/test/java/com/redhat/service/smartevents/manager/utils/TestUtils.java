@@ -12,7 +12,6 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.TestConstants;
@@ -24,7 +23,6 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
@@ -229,17 +227,6 @@ public class TestUtils {
         action.setType(WebhookAction.TYPE);
         action.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
         return action;
-    }
-
-    public static Source createSlackSource() {
-        Source s = new Source();
-        s.setType(SlackSource.TYPE);
-
-        Map<String, String> params = new HashMap<>();
-        params.put(SlackSource.CHANNEL_PARAM, "channel");
-        params.put(SlackSource.TOKEN_PARAM, "token");
-        s.setMapParameters(params);
-        return s;
     }
 
     public static Bridge waitForBridgeToBeReady(BridgesService bridgesService) {

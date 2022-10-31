@@ -9,8 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 @ApplicationScoped
 public class GatewaySecretsHandler {
@@ -27,20 +25,15 @@ public class GatewaySecretsHandler {
         return mask(action, passwordProps);
     }
 
-    public Source mask(Source source) {
-        List<String> passwordProps = processorCatalogService.getSourcePasswordProperties(source.getType());
-        return mask(source, passwordProps);
-    }
-
-    private <T extends Gateway> T mask(T gateway, List<String> passwordProps) {
-        ObjectNode parameters = gateway.getParameters();
+    private Action mask(Action action, List<String> passwordProps) {
+        ObjectNode parameters = action.getParameters();
         for (String passwordProperty : passwordProps) {
             if (parameters.has(passwordProperty)) {
                 parameters.set(passwordProperty, emptyObjectNode());
             }
         }
-        gateway.setParameters(parameters);
-        return gateway;
+        action.setParameters(parameters);
+        return action;
     }
 
 }

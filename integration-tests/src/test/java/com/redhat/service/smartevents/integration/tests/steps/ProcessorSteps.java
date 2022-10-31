@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.awaitility.Awaitility;
@@ -13,8 +12,6 @@ import org.hamcrest.Matchers;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
 import com.redhat.service.smartevents.integration.tests.context.ProcessorContext;
@@ -175,15 +172,10 @@ public class ProcessorSteps {
         });
     }
 
-    @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has (action|source) of type \"([^\"]*)\"$")
+    @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\"$")
     public void processorOfBridgeHasActionOfType(String processorName, String testBridgeName, String processorType, String processorTypeValue) {
-        final Gateway gateway;
-        if (Objects.equals(processorType, "action")) {
-            gateway = getProcessorAction(processorName, testBridgeName);
-        } else {
-            gateway = getProcessorSource(processorName, testBridgeName);
-        }
-        assertThat(gateway.getType()).isEqualTo(processorTypeValue);
+        Action action = getProcessorAction(processorName, testBridgeName);
+        assertThat(action.getType()).isEqualTo(processorTypeValue);
     }
 
     @When("^delete the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\"$")
@@ -230,13 +222,5 @@ public class ProcessorSteps {
 
         return ProcessorResource.getProcessor(context.getManagerToken(),
                 bridgeContext.getId(), processorId).getAction();
-    }
-
-    private Source getProcessorSource(String processorName, String testBridgeName) {
-        BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String processorId = bridgeContext.getProcessor(processorName).getId();
-
-        return ProcessorResource.getProcessor(context.getManagerToken(),
-                bridgeContext.getId(), processorId).getSource();
     }
 }

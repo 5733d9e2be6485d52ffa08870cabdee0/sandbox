@@ -25,19 +25,15 @@ import org.eclipse.microprofile.reactive.messaging.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.DeserializationException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.BytesCloudEventData;
-import io.cloudevents.jackson.JsonCloudEventData;
 import io.cloudevents.kafka.CloudEventDeserializer;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
@@ -121,10 +117,6 @@ public class ExecutorService {
 
     private Pair<CloudEvent, Map<String, String>> convertToCloudEventAndHeadersMap(KafkaRecord<Integer, String> message) {
         switch (executor.getProcessor().getType()) {
-            case SOURCE:
-                return Pair.of(
-                        toSourceCloudEvent(message.getPayload(), message.getHeaders()),
-                        Collections.emptyMap());
             case ERROR_HANDLER:
                 return buildCloudEvent(message, true);
             default:
@@ -146,23 +138,6 @@ public class ExecutorService {
                 return Pair.of(wrapToCloudEvent("RhoseError", data, Collections.emptyMap()), toHeadersMap(message.getHeaders()));
             }
             throw new DeserializationException("Failed to deserialize the cloud event", e);
-        }
-    }
-
-    private CloudEvent toSourceCloudEvent(String event, Headers headers) {
-        try {
-            // JsonCloudEventData.wrap requires an empty JSON
-            JsonNode payload = event == null ? mapper.createObjectNode() : mapper.readTree(event);
-
-            CloudEventData data = JsonCloudEventData.wrap(payload);
-
-            return wrapToCloudEvent(
-                    String.format("%s", executor.getProcessor().getDefinition().getRequestedSource().getType()),
-                    data,
-                    toExtensionsMap(headers));
-        } catch (JsonProcessingException e2) {
-            LOG.error("JsonProcessingException when generating CloudEvent for '{}'", event, e2);
-            throw new CloudEventDeserializationException("Failed to generate event map");
         }
     }
 

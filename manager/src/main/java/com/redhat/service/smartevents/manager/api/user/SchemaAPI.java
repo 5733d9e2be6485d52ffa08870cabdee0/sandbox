@@ -25,7 +25,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -50,13 +49,9 @@ import io.quarkus.security.Authenticated;
 public class SchemaAPI {
 
     private static final String ACTION_TYPE = "action";
-    private static final String SOURCE_TYPE = "source";
 
     @Inject
     ProcessorCatalogService processorCatalogService;
-
-    @Inject
-    ObjectMapper mapper;
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -66,7 +61,7 @@ public class SchemaAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
-    @Operation(summary = "Get processor catalog", description = "Get the processor catalog with all the available sources and actions.")
+    @Operation(summary = "Get processor catalog", description = "Get the processor catalog with all the available actions.")
     @GET
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
@@ -80,38 +75,8 @@ public class SchemaAPI {
                                 ACTION_TYPE,
                                 APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x.getId()))
                         .collect(Collectors.toList()));
-        entries.addAll(processorCatalogService
-                .getSourcesCatalog()
-                .stream()
-                .map(x -> new ProcessorSchemaEntryResponse(x.getId(),
-                        x.getName(),
-                        x.getDescription(),
-                        SOURCE_TYPE,
-                        APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x.getId()))
-                .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
-    }
-
-    @APIResponses(value = {
-            // we can't use JsonSchema.class because of https://github.com/swagger-api/swagger-ui/issues/8046
-            @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Object.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
-            @APIResponse(description = "Unauthorized.", responseCode = "401"),
-            @APIResponse(description = "Forbidden.", responseCode = "403"),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
-    })
-    @Operation(summary = "Get source processor schema", description = "Get the source processor JSON schema.")
-    @GET
-    @Path("/sources/{id}")
-    public Response getSourceProcessorSchema(@PathParam("id") String id) {
-        if (processorCatalogService.getSourcesCatalog().stream().noneMatch(x -> x.getId().equals(id))) {
-            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", id));
-        }
-
-        // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
-        return Response.ok(processorCatalogService.getSourceJsonSchema(id).getSchemaNode()).build();
     }
 
     @APIResponses(value = {
