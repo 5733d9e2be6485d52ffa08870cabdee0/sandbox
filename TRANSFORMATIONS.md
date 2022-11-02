@@ -8,8 +8,6 @@ to your [Action](ACTIONS.md)
 
 If you do not specify a `Transformation` then the `Event` is passed through unchanged to your [Action](ACTIONS.md).
 
-Transformations are currently not supported in [source processors](SOURCES.md).
-
 ## Writing a Transformation
 
 `Transformations` are defined using the [Qute Templating](https://quarkus.io/guides/qute-reference) engine. You can provide a template to be used to transform the original `Event` as part of

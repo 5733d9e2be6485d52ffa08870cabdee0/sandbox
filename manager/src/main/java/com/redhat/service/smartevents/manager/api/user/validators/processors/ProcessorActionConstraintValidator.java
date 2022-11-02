@@ -12,16 +12,16 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.processor.ActionConfigurator;
 
 @ApplicationScoped
-public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintValidator<ValidProcessorGateway, ProcessorRequest> {
+public class ProcessorActionConstraintValidator extends BaseGatewayConstraintValidator<ValidProcessorAction, ProcessorRequest> {
 
     static final String MISSING_ACTION_ERROR = "Processor must have an \"action\" definition";
 
-    protected ProcessorGatewayConstraintValidator() {
+    protected ProcessorActionConstraintValidator() {
         //CDI proxy
     }
 
     @Inject
-    public ProcessorGatewayConstraintValidator(ActionConfigurator actionConfigurator) {
+    public ProcessorActionConstraintValidator(ActionConfigurator actionConfigurator) {
         super(actionConfigurator);
     }
 
@@ -36,8 +36,6 @@ public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintVa
                     ProcessorMissingGatewayException::new);
             return false;
         }
-
-        // Currently, source processors don't support transformation
 
         return isValidGateway(value.getAction(), context);
     }

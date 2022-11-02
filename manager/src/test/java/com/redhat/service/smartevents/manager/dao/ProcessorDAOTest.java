@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import javax.inject.Inject;
@@ -316,15 +317,16 @@ public class ProcessorDAOTest {
     @Test
     void testGetProcessorsFilterByType() {
         Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo", SINK);
-        createProcessor(b, "bar");
+        Processor p1 = createProcessor(b, "foo", SINK);
+        Processor p2 = createProcessor(b, "bar", SINK);
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                new QueryProcessorResourceInfo(0, 100, filter().by(p.getType()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p1.getType()).build()));
         assertThat(results.getPage()).isZero();
-        assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
-        assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
+        assertThat(results.getSize()).isEqualTo(2L);
+        assertThat(results.getTotal()).isEqualTo(2L);
+        assertThat(results.getItems().stream().anyMatch(x -> Objects.equals(x.getId(), p1.getId()))).isTrue();
+        assertThat(results.getItems().stream().anyMatch(x -> Objects.equals(x.getId(), p2.getId()))).isTrue();
     }
 
     @Test

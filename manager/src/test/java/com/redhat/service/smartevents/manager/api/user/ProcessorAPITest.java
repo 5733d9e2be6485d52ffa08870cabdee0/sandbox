@@ -209,8 +209,8 @@ public class ProcessorAPITest {
 
         ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByType(bridgeResponse.getId(), SINK).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
-        assertThat(listResponse.getSize()).isEqualTo(1L);
-        assertThat(listResponse.getTotal()).isEqualTo(1L);
+        assertThat(listResponse.getSize()).isEqualTo(2L);
+        assertThat(listResponse.getTotal()).isEqualTo(2L);
 
         assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
     }
@@ -256,8 +256,8 @@ public class ProcessorAPITest {
 
         ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNameAndType(bridgeResponse.getId(), "myProcessor", SINK).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
-        assertThat(listResponse.getSize()).isEqualTo(1L);
-        assertThat(listResponse.getTotal()).isEqualTo(1L);
+        assertThat(listResponse.getSize()).isEqualTo(2L);
+        assertThat(listResponse.getTotal()).isEqualTo(2L);
 
         assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
     }

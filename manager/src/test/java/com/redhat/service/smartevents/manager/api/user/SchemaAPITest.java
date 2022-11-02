@@ -30,7 +30,6 @@ public class SchemaAPITest {
     private static final List<String> availableActions =
             List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1", "aws_lambda_sink_0.1", "ansible_tower_job_template_sink_0.1", "google_pubsub_sink_0.1",
                     "azure_eventhubs_sink_0.1");
-    private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1", "google_pubsub_source_0.1", "azure_eventhubs_source_0.1");
 
     @InjectMock
     JsonWebToken jwt;
@@ -44,7 +43,6 @@ public class SchemaAPITest {
     @Test
     public void testAuthentication() {
         TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
-        TestUtils.getSourceProcessorsSchema("slack_source_0.1").then().statusCode(401);
         TestUtils.getActionProcessorsSchema("slack_sink_0.1").then().statusCode(401);
     }
 
@@ -56,17 +54,12 @@ public class SchemaAPITest {
         assertThat(catalog.getItems()).isNotNull();
         assertThat(catalog.getItems())
                 .withFailMessage("The size of the catalog does not match. If you added a new action or a new source under /resources/schemas/ please update this test")
-                .hasSize(13);
+                .hasSize(8);
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
-            switch (entry.getType()) {
-                case "action":
-                    assertThat(availableActions).contains(entry.getId());
-                    break;
-                case "source":
-                    assertThat(availableSources).contains(entry.getId());
-                    break;
-                default:
-                    fail("entry type does not match 'source' nor 'action'");
+            if ("action".equals(entry.getType())) {
+                assertThat(availableActions).contains(entry.getId());
+            } else {
+                fail("entry type does not match 'action'");
             }
             assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
             assertThat(entry.getName()).isNotNull().isNotBlank();
@@ -81,18 +74,11 @@ public class SchemaAPITest {
     public void getUnexistingProcessorsSchema() {
         TestUtils.getSourceProcessorsSchema("wrong").then().statusCode(404);
         TestUtils.getSourceProcessorsSchema("kafka_topic_sink_0.1").then().statusCode(404);
-        TestUtils.getActionProcessorsSchema("aws_s3_source_0.1").then().statusCode(404);
     }
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessorsSchema() {
-        for (String source : availableSources) {
-            JsonNode schema = TestUtils.getSourceProcessorsSchema(source).as(JsonNode.class);
-            assertThat(schema.get("required") != null || schema.get("optional") != null).isTrue();
-            assertThat(schema.get("type")).isNotNull();
-            assertThat(schema.get("properties")).isNotNull();
-        }
 
         for (String action : availableActions) {
             JsonNode schema = TestUtils.getActionProcessorsSchema(action).as(JsonNode.class);

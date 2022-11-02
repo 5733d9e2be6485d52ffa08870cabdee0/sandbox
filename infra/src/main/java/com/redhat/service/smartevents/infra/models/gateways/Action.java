@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,6 +26,7 @@ public class Action {
     @Schema(implementation = Object.class, required = true)
     private ObjectNode parameters;
 
+    @JsonIgnore
     public ProcessorType getProcessorType() {
         return ProcessorType.SINK;
     }

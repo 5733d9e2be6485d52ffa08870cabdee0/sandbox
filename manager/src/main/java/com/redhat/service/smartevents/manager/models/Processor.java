@@ -40,7 +40,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "p.shardId=:shardId and " +
                         "(" +
                         "  (" +
-                        // Status combinations to support SINK/SOURCE Processors
+                        // Status combinations to support SINK Processors
                         "    p.bridge.status='READY' and " +
                         "    (" +
                         "      (p.status='PREPARING' and p.dependencyStatus='READY') " +

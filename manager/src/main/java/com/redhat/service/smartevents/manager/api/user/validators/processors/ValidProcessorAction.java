@@ -10,8 +10,8 @@ import javax.validation.Payload;
 
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = ProcessorGatewayConstraintValidator.class)
-public @interface ValidProcessorGateway {
+@Constraint(validatedBy = ProcessorActionConstraintValidator.class)
+public @interface ValidProcessorAction {
 
     String message() default "The supplied Action parameters are not valid";
 
