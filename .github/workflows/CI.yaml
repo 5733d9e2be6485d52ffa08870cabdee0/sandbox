@@ -59,7 +59,7 @@ jobs:
             -Dsonar.pullrequest.base=$PR_BASE
 
       - name: Publish Test Report
-        if: ${{ always() }}
+        if: always()
         uses: scacap/action-surefire-report@v1.0.10
         with:
           skip_publishing: true
@@ -67,7 +67,7 @@ jobs:
           fail_on_test_failures: true
           fail_if_no_tests: false
       - name: Validate openapi spec
-        if: ${{ always() }}
+        if: always()
         run: |
           differences=$(diff openapi/smartevents_mgmt.yaml manager/target/generated/openapi.yaml)
           if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt.yaml is out of sync. Please move the manager/target/generated/openapi.yaml into openapi/smartevents_mgmt.yaml"; false ; fi
