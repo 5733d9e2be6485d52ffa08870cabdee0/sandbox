@@ -4,8 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.google.common.base.Strings;
-import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InvalidURLException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;

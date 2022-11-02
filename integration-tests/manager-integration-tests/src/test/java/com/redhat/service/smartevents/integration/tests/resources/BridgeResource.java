@@ -2,12 +2,12 @@ package com.redhat.service.smartevents.integration.tests.resources;
 
 import java.io.InputStream;
 
-import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Constants;
-import com.redhat.service.smartevents.manager.api.v1.models.requests.BridgeRequest;
-import com.redhat.service.smartevents.manager.api.v1.models.responses.BridgeListResponse;
-import com.redhat.service.smartevents.manager.api.v1.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeListResponse;
+import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
 
 import io.restassured.response.Response;
 

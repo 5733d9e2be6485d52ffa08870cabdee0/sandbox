@@ -28,10 +28,10 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.DeserializationException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.DeserializationException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.CloudEventDeserializationException;
+import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
@@ -44,13 +44,13 @@ import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
 import static com.redhat.service.smartevents.executor.CloudEventExtension.adjustExtensionName;
-import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_BRIDGE_ID_HEADER;
-import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ERROR_CODE_HEADER;
-import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_ID_HEADER;
-import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_SOURCE_HEADER;
-import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER;
-import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_TYPE_HEADER;
-import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_PROCESSOR_ID_HEADER;
+import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_BRIDGE_ID_HEADER;
+import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_ERROR_CODE_HEADER;
+import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_ORIGINAL_EVENT_ID_HEADER;
+import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_ORIGINAL_EVENT_SOURCE_HEADER;
+import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER;
+import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_ORIGINAL_EVENT_TYPE_HEADER;
+import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_PROCESSOR_ID_HEADER;
 
 @ApplicationScoped
 public class ExecutorService {

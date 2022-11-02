@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.shard.operator.resources;
 
 import java.util.HashSet;
 
-import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 
 public class BridgeExecutorStatus extends CustomResourceStatus {
 

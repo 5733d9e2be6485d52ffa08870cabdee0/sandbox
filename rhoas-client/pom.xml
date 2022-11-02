@@ -17,7 +17,7 @@
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>infra</artifactId>
+      <artifactId>infra-core</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

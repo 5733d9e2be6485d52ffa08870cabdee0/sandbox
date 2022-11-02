@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.rhoas.exceptions;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 
 public class AppServicesException extends InternalPlatformException {
 

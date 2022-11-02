@@ -17,14 +17,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningReplicaFailureException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
-import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.core.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.PrometheusNotInstalledException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningReplicaFailureException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
@@ -55,7 +55,7 @@ import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
-import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)

@@ -18,9 +18,9 @@
   <description>Parent module for SmartEvents processor</description>
 
   <modules>
-    <module>core</module>
-    <module>configuration</module>
-    <module>runtime</module>
+    <module>processor-core</module>
+    <module>processor-configuration</module>
+    <module>processor-runtime</module>
   </modules>
 
 </project>

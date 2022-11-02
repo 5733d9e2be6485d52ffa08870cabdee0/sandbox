@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.shard.operator;
 
-import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 
 import io.fabric8.kubernetes.api.model.Secret;

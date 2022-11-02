@@ -11,10 +11,10 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
-import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.quarkus.test.common.QuarkusTestResource;

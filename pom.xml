@@ -42,10 +42,13 @@
     <module>bom</module>
     <module>test-utils</module>
     <module>processor</module>
+    <module>manager-core</module>
+    <module>manager-v1</module>
     <module>manager</module>
     <module>executor</module>
     <module>shard-operator</module>
-    <module>infra</module>
+    <module>infra-core</module>
+    <module>infra-v1</module>
     <module>rhoas-client</module>
   </modules>
 
