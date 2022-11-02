@@ -83,6 +83,7 @@ jobs:
           working-directory: integration-tests/manager-integration-tests
       - name: Archive junit test results
         uses: actions/upload-artifact@v3
+        if: ${{ always() }}
         with:
           name: junit-test-results
           path: |
