@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class KafkaConnectionDTO {
+public class KafkaConfigurationDTO {
 
     @JsonProperty("bootstrapServers")
     private String bootstrapServers;
@@ -27,10 +27,10 @@ public class KafkaConnectionDTO {
     @JsonProperty("errorTopic")
     private String errorTopic;
 
-    public KafkaConnectionDTO() {
+    public KafkaConfigurationDTO() {
     }
 
-    public KafkaConnectionDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String saslMechanism, String topic, String errorTopic) {
+    public KafkaConfigurationDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String saslMechanism, String topic, String errorTopic) {
         this.bootstrapServers = bootstrapServers;
         this.clientId = clientId;
         this.clientSecret = clientSecret;

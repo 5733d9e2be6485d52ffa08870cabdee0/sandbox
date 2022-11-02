@@ -19,6 +19,8 @@ public class BridgeExecutorSpec {
 
     private String processorDefinition;
 
+    private KafkaConfiguration kafkaConfiguration;
+
     public String getImage() {
         return image;
     }
@@ -81,6 +83,14 @@ public class BridgeExecutorSpec {
 
     public void setProcessorDefinition(String processorDefinition) {
         this.processorDefinition = processorDefinition;
+    }
+
+    public KafkaConfiguration getKafkaConfiguration() {
+        return kafkaConfiguration;
+    }
+
+    public void setKafkaConfiguration(KafkaConfiguration kafkaConfiguration) {
+        this.kafkaConfiguration = kafkaConfiguration;
     }
 
     @Override

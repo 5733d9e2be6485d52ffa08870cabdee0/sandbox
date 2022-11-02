@@ -52,7 +52,7 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 @WithOpenShiftTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
-public class BridgeIngressServiceTest {
+public class BridgeBridgeIngressServiceTest {
 
     @Inject
     BridgeIngressService bridgeIngressService;
@@ -145,10 +145,10 @@ public class BridgeIngressServiceTest {
                     ConfigMap configMap = fetchBridgeIngressConfigMap(dto);
                     assertThat(configMap).isNotNull();
                     assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP).length()).isGreaterThan(0);
-                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP).length()).isGreaterThan(0);
-                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_BOOTSTRAP_SERVERS_CONFIGMAP).length()).isGreaterThan(0);
-                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP).length()).isGreaterThan(0);
-                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_REPLICATION_FACTOR_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_AUTH_SECRET_REF_NAME_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_CONFIGMAP).length()).isGreaterThan(0);
 
                     KnativeBroker knativeBroker = fetchBridgeIngressKnativeBroker(dto);
                     assertThat(knativeBroker).isNotNull();

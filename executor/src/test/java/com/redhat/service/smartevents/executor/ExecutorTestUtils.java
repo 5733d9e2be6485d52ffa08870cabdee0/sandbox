@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -92,8 +92,8 @@ public class ExecutorTestUtils {
         return dto;
     }
 
-    public static KafkaConnectionDTO createKafkaConnection() {
-        return new KafkaConnectionDTO(
+    public static KafkaConfigurationDTO createKafkaConnection() {
+        return new KafkaConfigurationDTO(
                 "fake:9092",
                 "test",
                 "test",

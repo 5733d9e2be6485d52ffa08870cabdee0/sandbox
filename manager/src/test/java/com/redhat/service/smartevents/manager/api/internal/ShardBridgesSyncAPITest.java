@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
@@ -106,7 +106,7 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConnectionDTO());
+                new KafkaConfigurationDTO());
         TestUtils.updateBridge(bridge);
 
         //Create a Processor for the Bridge
@@ -148,7 +148,7 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConnectionDTO());
+                new KafkaConfigurationDTO());
         TestUtils.updateBridge(bridge);
 
         //Create a Processor for the Bridge
@@ -189,7 +189,7 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConnectionDTO());
+                new KafkaConfigurationDTO());
         TestUtils.updateBridge(bridge);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
@@ -227,7 +227,7 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConnectionDTO());
+                new KafkaConfigurationDTO());
         TestUtils.updateBridge(bridge);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 

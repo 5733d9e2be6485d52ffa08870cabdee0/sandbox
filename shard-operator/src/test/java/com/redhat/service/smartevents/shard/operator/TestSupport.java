@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
@@ -41,7 +41,7 @@ public class TestSupport {
     public static final String KAFKA_TOPIC = "ob-my-id";
     public static final String KAFKA_ERROR_TOPIC = "ob-my-id-errors";
 
-    public static final KafkaConnectionDTO KAFKA_CONNECTION_DTO = new KafkaConnectionDTO(
+    public static final KafkaConfigurationDTO KAFKA_CONNECTION_DTO = new KafkaConfigurationDTO(
             KAFKA_BOOTSTRAP_SERVERS,
             KAFKA_CLIENT_ID,
             KAFKA_CLIENT_SECRET,

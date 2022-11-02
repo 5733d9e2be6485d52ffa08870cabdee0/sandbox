@@ -30,39 +30,13 @@ public class KubernetesNetworkingService implements NetworkingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
     private final KubernetesClient client;
-    private final TemplateProvider templateProvider;
-    private final IstioGatewayProvider istioGatewayProvider;
-
-    public KubernetesNetworkingService(KubernetesClient client, TemplateProvider templateProvider, IstioGatewayProvider istioGatewayProvider) {
+    public KubernetesNetworkingService(KubernetesClient client) {
         this.client = client;
-        this.templateProvider = templateProvider;
-        this.istioGatewayProvider = istioGatewayProvider;
     }
 
     @Override
     public EventSource buildInformerEventSource(String component) {
         return EventSourceFactory.buildIngressesInformer(client, component);
-    }
-
-    @Override
-    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeIngress bridgeIngress, Secret secret, String path) {
-        Service service = istioGatewayProvider.getIstioGatewayService();
-        Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
-
-        Ingress existing = client.network().v1().ingresses()
-                .inNamespace(service.getMetadata().getNamespace())
-                .withName(bridgeIngress.getMetadata().getName())
-                .get();
-
-        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
-            client.network().v1().ingresses()
-                    .inNamespace(service.getMetadata().getNamespace())
-                    .withName(bridgeIngress.getMetadata().getName())
-                    .createOrReplace(expected);
-            return buildNetworkingResource(expected);
-        }
-
-        return buildNetworkingResource(existing);
     }
 
     @Override
@@ -73,53 +47,5 @@ public class KubernetesNetworkingService implements NetworkingService {
             LOGGER.debug("Can't delete ingress with name '{}' because it does not exist", name);
             return false;
         }
-    }
-
-    private Ingress buildIngress(BridgeIngress bridgeIngress, Service service, Integer port, String path) {
-        /**
-         * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
-         */
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress, new TemplateImportConfig()
-                .withNameFromParent()
-                .withPrimaryResourceFromParent());
-        // Inherit the namespace from the service
-        ingress.getMetadata().setNamespace(service.getMetadata().getNamespace());
-
-        IngressBackend ingressBackend = new IngressBackendBuilder()
-                .withService(new IngressServiceBackendBuilder()
-                        .withName(service.getMetadata().getName())
-                        .withPort(new ServiceBackendPortBuilder().withNumber(port).build())
-                        .build())
-                .build();
-
-        HTTPIngressPath httpIngressPath = new HTTPIngressPathBuilder()
-                .withBackend(ingressBackend)
-                .withPath(path)
-                .withPathType(NetworkingConstants.K8S_INGRESS_PATH_TYPE)
-                .build();
-
-        IngressRule ingressRule = new IngressRuleBuilder()
-                .withHttp(new HTTPIngressRuleValueBuilder()
-                        .withPaths(httpIngressPath)
-                        .build())
-                .build();
-
-        IngressSpec ingressSpec = new IngressSpecBuilder()
-                .withRules(ingressRule)
-                .build();
-
-        ingress.setSpec(ingressSpec);
-
-        return ingress;
-    }
-
-    private NetworkResource buildNetworkingResource(Ingress ingress) {
-        if (ingress.getStatus() == null || ingress.getStatus().getLoadBalancer() == null || ingress.getStatus().getLoadBalancer().getIngress() == null
-                || ingress.getStatus().getLoadBalancer().getIngress().isEmpty()
-                || (ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp() == null && ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname() == null)) {
-            LOGGER.info("Ingress '{}' not ready yet", ingress.getMetadata().getName());
-            return new NetworkResource("", false);
-        }
-        return new NetworkResource(null, true);
     }
 }

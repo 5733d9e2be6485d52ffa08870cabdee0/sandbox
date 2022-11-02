@@ -8,18 +8,9 @@ import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBr
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 
+import java.util.List;
+
 public interface BridgeIngressService {
-    void createBridgeIngress(BridgeDTO bridgeDTO);
 
-    void deleteBridgeIngress(BridgeDTO bridgeDTO);
-
-    void createOrUpdateBridgeIngressSecret(BridgeIngress bridgeIngress, BridgeDTO bridgeDTO);
-
-    Secret fetchBridgeIngressSecret(BridgeIngress bridgeIngress);
-
-    ConfigMap fetchOrCreateBridgeIngressConfigMap(BridgeIngress bridgeIngress, Secret secret);
-
-    KnativeBroker fetchOrCreateBridgeIngressBroker(BridgeIngress bridgeIngress, ConfigMap configMap);
-
-    AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress, String path);
+    List<BridgeIngress> fetchAllBridgeIngress();
 }

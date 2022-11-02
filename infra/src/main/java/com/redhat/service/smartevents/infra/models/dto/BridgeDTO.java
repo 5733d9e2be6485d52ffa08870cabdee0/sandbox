@@ -17,12 +17,6 @@ public class BridgeDTO {
     @JsonProperty("endpoint")
     private String endpoint;
 
-    @JsonProperty("tlsCertificate")
-    private String tlsCertificate;
-
-    @JsonProperty("tlsKey")
-    private String tlsKey;
-
     @JsonProperty("customerId")
     private String customerId;
 
@@ -33,7 +27,10 @@ public class BridgeDTO {
     private ManagedResourceStatus status;
 
     @JsonProperty("kafkaConnection")
-    private KafkaConnectionDTO kafkaConnection;
+    private KafkaConfigurationDTO kafkaConfiguration;
+
+    @JsonProperty("dnsConfiguration")
+    private DnsConfigurationDTO dnsConfiguration;
 
     public BridgeDTO() {
     }
@@ -41,21 +38,19 @@ public class BridgeDTO {
     public BridgeDTO(String id,
             String name,
             String endpoint,
-            String tlsCertificate,
-            String tlsKey,
             String customerId,
             String owner,
             ManagedResourceStatus status,
-            KafkaConnectionDTO kafkaConnection) {
+            KafkaConfigurationDTO kafkaConfiguration,
+                     DnsConfigurationDTO dnsConfiguration) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
-        this.tlsCertificate = tlsCertificate;
-        this.tlsKey = tlsKey;
         this.customerId = customerId;
         this.owner = owner;
         this.status = status;
-        this.kafkaConnection = kafkaConnection;
+        this.kafkaConfiguration = kafkaConfiguration;
+        this.dnsConfiguration = dnsConfiguration;
     }
 
     public void setCustomerId(String customerId) {
@@ -74,12 +69,8 @@ public class BridgeDTO {
         this.endpoint = endpoint;
     }
 
-    public void setTlsCertificate(String tlsCertificate) {
-        this.tlsCertificate = tlsCertificate;
-    }
-
-    public void setTlsKey(String tlsKey) {
-        this.tlsKey = tlsKey;
+    public void setDnsConfiguration(DnsConfigurationDTO dnsConfiguration) {
+        this.dnsConfiguration = dnsConfiguration;
     }
 
     public void setId(String id) {
@@ -90,8 +81,8 @@ public class BridgeDTO {
         this.name = name;
     }
 
-    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
-        this.kafkaConnection = kafkaConnection;
+    public void setKafkaConfiguration(KafkaConfigurationDTO kafkaConfiguration) {
+        this.kafkaConfiguration = kafkaConfiguration;
     }
 
     public String getId() {
@@ -110,14 +101,6 @@ public class BridgeDTO {
         return endpoint;
     }
 
-    public String getTlsCertificate() {
-        return tlsCertificate;
-    }
-
-    public String getTlsKey() {
-        return tlsKey;
-    }
-
     public String getName() {
         return name;
     }
@@ -126,8 +109,12 @@ public class BridgeDTO {
         return status;
     }
 
-    public KafkaConnectionDTO getKafkaConnection() {
-        return kafkaConnection;
+    public KafkaConfigurationDTO getKafkaConfiguration() {
+        return kafkaConfiguration;
+    }
+
+    public DnsConfigurationDTO getDnsConfiguration() {
+        return dnsConfiguration;
     }
 
     @Override
@@ -159,7 +146,7 @@ public class BridgeDTO {
                 ", customerId='" + customerId + '\'' +
                 ", owner='" + owner + '\'' +
                 ", status=" + status +
-                ", kafkaConnection=" + kafkaConnection +
+                ", kafkaConnection=" + kafkaConfiguration +
                 '}';
     }
 }

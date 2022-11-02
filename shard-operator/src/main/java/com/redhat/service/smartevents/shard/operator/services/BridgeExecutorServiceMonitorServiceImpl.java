@@ -1,25 +1,24 @@
-package com.redhat.service.smartevents.shard.operator.monitoring;
+package com.redhat.service.smartevents.shard.operator.services;
 
-import java.util.Optional;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorClient;
+import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorServiceImpl;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
+import io.fabric8.kubernetes.api.model.LabelSelector;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
-import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
-
-import io.fabric8.kubernetes.api.model.LabelSelector;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.client.CustomResource;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.Optional;
 
 @ApplicationScoped
-public class ServiceMonitorServiceImpl implements ServiceMonitorService {
+public class BridgeExecutorServiceMonitorServiceImpl implements BridgeExecutorServiceMonitorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceMonitorServiceImpl.class);
 
@@ -30,7 +29,7 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
     TemplateProvider templateProvider;
 
     @Override
-    public Optional<ServiceMonitor> fetchOrCreateServiceMonitor(final CustomResource resource, final Service service, final String componentName) {
+    public ServiceMonitor createBridgeExecutorServiceMonitorService(BridgeExecutor bridgeExecutor) {
         if (!ServiceMonitorClient.isServiceMonitorAvailable(kubernetesClient)) {
             LOGGER.warn("Prometheus Operator is not available in this cluster");
             return Optional.empty();
@@ -42,21 +41,14 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
         }
         this.ensureLabels(expected, service, componentName);
 
-        ServiceMonitor existing = ServiceMonitorClient
-                .get(kubernetesClient)
-                .inNamespace(resource.getMetadata().getNamespace())
-                .withName(service.getMetadata().getName())
+
+    }
+
+    @Override
+    public ServiceMonitor fetchBridgeExecutorServiceMonitorService(BridgeExecutor bridgeExecutor) {
+        return kubernetesClient.resources(ServiceMonitor.class).inNamespace(bridgeExecutor.getMetadata().getNamespace())
+                .withName(bridgeExecutor.getMetadata().getName())
                 .get();
-
-        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
-            return Optional.of(ServiceMonitorClient
-                    .get(kubernetesClient)
-                    .inNamespace(resource.getMetadata().getNamespace())
-                    .withName(service.getMetadata().getName())
-                    .createOrReplace(expected));
-        }
-
-        return Optional.of(existing);
     }
 
     private void ensureLabels(final ServiceMonitor serviceMonitor, final Service service, final String component) {

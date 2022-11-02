@@ -21,6 +21,10 @@ public class BridgeIngressSpec {
 
     private String host;
 
+    private KafkaConfiguration kafkaConfiguration;
+
+    private DnsConfiguration dnsConfiguration;
+
     public String getImage() {
         return image;
     }
@@ -67,6 +71,22 @@ public class BridgeIngressSpec {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public KafkaConfiguration getKafkaConfiguration() {
+        return kafkaConfiguration;
+    }
+
+    public void setKafkaConfiguration(KafkaConfiguration kafkaConfiguration) {
+        this.kafkaConfiguration = kafkaConfiguration;
+    }
+
+    public DnsConfiguration getDnsConfiguration() {
+        return dnsConfiguration;
+    }
+
+    public void setDnsConfiguration(DnsConfiguration dnsConfiguration) {
+        this.dnsConfiguration = dnsConfiguration;
     }
 
     @Override

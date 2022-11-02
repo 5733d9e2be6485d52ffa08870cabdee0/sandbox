@@ -27,10 +27,10 @@ public class GlobalConfigurationsConstants {
     public static final String KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP = "default.topic.partitions";
     public static final String KNATIVE_KAFKA_TOPIC_PARTITIONS_VALUE_CONFIGMAP = "1";
     public static final String KNATIVE_KAFKA_REPLICATION_FACTOR_VALUE_CONFIGMAP = "1";
-    public static final String KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP = "default.topic.replication.factor";
-    public static final String KNATIVE_KAFKA_TOPIC_BOOTSTRAP_SERVERS_CONFIGMAP = "bootstrap.servers";
-    public static final String KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP = "auth.secret.ref.name";
-    public static final String KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP = "topic.name";
+    public static final String KNATIVE_KAFKA_TOPIC_REPLICATION_FACTOR_CONFIGMAP = "default.topic.replication.factor";
+    public static final String KNATIVE_KAFKA_BOOTSTRAP_SERVERS_CONFIGMAP = "bootstrap.servers";
+    public static final String KNATIVE_KAFKA_AUTH_SECRET_REF_NAME_CONFIGMAP = "auth.secret.ref.name";
+    public static final String KNATIVE_KAFKA_TOPIC_NAME_CONFIGMAP = "topic.name";
 
     public static final String KNATIVE_BROKER_EXTERNAL_TOPIC_ANNOTATION_NAME = "kafka.eventing.knative.dev/external.topic";
 

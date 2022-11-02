@@ -32,7 +32,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.Processo
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -476,8 +476,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         return dto;
     }
 
-    private KafkaConnectionDTO getKafkaConnectorDTO(Processor processor) {
-        return new KafkaConnectionDTO(
+    private KafkaConfigurationDTO getKafkaConnectorDTO(Processor processor) {
+        return new KafkaConfigurationDTO(
                 internalKafkaConfigurationProvider.getBootstrapServers(),
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),

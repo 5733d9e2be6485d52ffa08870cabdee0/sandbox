@@ -13,6 +13,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.smartevents.infra.models.dto.*;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +32,6 @@ import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -337,7 +334,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     public BridgeDTO toDTO(Bridge bridge) {
-        KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
+        KafkaConfigurationDTO kafkaConfiguration = new KafkaConfigurationDTO(
                 internalKafkaConfigurationProvider.getBootstrapServers(),
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
@@ -345,16 +342,16 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getSaslMechanism(),
                 resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
+        DnsConfigurationDTO dncConfiguration = new DnsConfigurationDTO(tlsCertificate, tlsKey);
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
         dto.setEndpoint(bridge.getEndpoint());
-        dto.setTlsCertificate(tlsCertificate);
-        dto.setTlsKey(tlsKey);
         dto.setStatus(bridge.getStatus());
         dto.setCustomerId(bridge.getCustomerId());
         dto.setOwner(bridge.getOwner());
-        dto.setKafkaConnection(kafkaConnectionDTO);
+        dto.setKafkaConfiguration(kafkaConfiguration);
+        dto.setDnsConfiguration(dncConfiguration);
         return dto;
     }
 

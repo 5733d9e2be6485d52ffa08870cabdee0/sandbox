@@ -35,7 +35,7 @@ public class ProcessorDTO {
     private ManagedResourceStatus status;
 
     @JsonProperty("kafkaConnection")
-    private KafkaConnectionDTO kafkaConnection;
+    private KafkaConfigurationDTO kafkaConnection;
 
     public ProcessorType getType() {
         return type;
@@ -101,11 +101,11 @@ public class ProcessorDTO {
         this.status = status;
     }
 
-    public KafkaConnectionDTO getKafkaConnection() {
+    public KafkaConfigurationDTO getKafkaConnection() {
         return kafkaConnection;
     }
 
-    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
+    public void setKafkaConnection(KafkaConfigurationDTO kafkaConnection) {
         this.kafkaConnection = kafkaConnection;
     }
 

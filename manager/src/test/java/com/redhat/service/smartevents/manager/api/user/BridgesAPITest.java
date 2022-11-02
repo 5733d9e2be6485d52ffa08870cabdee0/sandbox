@@ -21,7 +21,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidC
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.ProcessorService;
@@ -65,7 +65,6 @@ import static com.redhat.service.smartevents.manager.utils.TestUtils.createKafka
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -476,7 +475,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 
@@ -497,7 +496,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         // The call to create a Bridge above is stubbed to be a NOP as WorkManager is mocked.
         // Therefore, manually create the Error Handler records that would have otherwise existed.
@@ -520,7 +519,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         FAILED,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         // The call to create a Bridge above is stubbed to be a NOP as WorkManager is mocked.
         // Therefore, manually create the Error Handler records that would have otherwise existed.
@@ -560,7 +559,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         //Update Bridge removing ErrorHandler
         Action errorHandler = createWebhookAction();
@@ -596,7 +595,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         //Update Bridge removing ErrorHandler
         Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
@@ -630,7 +629,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         //Update Bridge removing ErrorHandler
         Action errorHandler2 = createWebhookAction();
@@ -676,7 +675,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         //Update Bridge removing ErrorHandler
         Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler2));
@@ -709,7 +708,7 @@ public class BridgesAPITest {
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConnectionDTO()));
+                        new KafkaConfigurationDTO()));
 
         //Attempt to update Bridge name
         Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME + "-updated", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));

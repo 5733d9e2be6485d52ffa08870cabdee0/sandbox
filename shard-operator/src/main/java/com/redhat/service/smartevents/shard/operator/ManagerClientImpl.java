@@ -6,6 +6,8 @@ import java.util.function.Function;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import io.smallrye.mutiny.unchecked.Unchecked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,5 +133,4 @@ public class ManagerClientImpl implements ManagerClient {
     private boolean isSuccessfulResponse(HttpResponse<?> httpResponse) {
         return httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 400;
     }
-
 }

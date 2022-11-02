@@ -13,6 +13,10 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeExecutorDeploymentReconciler;
+import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeExecutorSecretReconciler;
+import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeExecutorServiceMonitorReconciler;
+import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeExecutorServiceReconciler;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +92,18 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     @Inject
     OperatorMetricsService metricsService;
 
+    @Inject
+    BridgeExecutorSecretReconciler bridgeExecutorSecretReconciler;
+
+    @Inject
+    BridgeExecutorDeploymentReconciler bridgeExecutorDeploymentReconciler;
+
+    @Inject
+    BridgeExecutorServiceReconciler bridgeExecutorServiceReconciler;
+
+    @Inject
+    BridgeExecutorServiceMonitorReconciler bridgeExecutorServiceMonitorReconciler;
+
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
 
@@ -108,117 +124,14 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         BridgeExecutorStatus status = bridgeExecutor.getStatus();
 
-        if (!status.isReady() && isTimedOut(status)) {
-            notifyManagerOfFailure(bridgeExecutor,
-                    new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
-                            bridgeExecutor.getClass().getSimpleName(),
-                            bridgeExecutor.getSpec().getId())));
-            status.markConditionFalse(ConditionTypeConstants.READY);
-            return UpdateControl.updateStatus(bridgeExecutor);
-        }
 
-        Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
+        bridgeExecutorSecretReconciler.reconcile(bridgeExecutor);
 
-        if (secret == null) {
-            LOGGER.info("Secrets for the BridgeProcessor '{}' have been not created yet.",
-                    bridgeExecutor.getMetadata().getName());
-            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                status.markConditionFalse(ConditionTypeConstants.READY);
-            }
-            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SECRET_AVAILABLE)) {
-                status.markConditionFalse(BridgeExecutorStatus.SECRET_AVAILABLE);
-            }
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
-        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SECRET_AVAILABLE)) {
-            status.markConditionTrue(BridgeExecutorStatus.SECRET_AVAILABLE);
-        }
+        bridgeExecutorDeploymentReconciler.reconcile(bridgeExecutor);
 
-        // Check if the image of the executor has to be updated
-        String image = bridgeExecutorService.getExecutorImage();
-        if (!image.equals(bridgeExecutor.getSpec().getImage())) {
-            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                status.markConditionFalse(ConditionTypeConstants.READY);
-            }
-            if (!status.isConditionTypeFalse(BridgeExecutorStatus.IMAGE_NAME_CORRECT)) {
-                status.markConditionFalse(BridgeExecutorStatus.IMAGE_NAME_CORRECT);
-            }
-            bridgeExecutor.getSpec().setImage(image);
-            return UpdateControl.updateResourceAndStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
-        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.IMAGE_NAME_CORRECT)) {
-            status.markConditionTrue(BridgeExecutorStatus.IMAGE_NAME_CORRECT);
-        }
+        bridgeExecutorServiceReconciler.reconcile(bridgeExecutor);
 
-        Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
-        if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-
-            status.setStatusFromDeployment(deployment);
-
-            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                notifyManagerOfFailure(bridgeExecutor,
-                        new ProvisioningTimeOutException(DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment)));
-                // Don't reschedule reconciliation if we're in a FAILED state
-                return UpdateControl.updateStatus(bridgeExecutor);
-            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                notifyManagerOfFailure(bridgeExecutor,
-                        new ProvisioningReplicaFailureException(DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment)));
-                // Don't reschedule reconciliation if we're in a FAILED state
-                return UpdateControl.updateStatus(bridgeExecutor);
-            } else {
-                // State may otherwise be recoverable so reschedule
-                return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
-            }
-        } else {
-            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
-                status.markConditionTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
-            }
-        }
-
-        // Create Service
-        Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
-        if (service.getStatus() == null) {
-            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                status.markConditionFalse(ConditionTypeConstants.READY);
-            }
-            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
-                status.markConditionFalse(BridgeExecutorStatus.SERVICE_AVAILABLE);
-            }
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
-        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
-            status.markConditionTrue(BridgeExecutorStatus.SERVICE_AVAILABLE);
-        }
-
-        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
-        if (serviceMonitor.isEmpty()) {
-            LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE)) {
-                status.markConditionFalse(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE);
-            }
-            PrometheusNotInstalledException prometheusNotInstalledException = new PrometheusNotInstalledException(ConditionReasonConstants.PROMETHEUS_UNAVAILABLE);
-            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(prometheusNotInstalledException);
-            status.setStatusFromBridgeError(bei);
-            notifyManagerOfFailure(bridgeExecutor, bei);
-
-            return UpdateControl.updateStatus(bridgeExecutor);
-        } else {
-            // this is an optional resource
-            LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeTrue(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE)) {
-                status.markConditionTrue(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE);
-            }
-        }
+        bridgeExecutorServiceMonitorReconciler.reconcile(bridgeExecutor);
 
         LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready",
                 bridgeExecutor.getMetadata().getName(),
