@@ -45,12 +45,12 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     ConnectorsApiClient connectorsApi;
 
     @Override
-    protected PanacheRepositoryBase<ConnectorEntity, String> getDao() {
+    public PanacheRepositoryBase<ConnectorEntity, String> getDao() {
         return connectorsDAO;
     }
 
     @Override
-    protected String getId(Work work) {
+    public String getId(Work work) {
         // The ID of the ManagedResource to process is the child of that stored directly in the JobDetail.
         String processorId = work.getManagedResourceId();
         ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
@@ -160,7 +160,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    protected boolean isProvisioningComplete(ConnectorEntity managedResource) {
+    public boolean isProvisioningComplete(ConnectorEntity managedResource) {
         // As far as the Worker mechanism is concerned work for a Connector is ALWAYS
         // complete as removal of the Work is controlled by the ProcessorWorker.
         return true;
@@ -219,7 +219,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    protected boolean isDeprovisioningComplete(ConnectorEntity managedResource) {
+    public boolean isDeprovisioningComplete(ConnectorEntity managedResource) {
         // As far as the Worker mechanism is concerned work for a Connector is ALWAYS
         // complete as removal of the Work is controlled by the ProcessorWorker.
         return true;

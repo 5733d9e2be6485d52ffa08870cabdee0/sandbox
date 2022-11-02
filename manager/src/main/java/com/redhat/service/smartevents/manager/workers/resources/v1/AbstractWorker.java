@@ -117,7 +117,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         return updated;
     }
 
-    protected abstract String getId(Work work);
+    public abstract String getId(Work work);
 
     @Transactional
     protected T load(String id) {
@@ -160,7 +160,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         return persist(managedResource);
     };
 
-    protected abstract PanacheRepositoryBase<T, String> getDao();
+    public abstract PanacheRepositoryBase<T, String> getDao();
 
     protected abstract T createDependencies(Work work, T managedResource);
 
@@ -172,8 +172,8 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     // chain: A->B->C where A is the primary work, B a dependency on A and C a dependency on B. We would not want
     // the work for A to be removed from the Work Queue until B and C are complete. Therefore, neither B nor C should
     // flag that work is complete. B would check on the status of C and A on B. These methods allow for this.
-    protected abstract boolean isProvisioningComplete(T managedResource);
+    public abstract boolean isProvisioningComplete(T managedResource);
 
-    protected abstract boolean isDeprovisioningComplete(T managedResource);
+    public abstract boolean isDeprovisioningComplete(T managedResource);
 
 }

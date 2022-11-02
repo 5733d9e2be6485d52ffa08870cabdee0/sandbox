@@ -32,12 +32,12 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     ConnectorWorker connectorWorker;
 
     @Override
-    protected PanacheRepositoryBase<Processor, String> getDao() {
+    public PanacheRepositoryBase<Processor, String> getDao() {
         return processorDAO;
     }
 
     @Override
-    protected String getId(Work work) {
+    public String getId(Work work) {
         // The ID of the ManagedResource to process is stored directly in the JobDetail.
         return work.getManagedResourceId();
     }
@@ -77,7 +77,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     }
 
     @Override
-    protected boolean isProvisioningComplete(Processor managedResource) {
+    public boolean isProvisioningComplete(Processor managedResource) {
         //As far as the Worker mechanism is concerned work for a Processor is complete when the dependencies are complete.
         return PROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
     }
@@ -111,7 +111,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     }
 
     @Override
-    protected boolean isDeprovisioningComplete(Processor managedResource) {
+    public boolean isDeprovisioningComplete(Processor managedResource) {
         //As far as the Worker mechanism is concerned work for a Processor is complete when the dependencies are complete.
         return DEPROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
     }
