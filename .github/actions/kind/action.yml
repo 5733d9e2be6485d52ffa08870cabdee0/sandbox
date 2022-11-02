@@ -11,7 +11,7 @@ runs:
   using: "composite"
   steps:
     - name: Set up KinD
-      uses: container-tools/kind-action@v1
+      uses: container-tools/kind-action@v2
       with:
         config: .github/kind-config.yaml
         registry: false                  # Registry not needed

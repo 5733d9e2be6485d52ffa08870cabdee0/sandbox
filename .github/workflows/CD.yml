@@ -26,7 +26,7 @@ jobs:
     name: Publish JARs and Containers
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
       - name: Java and Maven Setup
@@ -44,7 +44,7 @@ jobs:
           CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
         run: docker login quay.io --username $CONTAINER_REGISTRY_USER --password $CONTAINER_REGISTRY_PASSWORD
 
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v2.11.1
         id: filter
         with:
           filters: |

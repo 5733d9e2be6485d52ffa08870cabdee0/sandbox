@@ -23,7 +23,7 @@ jobs:
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "stable"
       - name: Free disk space
@@ -47,7 +47,7 @@ jobs:
         with:
           cache-key-prefix: ${{ runner.os }}
       - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the stable branch again
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "stable"
       - name: Compile sandbox repo
@@ -92,10 +92,10 @@ jobs:
       - name: Get Sheriff Name
         if: ${{ failure() }}
         run: |
-          echo "::set-output name=USER_NAME::$(./.github/scripts/sheriff-queue.sh)"
+          run: echo "{USER_NAME}=$(./.github/scripts/sheriff-queue.sh)" >> $GITHUB_OUTPUT
         id: findUser
       - name: Send mail with link to failing job
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v3.7.1
         if: ${{ failure() }}
         with:
           server_address: smtp.gmail.com

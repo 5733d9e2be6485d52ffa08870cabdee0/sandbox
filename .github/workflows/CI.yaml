@@ -21,7 +21,7 @@ jobs:
     name: Build and Test
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
           fetch-depth: 0
@@ -32,7 +32,7 @@ jobs:
         with:
           cache-key-prefix: ${{ runner.os }}
       - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
           fetch-depth: 0

@@ -20,7 +20,7 @@ jobs:
     name: Build and Test Operator
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Check labels
@@ -34,7 +34,7 @@ jobs:
         with:
           cache-key-prefix: ${{ runner.os }}
       - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Set up KinD
@@ -96,7 +96,7 @@ jobs:
           working-directory: integration-tests/shard-operator-integration-tests
       - name: Archive test logs
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: cucumber-logs
           path: integration-tests/shard-operator-integration-tests/target/logs/**/*.*
