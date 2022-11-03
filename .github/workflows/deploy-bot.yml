@@ -63,7 +63,7 @@ jobs:
           export TARGET_BRANCH=$(printf "${{ github.event.comment.body }}" | cut -d ' ' -f2)
           export SHA_COMMIT="${{ fromJSON(steps.get-pr.outputs.result).merge_commit_sha }}"
           chmod +x ./.github/scripts/rebase-and-deploy-to-env.sh
-          run: echo "{output}=$(./.github/scripts/rebase-and-deploy-to-env.sh)"
+          echo "output=$(./.github/scripts/rebase-and-deploy-to-env.sh)" >> $GITHUB_ENV
       - name: Comment on PR
         if: steps.checkUser.outputs.require-result == 'true'
         uses: actions/github-script@v6.3.3
