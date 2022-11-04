@@ -6,12 +6,15 @@ import java.time.Duration;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.Awaitility;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
+import com.redhat.service.smartevents.integration.tests.common.MetricsConverter;
 import com.redhat.service.smartevents.integration.tests.context.PerfTestContext;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
-import com.redhat.service.smartevents.integration.tests.resources.HorreumResource;
 import com.redhat.service.smartevents.integration.tests.resources.HyperfoilResource;
+import com.redhat.service.smartevents.integration.tests.resources.ManagerResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
 
 import io.cucumber.datatable.DataTable;
@@ -52,12 +55,6 @@ public class PerformanceSteps {
                         () -> assertThat(HyperfoilResource.isRunCompleted(runId))
                                 .as("Waiting for performance run to finish")
                                 .isTrue());
-
-        try {
-            HyperfoilResource.storeBenchmarkReport(perfTestName, runId);
-        } catch (IOException e) {
-            context.getScenario().log(String.format("Failed to store benchmark report into filesystem: %s", e.getMessage()));
-        }
     }
 
     @And("^the benchmark run \"([^\"]*)\" was executed successfully$")
@@ -86,27 +83,41 @@ public class PerformanceSteps {
                 });
     }
 
-    @When("^store results of benchmark run \"([^\"]*)\" in Horreum test \"([^\"]*)\"$")
-    public void storeResultsInHorreumTest(String perfTestName, String testName) {
-        if (!HorreumResource.isResultsUploadEnabled()) {
-            context.getScenario().log("Horreum results upload disabled. Skipping the step.");
-            return;
+    @When("^store generated report of benchmark run \"([^\"]*)\" to file \"([^\"]*)\"$")
+    public void storeGeneratedReportOfBenchmarkRunToFile(String perfTestName, String fileName) {
+        try {
+            String runId = perfContext.getBenchmarkRun(perfTestName);
+            String generatedReport = HyperfoilResource.generateReport(perfTestName, runId);
+            HyperfoilResource.storeToHyperfoilResultsFolder(fileName, generatedReport);
+        } catch (IOException e) {
+            context.getScenario().log(String.format("Failed to store benchmark report into filesystem: %s", e.getMessage()));
         }
-
-        String benchmarkRun = perfContext.getBenchmarkRun(perfTestName);
-        String testDescription = context.getScenario().getName();
-        HorreumResource.storePerformanceData(testName, testDescription, context.getStartTime(), benchmarkRun);
     }
 
-    @When("^store Manager metrics in Horreum test \"([^\"]*)\"$")
-    public void storeManagerMetricsInHorreumTest(String testName) {
-        if (!HorreumResource.isResultsUploadEnabled()) {
-            context.getScenario().log("Horreum results upload disabled. Skipping the step.");
-            return;
+    @When("^store results of benchmark run \"([^\"]*)\" to json file \"([^\"]*)\"$")
+    public void storeBenchmarkResultsToFile(String perfTestName, String fileName) {
+        try {
+            String benchmarkRun = perfContext.getBenchmarkRun(perfTestName);
+            Object totalStats = HyperfoilResource.getAllStatsJson(benchmarkRun);
+            Gson gson = new Gson();
+            String totalStatsJson = gson.toJson(totalStats);
+            HyperfoilResource.storeToHyperfoilResultsFolder(fileName, totalStatsJson);
+        } catch (IOException e) {
+            context.getScenario().log(String.format("Failed to store results of benchmark run into filesystem: %s", e.getMessage()));
         }
+    }
 
-        String testDescription = context.getScenario().getName();
-        HorreumResource.storeManagerPerformanceData(testName, testDescription, context.getStartTime());
+    @When("^store Manager metrics to json file \"([^\"]*)\"$")
+    public void storeManagerMetricsToFile(String fileName) {
+        try {
+            String managerMetrics = ManagerResource.getManagerMetrics();
+            JsonObject convertedMetrics = MetricsConverter.convertToJson(managerMetrics);
+            Gson gson = new Gson();
+            String convertedMetricsJson = gson.toJson(convertedMetrics);
+            HyperfoilResource.storeToHyperfoilResultsFolder(fileName, convertedMetricsJson);
+        } catch (IOException e) {
+            context.getScenario().log(String.format("Failed to store Manager metrics into filesystem: %s", e.getMessage()));
+        }
     }
 
     @When("^generate (\\d+) random letters into data property \"([^\"]*)\"$")

@@ -5,6 +5,8 @@ Feature: Continuous create Bridges performance tests
     When run benchmark with content:
       """text/vnd.yaml
       name: rhose-continuously-create-bridges
+      agents:
+        driver01:
       http:
       - host: ${env.event-bridge.manager.url}
         name: manager
@@ -123,7 +125,7 @@ Feature: Continuous create Bridges performance tests
       """
 
     Then the benchmark run "rhose-continuously-create-bridges" was executed successfully
-    And store Manager metrics in Horreum test "continuously-create-bridges-<users>-users"
+    And store Manager metrics to json file "continuously-create-bridges-<users>-users-manager-metrics.json"
 
     Examples:
       | users | shared-connections |
@@ -134,6 +136,8 @@ Feature: Continuous create Bridges performance tests
     When run benchmark with content:
       """text/vnd.yaml
       name: rhose-continuously-create-bridges-with-error-handler
+      agents:
+        driver01:
       http:
       - host: ${env.event-bridge.manager.url}
         name: manager
@@ -257,7 +261,7 @@ Feature: Continuous create Bridges performance tests
               - restartSequence
       """
     Then the benchmark run "rhose-continuously-create-bridges-with-error-handler" was executed successfully
-    And store Manager metrics in Horreum test "continuously-create-bridges-with-error-handler-<users>-users"
+    And store Manager metrics to json file "continuously-create-bridges-with-error-handler-<users>-users-manager-metrics.json"
 
     Examples:
       | users | shared-connections |

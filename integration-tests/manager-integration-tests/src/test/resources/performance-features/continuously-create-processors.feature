@@ -11,6 +11,8 @@ Feature: Continuous create Processors performance tests
     When run benchmark with content:
       """text/vnd.yaml
       name: rhose-continuously-create-processors
+      agents:
+        driver01:
       http:
       - host: ${env.event-bridge.manager.url}
         name: manager
@@ -134,7 +136,7 @@ Feature: Continuous create Processors performance tests
       """
 
     Then the benchmark run "rhose-continuously-create-processors" was executed successfully
-    And store Manager metrics in Horreum test "continuously-create-processors-<users>-users"
+    And store Manager metrics to json file "continuously-create-processors-<users>-users-manager-metrics.json"
 
     Examples:
       | users | shared-connections |

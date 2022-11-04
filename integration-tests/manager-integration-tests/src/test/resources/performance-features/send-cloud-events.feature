@@ -24,18 +24,21 @@ Feature: Sending cloud events performance tests
     And the Processor "my-perf-processor" of the Bridge "my-perf-single-bridge" is existing with status "ready" within 3 minutes
 
     When generate <messageContentSizeInBytes> random letters into data property "random-data"
-    When run benchmark with content:
+    And run benchmark with content:
       """text/vnd.yaml
       name: rhose-send-cloud-events-single-bridge
+      agents:
+        driver01:
+#          log: my-config-map/log4j2.xml
       http:
       - host: ${bridge.my-perf-single-bridge.endpoint.base}
-        sharedConnections: 10
+        sharedConnections: 200
         connectionStrategy: ALWAYS_NEW
       phases:
       - steadyState:
           constantRate:
             usersPerSec: <requestsPerSec>
-            maxSessions: 10
+            maxSessions: 200
             startAfter: rampUp
             duration: 5m
             maxDuration: 6m
@@ -95,22 +98,25 @@ Feature: Sending cloud events performance tests
     And the total of events received for benchmark "rhose-send-cloud-events-single-bridge" run in "steadyState" phase is equal to the total of cloud events sent in:
       | bridge                | metric           |
       | my-perf-single-bridge | send-cloud-event |
-    And store results of benchmark run "rhose-send-cloud-events-single-bridge" in Horreum test "send-cloud-events-single-bridge-<messageContentSizeInBytes>-message-size-<requestsPerSec>-users"
+    And store generated report of benchmark run "rhose-send-cloud-events-single-bridge" to file "send-cloud-events-single-bridge-<messageContentSizeInBytes>-message-size-<requestsPerSec>-users.html"
+    And store results of benchmark run "rhose-send-cloud-events-single-bridge" to json file "send-cloud-events-single-bridge-<messageContentSizeInBytes>-message-size-<requestsPerSec>-users.json"
 
     Examples:
       | requestsPerSec | messageContentSizeInBytes |
-      | 1              | 10                        |
-      | 4              | 10                        |
-      | 8              | 10                        |
-      | 1              | 50000                     |
-      | 4              | 50000                     |
-      | 8              | 50000                     |
+      | 10             | 10                        |
+      | 50             | 10                        |
+      | 10             | 5000                      |
+      | 50             | 5000                      |
 
   @send-cloud-events-two-bridges
   Scenario Outline: Creating two bridges and sending cloud events with <requestsPerSec> requests per second
-    And create a new Bridge "my-perf-bridge-1" in cloud provider "aws" and region "us-east-1"
+    Given create a new Bridge "my-perf-bridge-1" in cloud provider "aws" and region "us-east-1"
+    And create a new Bridge "my-perf-bridge-2" in cloud provider "aws" and region "us-east-1"
     And the Bridge "my-perf-bridge-1" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "my-perf-bridge-1" is available within 2 minutes
+    And the Bridge "my-perf-bridge-2" is existing with status "ready" within 4 minutes
+    And the Ingress of Bridge "my-perf-bridge-2" is available within 2 minutes
+
     And add a Processor to the Bridge "my-perf-bridge-1" with body:
     """
     {
@@ -124,11 +130,6 @@ Feature: Sending cloud events performance tests
         "transformationTemplate" : "{\"bridgeId\": \"{data.bridgeId}\", \"message\": \"{data.message}\", \"submitted_at\": \"{timestamp}\"}"
     }
     """
-    And the Processor "my-perf-processor-1" of the Bridge "my-perf-bridge-1" is existing with status "ready" within 3 minutes
-
-    And create a new Bridge "my-perf-bridge-2" in cloud provider "aws" and region "us-east-1"
-    And the Bridge "my-perf-bridge-2" is existing with status "ready" within 4 minutes
-    And the Ingress of Bridge "my-perf-bridge-2" is available within 2 minutes
     And add a Processor to the Bridge "my-perf-bridge-2" with body:
     """
     {
@@ -142,25 +143,29 @@ Feature: Sending cloud events performance tests
         "transformationTemplate" : "{\"bridgeId\": \"{data.bridgeId}\", \"message\": \"{data.message}\", \"submitted_at\": \"{timestamp}\"}"
     }
     """
+    And the Processor "my-perf-processor-1" of the Bridge "my-perf-bridge-1" is existing with status "ready" within 3 minutes
     And the Processor "my-perf-processor-2" of the Bridge "my-perf-bridge-2" is existing with status "ready" within 3 minutes
 
-    When run benchmark with content:
+    When generate <messageContentSizeInBytes> random letters into data property "random-data"
+    And run benchmark with content:
       """text/vnd.yaml
       name: rhose-send-cloud-events-several-bridges
+      agents:
+        driver01:
       http:
       - host: ${bridge.my-perf-bridge-1.endpoint.base}
         name: bridge-1
-        sharedConnections: 10
+        sharedConnections: 200
         connectionStrategy: ALWAYS_NEW
       - host: ${bridge.my-perf-bridge-2.endpoint.base}
         name: bridge-2
-        sharedConnections: 10
+        sharedConnections: 200
         connectionStrategy: ALWAYS_NEW
       phases:
       - steadyStateBridge1:
           constantRate:
             usersPerSec: <requestsPerSec>
-            maxSessions: 10
+            maxSessions: 200
             startAfter: rampUp
             duration: 5m
             maxDuration: 6m
@@ -181,7 +186,7 @@ Feature: Sending cloud events performance tests
                       "timestamp": "${submitted_at}",
                       "data": {
                           "bridgeId": "${bridge.my-perf-bridge-1.id}",
-                          "message": "hello bridge-1"
+                          "message": "${data.random-data}"
                         }
                     }
                   headers:
@@ -190,7 +195,7 @@ Feature: Sending cloud events performance tests
       - steadyStateBridge2:
           constantRate:
             usersPerSec: <requestsPerSec>
-            maxSessions: 10
+            maxSessions: 200
             startAfter: rampUp
             duration: 5m
             maxDuration: 6m
@@ -211,7 +216,7 @@ Feature: Sending cloud events performance tests
                       "timestamp": "${submitted_at}",
                       "data": {
                           "bridgeId": "${bridge.my-perf-bridge-2.id}",
-                          "message": "hello bridge-2"
+                          "message": "${data.random-data}"
                         }
                     }
                   headers:
@@ -277,10 +282,12 @@ Feature: Sending cloud events performance tests
     And the total of events received for benchmark "rhose-send-cloud-events-several-bridges" run in "steadyStateBridge2" phase is equal to the total of cloud events sent in:
       | bridge           | metric                    |
       | my-perf-bridge-2 | send-cloud-event-bridge-2 |
-    And store results of benchmark run "rhose-send-cloud-events-several-bridges" in Horreum test "send-cloud-events-several-bridges-<requestsPerSec>-users"
+    And store generated report of benchmark run "rhose-send-cloud-events-several-bridges" to file "send-cloud-events-several-bridges-<messageContentSizeInBytes>-message-size-<requestsPerSec>-users.html"
+    And store results of benchmark run "rhose-send-cloud-events-several-bridges" to json file "send-cloud-events-several-bridges-<messageContentSizeInBytes>-message-size-<requestsPerSec>-users.json"
 
     Examples:
-      | requestsPerSec |
-      | 1              |
-      | 4              |
-      | 8              |
+      | requestsPerSec | messageContentSizeInBytes |
+      | 10             | 10                        |
+      | 50             | 10                        |
+      | 10             | 5000                      |
+      | 50             | 5000                      |

@@ -120,7 +120,7 @@ You can update the parameters needs to configure in `integration-tests/manager-i
 
 In order to be able to run the [performance tests scenarios](src/test/resources/performance-features) locally you will need to have the following installed on your machine:
 
-- [Hyperfoil v0.21](https://hyperfoil.io/) - Benchmark framework for microservices (*)
+- [Hyperfoil v0.24](https://hyperfoil.io/) - Benchmark framework for microservices (*)
 - [webhook-perf-test](https://github.com/afalhambra/webhook-perf-test) - Dummy app to consume cloud events from webhook Processor
 
 There is a dedicated Maven profile named `performance` located in `integration-tests/manager-integration-tests/pom.xml`. There you can see the following system properties needed 
