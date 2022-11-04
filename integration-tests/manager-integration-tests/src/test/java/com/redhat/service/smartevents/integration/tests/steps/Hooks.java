@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.awaitility.Awaitility;
@@ -90,7 +89,7 @@ public class Hooks {
             // Delete Kafka topics and related ACLs
             cleanKafkaTopics();
 
-            String token = Optional.ofNullable(context.getManagerToken()).orElse(BridgeUtils.retrieveBridgeToken());
+            String token = BridgeUtils.retrieveBridgeToken();
             // Remove all bridges/processors created
             context.getAllBridges().values()
                     .parallelStream()
