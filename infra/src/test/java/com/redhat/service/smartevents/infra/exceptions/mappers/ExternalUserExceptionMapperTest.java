@@ -8,13 +8,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;

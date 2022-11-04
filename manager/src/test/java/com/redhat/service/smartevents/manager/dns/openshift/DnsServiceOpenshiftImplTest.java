@@ -11,9 +11,9 @@ import com.amazonaws.services.route53.AmazonRoute53Async;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsRequest;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsResult;
 import com.redhat.service.smartevents.infra.utils.Constants;
-import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.dns.DnsService;
+import com.redhat.service.smartevents.manager.services.v1.ShardService;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;

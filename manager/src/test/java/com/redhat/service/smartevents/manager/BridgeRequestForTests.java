@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.manager;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.api.v1.models.requests.BridgeRequest;
 
 /**
  * A clone of {@see BridgeRequest} however it has setters for the properties, useful in tests.

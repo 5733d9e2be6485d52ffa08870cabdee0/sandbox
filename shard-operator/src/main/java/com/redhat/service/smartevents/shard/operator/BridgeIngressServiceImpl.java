@@ -10,9 +10,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;

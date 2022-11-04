@@ -11,7 +11,7 @@ import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -21,8 +21,8 @@ import com.redhat.service.smartevents.integration.tests.context.ProcessorContext
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
-import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
-import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
+import com.redhat.service.smartevents.manager.api.v1.models.responses.ProcessorListResponse;
+import com.redhat.service.smartevents.manager.api.v1.models.responses.ProcessorResponse;
 
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;

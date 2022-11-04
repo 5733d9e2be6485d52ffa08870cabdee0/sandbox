@@ -5,19 +5,19 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.PREPARING;
+import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.READY;
 
 public class TestSupport {
 

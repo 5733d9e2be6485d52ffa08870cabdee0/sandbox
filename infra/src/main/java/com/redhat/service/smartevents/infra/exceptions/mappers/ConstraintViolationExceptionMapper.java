@@ -15,13 +15,13 @@ import org.hibernate.validator.engine.HibernateConstraintViolation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.models.ListResult;
+import com.redhat.service.smartevents.infra.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
 
 public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<ConstraintViolationException> {
 

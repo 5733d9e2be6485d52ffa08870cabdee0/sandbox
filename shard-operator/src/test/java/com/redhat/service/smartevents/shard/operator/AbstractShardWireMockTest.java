@@ -10,9 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
-import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
@@ -43,38 +43,38 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {
-        wireMockServer.stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
+        wireMockServer.stubFor(get(urlEqualTo(V1APIConstants.V1_SHARD_API_BASE_PATH + "processors"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(objectMapper.writeValueAsString(processorDTOS))));
     }
 
     protected void stubBridgesToDeployOrDelete(List<BridgeDTO> bridgeDTOs) throws JsonProcessingException {
-        wireMockServer.stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+        wireMockServer.stubFor(get(urlEqualTo(V1APIConstants.V1_SHARD_API_BASE_PATH))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(objectMapper.writeValueAsString(bridgeDTOs))));
     }
 
     protected void stubProcessorUpdate() {
-        wireMockServer.stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
+        wireMockServer.stubFor(put(urlEqualTo(V1APIConstants.V1_SHARD_API_BASE_PATH + "processors"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
     }
 
     protected void stubBridgeUpdate() {
-        wireMockServer.stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+        wireMockServer.stubFor(put(urlEqualTo(V1APIConstants.V1_SHARD_API_BASE_PATH))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
     }
 
     protected void addProcessorUpdateRequestListener(CountDownLatch latch) {
-        addUpdateRequestListener(APIConstants.SHARD_API_BASE_PATH + "processors", RequestMethod.PUT, latch);
+        addUpdateRequestListener(V1APIConstants.V1_SHARD_API_BASE_PATH + "processors", RequestMethod.PUT, latch);
     }
 
     protected void addBridgeUpdateRequestListener(CountDownLatch latch) {
-        addUpdateRequestListener(APIConstants.SHARD_API_BASE_PATH, RequestMethod.PUT, latch);
+        addUpdateRequestListener(V1APIConstants.V1_SHARD_API_BASE_PATH, RequestMethod.PUT, latch);
     }
 }

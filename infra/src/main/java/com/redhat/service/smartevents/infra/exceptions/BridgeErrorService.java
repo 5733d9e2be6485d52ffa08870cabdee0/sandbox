@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.infra.exceptions;
 import java.util.Optional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryPageInfo;
+import com.redhat.service.smartevents.infra.models.queries.QueryPageInfo;
 
 public interface BridgeErrorService {
 

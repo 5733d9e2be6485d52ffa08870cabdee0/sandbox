@@ -9,12 +9,12 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -30,8 +30,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.redhat.service.smartevents.infra.api.APIConstants.SHARD_API_BASE_PATH;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.api.v1.V1APIConstants.V1_SHARD_API_BASE_PATH;
+import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.shard.operator.TestSupport.KAFKA_CONNECTION_DTO;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,7 +63,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         managerClient.notifyBridgeStatusChange(updateDTO).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(30, SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH))
+        wireMockServer.verify(putRequestedFor(urlEqualTo(V1_SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
@@ -79,7 +79,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         managerClient.notifyProcessorStatusChange(updateDTO).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH + "processors"))
+        wireMockServer.verify(putRequestedFor(urlEqualTo(V1_SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(updateDTO), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }

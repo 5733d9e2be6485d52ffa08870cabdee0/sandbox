@@ -10,8 +10,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.manager.models.CloudProvider;
-import com.redhat.service.smartevents.manager.models.CloudRegion;
+import com.redhat.service.smartevents.manager.persistence.v1.models.CloudProvider;
+import com.redhat.service.smartevents.manager.persistence.v1.models.CloudRegion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;

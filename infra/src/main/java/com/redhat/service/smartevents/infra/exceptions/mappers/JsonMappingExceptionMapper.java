@@ -9,9 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
+import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
 
 /**
  * Generic mapping of *any* {@link JsonMappingException} into a {@link ErrorsResponse}.

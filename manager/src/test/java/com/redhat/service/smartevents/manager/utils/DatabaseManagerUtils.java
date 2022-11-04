@@ -5,11 +5,11 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.manager.TestConstants;
-import com.redhat.service.smartevents.manager.dao.BridgeDAO;
-import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
-import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
-import com.redhat.service.smartevents.manager.dao.ShardDAO;
-import com.redhat.service.smartevents.manager.models.Shard;
+import com.redhat.service.smartevents.manager.persistence.v1.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.persistence.v1.dao.ConnectorsDAO;
+import com.redhat.service.smartevents.manager.persistence.v1.dao.ProcessorDAO;
+import com.redhat.service.smartevents.manager.persistence.v1.dao.ShardDAO;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Shard;
 
 /**
  * This bean must be injected in every test class that uses the database.

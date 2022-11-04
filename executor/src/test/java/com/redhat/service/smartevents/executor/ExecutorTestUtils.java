@@ -6,12 +6,12 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;

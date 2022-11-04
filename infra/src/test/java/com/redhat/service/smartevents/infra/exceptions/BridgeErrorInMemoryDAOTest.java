@@ -13,7 +13,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryPageInfo;
+import com.redhat.service.smartevents.infra.models.queries.QueryPageInfo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

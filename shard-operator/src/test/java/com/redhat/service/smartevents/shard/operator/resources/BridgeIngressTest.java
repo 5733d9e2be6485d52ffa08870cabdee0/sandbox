@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.shard.operator.resources;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 

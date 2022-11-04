@@ -2,9 +2,9 @@ package com.redhat.service.smartevents.manager.metrics;
 
 import java.util.Objects;
 
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 
 public final class ManagedResourceOperationMapper {

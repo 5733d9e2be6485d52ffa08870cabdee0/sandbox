@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.WithPrometheus;

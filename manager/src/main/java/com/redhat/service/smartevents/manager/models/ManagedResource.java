@@ -11,7 +11,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
 import com.redhat.service.smartevents.infra.exceptions.HasErrorInformation;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 
 @MappedSuperclass
 public class ManagedResource implements HasErrorInformation {

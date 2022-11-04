@@ -22,13 +22,13 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
-import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
-import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
+import com.redhat.service.smartevents.infra.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.models.responses.PagedListResponse;
+import com.redhat.service.smartevents.manager.services.v1.ProcessingErrorService;
 import com.redhat.service.smartevents.processingerrors.api.models.ProcessingErrorListResponse;
 import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
@@ -40,7 +40,7 @@ import io.quarkus.security.Authenticated;
                 scheme = "Bearer")
 })
 @SecurityRequirement(name = "bearer")
-@Path(APIConstants.USER_API_BASE_PATH)
+@Path(V1APIConstants.V1_USER_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated

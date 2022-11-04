@@ -5,7 +5,7 @@ import java.util.Set;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.smartevents.manager.api.v1.models.requests.ProcessorRequest;
 
 /**
  * A clone of {@see ProcessorRequest} however it has setters for the properties, useful in tests.

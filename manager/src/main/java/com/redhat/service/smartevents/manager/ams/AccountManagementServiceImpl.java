@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.manager.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.persistence.v1.dao.BridgeDAO;
 
 import io.smallrye.mutiny.Uni;
 

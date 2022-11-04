@@ -7,12 +7,12 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Bridge;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Processor;
 import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.Worker;
-import com.redhat.service.smartevents.manager.workers.resources.BridgeWorker;
-import com.redhat.service.smartevents.manager.workers.resources.ProcessorWorker;
+import com.redhat.service.smartevents.manager.workers.resources.v1.BridgeWorker;
+import com.redhat.service.smartevents.manager.workers.resources.v1.ProcessorWorker;
 
 import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkConvertor.convertFromJobData;
 
@@ -20,6 +20,12 @@ import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkCo
  * Single Job implementation that invokes the applicable {@link Worker} based on the {@link JobDataMap} .
  */
 public class WorkJob implements Job {
+
+    private static final String BRIDGE_WORKER_CLASSNAME = Bridge.class.getName();
+    private static final String LEGACY_BRIDGE_WORKER_CLASSNAME = "com.redhat.service.smartevents.manager.models.Bridge";
+
+    private static final String PROCESSOR_WORKER_CLASSNAME = Processor.class.getName();
+    private static final String LEGACY_PROCESSOR_WORKER_CLASSNAME = "com.redhat.service.smartevents.manager.models.Processor";
 
     @Inject
     ProcessorWorker processorWorker;
@@ -37,12 +43,28 @@ public class WorkJob implements Job {
     // Find the Worker that can handle this item of Work.
     // A bit clunky, but should be fine given that we only have two Workers at the minute.
     private Worker<?> findWorker(Work work) {
-        if (Bridge.class.getName().equals(work.getType())) {
+        if (isWorkForBridge(work)) {
             return bridgeWorker;
-        } else if (Processor.class.getName().equals(work.getType())) {
+        } else if (isWorkForProcessor(work)) {
             return processorWorker;
         }
         throw new InternalPlatformException("Unable to locate worker for resource of type '" + work.getType() + "', with id '" + work.getManagedResourceId() + "'");
+    }
+
+    private boolean isWorkForBridge(Work work) {
+        if (BRIDGE_WORKER_CLASSNAME.equals(work.getType())) {
+            return true;
+        } else {
+            return LEGACY_BRIDGE_WORKER_CLASSNAME.equals(work.getType());
+        }
+    }
+
+    private boolean isWorkForProcessor(Work work) {
+        if (PROCESSOR_WORKER_CLASSNAME.equals(work.getType())) {
+            return true;
+        } else {
+            return LEGACY_PROCESSOR_WORKER_CLASSNAME.equals(work.getType());
+        }
     }
 
 }

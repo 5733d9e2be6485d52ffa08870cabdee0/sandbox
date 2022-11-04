@@ -27,7 +27,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.Conn
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorDeletionException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorGetException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorUpdateException;
-import com.redhat.service.smartevents.manager.models.ConnectorEntity;
+import com.redhat.service.smartevents.manager.persistence.v1.models.ConnectorEntity;
 
 @RequestScoped
 public class ConnectorsApiClientImpl implements ConnectorsApiClient {

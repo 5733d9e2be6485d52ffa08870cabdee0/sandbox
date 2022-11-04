@@ -11,10 +11,10 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -64,8 +64,8 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateProvisioningRequest, APIConstants.SHARD_API_BASE_PATH);
-        assertJsonRequest(expectedJsonUpdateFailedRequest, APIConstants.SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateProvisioningRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateFailedRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
     }
 
     @Test
@@ -93,8 +93,8 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateDeletingRequest, APIConstants.SHARD_API_BASE_PATH);
-        assertJsonRequest(expectedJsonUpdateDeletedRequest, APIConstants.SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateDeletingRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateDeletedRequest, V1APIConstants.V1_SHARD_API_BASE_PATH);
     }
 
     @Test
@@ -142,8 +142,8 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateProvisioningRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
-        assertJsonRequest(expectedJsonUpdateFailedRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateProvisioningRequest, V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateFailedRequest, V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
     }
 
     @Test
@@ -170,8 +170,8 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        assertJsonRequest(expectedJsonUpdateDeletingRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
-        assertJsonRequest(expectedJsonUpdateDeletedRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateDeletingRequest, V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateDeletedRequest, V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
     }
 
     @Test

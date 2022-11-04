@@ -15,9 +15,9 @@ import com.amazonaws.services.route53.model.RRType;
 import com.amazonaws.services.route53.model.ResourceRecord;
 import com.amazonaws.services.route53.model.ResourceRecordSet;
 import com.redhat.service.smartevents.infra.utils.Constants;
-import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.dns.KnativeBrokerPathBuilder;
+import com.redhat.service.smartevents.manager.services.v1.ShardService;
 
 import io.smallrye.mutiny.Uni;
 

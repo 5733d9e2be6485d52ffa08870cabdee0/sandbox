@@ -13,8 +13,8 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 
-import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Bridge;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.Work;
 

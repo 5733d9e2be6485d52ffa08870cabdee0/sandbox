@@ -10,13 +10,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.RhoasService;
-import com.redhat.service.smartevents.manager.dao.BridgeDAO;
-import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.persistence.v1.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Bridge;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.Work;
+import com.redhat.service.smartevents.manager.workers.resources.v1.BridgeWorker;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;

@@ -7,8 +7,8 @@ import java.util.List;
 import org.awaitility.Awaitility;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
