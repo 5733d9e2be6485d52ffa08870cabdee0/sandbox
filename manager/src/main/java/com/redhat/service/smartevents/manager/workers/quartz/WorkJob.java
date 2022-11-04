@@ -11,8 +11,6 @@ import com.redhat.service.smartevents.manager.persistence.v1.models.Bridge;
 import com.redhat.service.smartevents.manager.persistence.v1.models.Processor;
 import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.Worker;
-import com.redhat.service.smartevents.manager.workers.resources.LegacyBridgeWorker;
-import com.redhat.service.smartevents.manager.workers.resources.LegacyProcessorWorker;
 import com.redhat.service.smartevents.manager.workers.resources.v1.BridgeWorker;
 import com.redhat.service.smartevents.manager.workers.resources.v1.ProcessorWorker;
 
@@ -23,7 +21,10 @@ import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkCo
  */
 public class WorkJob implements Job {
 
+    private static final String BRIDGE_WORKER_CLASSNAME = Bridge.class.getName();
     private static final String LEGACY_BRIDGE_WORKER_CLASSNAME = "com.redhat.service.smartevents.manager.models.Bridge";
+
+    private static final String PROCESSOR_WORKER_CLASSNAME = Processor.class.getName();
     private static final String LEGACY_PROCESSOR_WORKER_CLASSNAME = "com.redhat.service.smartevents.manager.models.Processor";
 
     @Inject
@@ -31,12 +32,6 @@ public class WorkJob implements Job {
 
     @Inject
     BridgeWorker bridgeWorker;
-
-    @Inject
-    LegacyBridgeWorker legacyBridgeWorker;
-
-    @Inject
-    LegacyProcessorWorker legacyProcessorWorker;
 
     @Override
     public void execute(JobExecutionContext context) {
@@ -48,18 +43,28 @@ public class WorkJob implements Job {
     // Find the Worker that can handle this item of Work.
     // A bit clunky, but should be fine given that we only have two Workers at the minute.
     private Worker<?> findWorker(Work work) {
-        if (Bridge.class.getName().equals(work.getType())) {
+        if (isWorkForBridge(work)) {
             return bridgeWorker;
-        } else if (Processor.class.getName().equals(work.getType())) {
+        } else if (isWorkForProcessor(work)) {
             return processorWorker;
-        } else if (LEGACY_BRIDGE_WORKER_CLASSNAME.equals(work.getType())) {
-            // Existing Work may have been created on an older version
-            return legacyBridgeWorker;
-        } else if (LEGACY_PROCESSOR_WORKER_CLASSNAME.equals(work.getType())) {
-            // Existing Work may have been created on an older version
-            return legacyProcessorWorker;
         }
         throw new InternalPlatformException("Unable to locate worker for resource of type '" + work.getType() + "', with id '" + work.getManagedResourceId() + "'");
+    }
+
+    private boolean isWorkForBridge(Work work) {
+        if (BRIDGE_WORKER_CLASSNAME.equals(work.getType())) {
+            return true;
+        } else {
+            return LEGACY_BRIDGE_WORKER_CLASSNAME.equals(work.getType());
+        }
+    }
+
+    private boolean isWorkForProcessor(Work work) {
+        if (PROCESSOR_WORKER_CLASSNAME.equals(work.getType())) {
+            return true;
+        } else {
+            return LEGACY_PROCESSOR_WORKER_CLASSNAME.equals(work.getType());
+        }
     }
 
 }
