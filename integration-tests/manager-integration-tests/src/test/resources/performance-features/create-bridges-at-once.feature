@@ -8,6 +8,8 @@ Feature: Create Bridges performance tests
     When run benchmark with content:
       """text/vnd.yaml
       name: rhose-create-bridges
+      agents:
+        driver01:
       http:
       - host: ${env.event-bridge.manager.url}
         sharedConnections: <shared-connections>
