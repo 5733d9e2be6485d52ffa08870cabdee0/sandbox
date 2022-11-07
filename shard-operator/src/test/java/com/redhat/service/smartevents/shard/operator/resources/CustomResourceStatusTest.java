@@ -12,8 +12,8 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.False;
-import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.True;
+import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.FALSE;
+import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CustomResourceStatusTest {
@@ -53,14 +53,14 @@ public class CustomResourceStatusTest {
     public void testInferManagedResourceStatus(ConditionStatus ready, ConditionStatus augmentation, ManagedResourceStatus inferred) {
         final CustomResourceStatus resourceStatus = new FooResourceStatus();
 
-        if (True.equals(ready)) {
+        if (TRUE.equals(ready)) {
             resourceStatus.markConditionTrue(ConditionTypeConstants.READY);
-        } else if (False.equals(ready)) {
+        } else if (FALSE.equals(ready)) {
             resourceStatus.markConditionFalse(ConditionTypeConstants.READY);
         }
-        if (True.equals(augmentation)) {
+        if (TRUE.equals(augmentation)) {
             resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
-        } else if (False.equals(augmentation)) {
+        } else if (FALSE.equals(augmentation)) {
             resourceStatus.markConditionFalse(FooResourceStatus.AUGMENTATION);
         }
 
@@ -69,10 +69,10 @@ public class CustomResourceStatusTest {
 
     private static Stream<Arguments> inferManagedResourceStatusParams() {
         return Stream.of(
-                Arguments.of(True, null, READY),
-                Arguments.of(False, False, FAILED),
-                Arguments.of(True, False, READY),
-                Arguments.of(False, True, PROVISIONING));
+                Arguments.of(TRUE, null, READY),
+                Arguments.of(FALSE, FALSE, FAILED),
+                Arguments.of(TRUE, FALSE, READY),
+                Arguments.of(FALSE, TRUE, PROVISIONING));
     }
 
 }
