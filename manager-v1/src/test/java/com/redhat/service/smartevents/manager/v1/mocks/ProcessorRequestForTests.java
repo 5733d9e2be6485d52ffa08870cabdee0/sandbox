@@ -2,9 +2,9 @@ package com.redhat.service.smartevents.manager.v1.mocks;
 
 import java.util.Set;
 
-import com.redhat.service.smartevents.infra.core.models.filters.BaseFilter;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 
 /**

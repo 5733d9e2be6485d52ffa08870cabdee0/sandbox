@@ -8,9 +8,9 @@ import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.UnsupportedErrorHandlerGatewayException;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.manager.core.api.validators.processors.BaseGatewayConstraintValidator;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v1.api.validators.processors.BaseGatewayConstraintValidator;
 import com.redhat.service.smartevents.manager.v1.services.ProcessingErrorService;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;

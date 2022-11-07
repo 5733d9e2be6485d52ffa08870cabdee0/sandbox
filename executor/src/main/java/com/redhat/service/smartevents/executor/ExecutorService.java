@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.DeserializationException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.CloudEventDeserializationException;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;

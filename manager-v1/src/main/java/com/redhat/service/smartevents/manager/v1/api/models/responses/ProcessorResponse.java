@@ -8,10 +8,10 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.models.filters.BaseFilter;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.core.api.models.responses.BaseManagedResourceResponse;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

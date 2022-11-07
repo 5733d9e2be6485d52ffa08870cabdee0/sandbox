@@ -10,9 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
 import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;

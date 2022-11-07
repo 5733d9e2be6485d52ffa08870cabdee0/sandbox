@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
@@ -32,9 +32,9 @@ import io.quarkus.test.junit.QuarkusTest;
 
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.infra.core.models.processors.ProcessorType.SINK;
-import static com.redhat.service.smartevents.infra.core.models.processors.ProcessorType.SOURCE;
-import static com.redhat.service.smartevents.infra.core.models.queries.QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder.filter;
+import static com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType.SINK;
+import static com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType.SOURCE;
+import static com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder.filter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest

@@ -3,10 +3,10 @@ package com.redhat.service.smartevents.manager.v1.api.user;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
-import com.redhat.service.smartevents.manager.core.api.models.responses.CloudProviderListResponse;
-import com.redhat.service.smartevents.manager.core.api.models.responses.CloudProviderResponse;
 import com.redhat.service.smartevents.manager.core.api.models.responses.CloudRegionListResponse;
 import com.redhat.service.smartevents.manager.core.api.models.responses.CloudRegionResponse;
+import com.redhat.service.smartevents.manager.v1.api.models.responses.CloudProviderListResponse;
+import com.redhat.service.smartevents.manager.v1.api.models.responses.CloudProviderResponse;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;

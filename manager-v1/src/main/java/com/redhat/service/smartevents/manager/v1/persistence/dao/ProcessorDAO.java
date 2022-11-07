@@ -11,8 +11,8 @@ import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 

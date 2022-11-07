@@ -20,10 +20,10 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Inv
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.TestConstants;

@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.manager.v1.mocks;
 
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 
 /**

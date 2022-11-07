@@ -9,11 +9,11 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
+import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;

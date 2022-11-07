@@ -8,8 +8,8 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorTemplateDefinitionException;
-import com.redhat.service.smartevents.infra.core.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
+import com.redhat.service.smartevents.infra.v1.api.models.transformations.TransformationEvaluatorFactory;
 
 @ApplicationScoped
 public class TransformationTemplateConstraintValidator implements ConstraintValidator<ValidTransformationTemplate, String> {

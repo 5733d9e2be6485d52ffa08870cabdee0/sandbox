@@ -8,8 +8,8 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 
 import io.smallrye.common.annotation.Identifier;
 

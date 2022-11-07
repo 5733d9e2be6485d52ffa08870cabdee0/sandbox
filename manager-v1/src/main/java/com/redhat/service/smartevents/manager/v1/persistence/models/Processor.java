@@ -22,8 +22,8 @@ import org.hibernate.annotations.Filters;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.TypeDef;
 
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.core.models.ManagedDefinedResource;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
@@ -78,7 +78,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @FilterDefs({
         @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
         @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.core.persistence.EnumTypeManagedResourceStatus") }),
-        @FilterDef(name = "byType", parameters = { @ParamDef(name = "ptype", type = "com.redhat.service.smartevents.manager.core.persistence.EnumTypeProcessorType") })
+        @FilterDef(name = "byType", parameters = { @ParamDef(name = "ptype", type = "com.redhat.service.smartevents.manager.v1.persistence.EnumTypeProcessorType") })
 })
 @Filters({
         @Filter(name = "byName", condition = "name like :name"),

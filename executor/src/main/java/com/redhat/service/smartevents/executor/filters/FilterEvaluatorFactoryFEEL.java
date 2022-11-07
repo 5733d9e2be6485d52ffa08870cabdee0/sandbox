@@ -7,13 +7,13 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.core.models.filters.BaseFilter;
-import com.redhat.service.smartevents.infra.core.models.filters.NumberIn;
-import com.redhat.service.smartevents.infra.core.models.filters.ObjectMapperFactory;
-import com.redhat.service.smartevents.infra.core.models.filters.StringBeginsWith;
-import com.redhat.service.smartevents.infra.core.models.filters.StringContains;
-import com.redhat.service.smartevents.infra.core.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.core.models.filters.StringIn;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.NumberIn;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.ObjectMapperFactory;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringBeginsWith;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringContains;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringIn;
 
 public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
 

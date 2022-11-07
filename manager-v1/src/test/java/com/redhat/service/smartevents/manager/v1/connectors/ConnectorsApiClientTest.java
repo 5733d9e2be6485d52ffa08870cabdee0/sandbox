@@ -23,8 +23,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorDeletionException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorGetException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorUpdateException;
-import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 

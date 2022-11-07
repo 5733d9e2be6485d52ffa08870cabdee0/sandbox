@@ -20,6 +20,10 @@
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>infra-v1</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>processor-core</artifactId>
     </dependency>
     <dependency>
@@ -76,11 +80,11 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
-        <properties>
-          <configurationParameters>
-            junit.jupiter.extensions.autodetection.enabled = true
-          </configurationParameters>
-        </properties>
+          <properties>
+            <configurationParameters>
+              junit.jupiter.extensions.autodetection.enabled = true
+            </configurationParameters>
+          </properties>
         </configuration>
       </plugin>
     </plugins>

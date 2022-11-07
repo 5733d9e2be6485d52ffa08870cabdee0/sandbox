@@ -68,11 +68,7 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>infra-v1</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>processor-configuration</artifactId>
+      <artifactId>infra-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
@@ -194,6 +190,17 @@
           <forceJavacCompilerUse>true</forceJavacCompilerUse>
           <parameters>${maven.compiler.parameters}</parameters>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${jar-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>

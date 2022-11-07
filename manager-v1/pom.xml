@@ -16,7 +16,15 @@
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>infra-v1</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>manager-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>processor-configuration</artifactId>
     </dependency>
 
     <dependency>
@@ -52,6 +60,12 @@
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>test-utils</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>manager-core</artifactId>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>

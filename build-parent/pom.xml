@@ -21,6 +21,7 @@
 
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <version.dependency.plugin>2.8</version.dependency.plugin>
+    <jar-plugin.version>3.3.0</jar-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>

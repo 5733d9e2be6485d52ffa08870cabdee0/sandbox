@@ -4,9 +4,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.models.filters.BaseFilter;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 
 public class ProcessorDefinition {
 

@@ -8,9 +8,9 @@ import javax.inject.Inject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 
 @ApplicationScoped
 public class GatewaySecretsHandler {

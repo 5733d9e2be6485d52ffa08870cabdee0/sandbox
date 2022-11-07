@@ -8,8 +8,8 @@ import org.eclipse.microprofile.reactive.messaging.Metadata;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 

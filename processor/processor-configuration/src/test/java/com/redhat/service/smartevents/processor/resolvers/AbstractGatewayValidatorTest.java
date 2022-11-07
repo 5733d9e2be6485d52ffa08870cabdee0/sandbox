@@ -3,10 +3,10 @@ package com.redhat.service.smartevents.processor.resolvers;
 import java.util.List;
 import java.util.Map;
 
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
 import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 
 import static org.assertj.core.api.Assertions.assertThat;

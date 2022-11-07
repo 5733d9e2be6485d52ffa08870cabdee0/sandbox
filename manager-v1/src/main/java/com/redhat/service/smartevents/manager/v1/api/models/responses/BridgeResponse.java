@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.manager.v1.api.models.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.responses.BaseManagedResourceResponse;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

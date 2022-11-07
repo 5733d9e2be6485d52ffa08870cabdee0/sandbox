@@ -9,7 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.smartevents.infra.core.transformations.TransformationEvaluatorFactoryQute;
+import com.redhat.service.smartevents.infra.v1.api.models.transformations.TransformationEvaluatorFactoryQute;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

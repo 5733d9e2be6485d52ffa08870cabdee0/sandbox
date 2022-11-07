@@ -12,9 +12,9 @@ import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
 import com.redhat.service.smartevents.integration.tests.context.ProcessorContext;

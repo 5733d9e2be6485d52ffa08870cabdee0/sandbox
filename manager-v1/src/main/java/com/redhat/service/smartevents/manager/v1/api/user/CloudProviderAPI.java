@@ -25,12 +25,12 @@ import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
-import com.redhat.service.smartevents.manager.core.api.models.responses.CloudProviderListResponse;
-import com.redhat.service.smartevents.manager.core.api.models.responses.CloudProviderResponse;
 import com.redhat.service.smartevents.manager.core.api.models.responses.CloudRegionListResponse;
 import com.redhat.service.smartevents.manager.core.api.models.responses.CloudRegionResponse;
 import com.redhat.service.smartevents.manager.core.persistence.dao.CloudProviderDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvider;
+import com.redhat.service.smartevents.manager.v1.api.models.responses.CloudProviderListResponse;
+import com.redhat.service.smartevents.manager.v1.api.models.responses.CloudProviderResponse;
 
 @Tag(name = "Cloud Providers", description = "List Supported Cloud Providers and Regions")
 @Path(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH)

@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.manager.v1;
 
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
 public class TestConstants {
 

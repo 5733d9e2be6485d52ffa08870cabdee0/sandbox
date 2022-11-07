@@ -10,9 +10,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.responses.ProcessingErrorResponse;
 import com.redhat.service.smartevents.manager.core.persistence.dao.ProcessingErrorDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.ProcessingError;

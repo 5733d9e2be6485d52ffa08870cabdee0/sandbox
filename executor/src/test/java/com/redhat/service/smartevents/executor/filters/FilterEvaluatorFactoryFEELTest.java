@@ -4,11 +4,11 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.core.models.filters.NumberIn;
-import com.redhat.service.smartevents.infra.core.models.filters.StringBeginsWith;
-import com.redhat.service.smartevents.infra.core.models.filters.StringContains;
-import com.redhat.service.smartevents.infra.core.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.core.models.filters.StringIn;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.NumberIn;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringBeginsWith;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringContains;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringIn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

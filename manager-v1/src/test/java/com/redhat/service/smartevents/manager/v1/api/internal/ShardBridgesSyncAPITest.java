@@ -15,11 +15,11 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.filters.BaseFilter;
-import com.redhat.service.smartevents.infra.core.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.v1.TestConstants;

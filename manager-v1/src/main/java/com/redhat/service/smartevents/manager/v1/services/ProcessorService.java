@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import com.redhat.service.smartevents.infra.core.api.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;

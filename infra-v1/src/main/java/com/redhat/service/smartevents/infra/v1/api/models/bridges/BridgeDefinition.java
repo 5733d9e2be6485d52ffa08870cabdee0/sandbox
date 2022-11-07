@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.infra.v1.api.models.bridges;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 
 public class BridgeDefinition {
 

@@ -9,11 +9,11 @@ import javax.validation.ConstraintValidatorContext;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorMissingGatewayException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorMultipleGatewayException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorTransformationTemplateUnsupportedException;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
-import com.redhat.service.smartevents.manager.core.api.validators.processors.BaseGatewayConstraintValidator;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
+import com.redhat.service.smartevents.manager.v1.api.validators.processors.BaseGatewayConstraintValidator;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
 @ApplicationScoped

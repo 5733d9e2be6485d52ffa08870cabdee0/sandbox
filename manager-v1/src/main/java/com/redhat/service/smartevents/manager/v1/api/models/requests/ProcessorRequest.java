@@ -9,12 +9,11 @@ import javax.validation.constraints.NotEmpty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.redhat.service.smartevents.infra.core.models.filters.BaseFilter;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
-import com.redhat.service.smartevents.infra.core.models.gateways.Gateway;
-import com.redhat.service.smartevents.infra.core.models.gateways.Source;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
-import com.redhat.service.smartevents.manager.core.api.models.requests.FiltersDeserializer;
+import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.v1.api.user.validators.processors.ValidProcessorGateway;
 import com.redhat.service.smartevents.manager.v1.api.user.validators.processors.ValidTransformationTemplate;
 

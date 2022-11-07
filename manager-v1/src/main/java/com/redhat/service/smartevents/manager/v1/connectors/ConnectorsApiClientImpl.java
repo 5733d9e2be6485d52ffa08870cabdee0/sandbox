@@ -27,7 +27,6 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorDeletionException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorGetException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorUpdateException;
-import com.redhat.service.smartevents.manager.core.connectors.ConnectorsOidcClient;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
 
 @RequestScoped

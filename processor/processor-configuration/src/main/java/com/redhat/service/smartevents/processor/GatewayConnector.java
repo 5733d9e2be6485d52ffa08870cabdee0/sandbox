@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.core.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
 
 @ApplicationScoped
 public class GatewayConnector {

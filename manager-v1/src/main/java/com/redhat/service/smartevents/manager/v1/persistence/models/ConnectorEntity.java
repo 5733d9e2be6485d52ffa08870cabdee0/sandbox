@@ -16,7 +16,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
+import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.manager.core.models.ManagedDefinedResource;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;

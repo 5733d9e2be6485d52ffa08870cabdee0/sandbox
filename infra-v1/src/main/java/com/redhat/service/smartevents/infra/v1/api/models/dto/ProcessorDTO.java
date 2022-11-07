@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProcessorDTO {

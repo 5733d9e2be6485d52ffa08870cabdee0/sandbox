@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayNotRecognisedException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersNotValidException;
-import com.redhat.service.smartevents.infra.core.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
 import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 public abstract class AbstractGatewayValidator implements GatewayValidator {

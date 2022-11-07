@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.manager.v1.services;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.gateways.Action;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.responses.ProcessingErrorResponse;
 import com.redhat.service.smartevents.manager.core.persistence.models.ProcessingError;
 
