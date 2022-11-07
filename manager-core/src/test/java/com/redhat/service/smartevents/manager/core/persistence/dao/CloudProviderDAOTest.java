@@ -9,13 +9,17 @@ import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvider;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudRegion;
+import com.redhat.service.smartevents.test.resource.PostgresResource;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
+// This annotation also bootstraps Quarkus into using DevServices for ALL @QuarkusTest's
+@QuarkusTestResource(PostgresResource.class)
 public class CloudProviderDAOTest {
 
     @Inject
