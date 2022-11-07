@@ -89,10 +89,10 @@ public class BridgeIngressControllerTest {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.FALSE);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.UNKNOWN);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.UNKNOWN);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);
         });
     }
 
