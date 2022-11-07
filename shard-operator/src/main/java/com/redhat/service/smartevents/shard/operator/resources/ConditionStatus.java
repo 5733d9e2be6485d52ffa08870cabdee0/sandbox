@@ -8,8 +8,8 @@ package com.redhat.service.smartevents.shard.operator.resources;
  *      Properties</a>
  */
 public enum ConditionStatus {
-    FALSE,
     TRUE,
-    Unknown
+    FALSE,
+    Unknown;
 
 }
