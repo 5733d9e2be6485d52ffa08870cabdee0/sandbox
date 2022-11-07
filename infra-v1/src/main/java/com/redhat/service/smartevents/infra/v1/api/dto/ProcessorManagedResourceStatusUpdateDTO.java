@@ -1,7 +1,8 @@
-package com.redhat.service.smartevents.infra.core.api.dto;
+package com.redhat.service.smartevents.infra.v1.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 
