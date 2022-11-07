@@ -83,20 +83,20 @@ jobs:
           working-directory: integration-tests/manager-integration-tests
       - name: Archive junit test results
         uses: actions/upload-artifact@v3
-        if: ${{ always() }}
+        if: always()
         with:
           name: junit-test-results
           path: |
             integration-tests/manager-integration-tests/target/failsafe-reports/TEST-*.xml
           retention-days: 7
       - name: Get Sheriff Name
-        if: ${{ failure() }}
+        if: failure()
         run: |
           run: echo "{USER_NAME}=$(./.github/scripts/sheriff-queue.sh)" >> $GITHUB_OUTPUT
         id: findUser
       - name: Send mail with link to failing job
-        uses: dawidd6/action-send-mail@v3.7.1
-        if: ${{ failure() }}
+        uses: dawidd6/action-send-mail@v3
+        if: failure()
         with:
           server_address: smtp.gmail.com
           server_port: 465
@@ -107,7 +107,7 @@ jobs:
           from: Stage cluster CI
           html_body: Stage cluster CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/stage-cluster-check.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
       - name: Publish Test Report
-        if: ${{ always() }}
+        if: always()
         uses: scacap/action-surefire-report@v1.0.10
         with:
           skip_publishing: false

@@ -25,7 +25,7 @@ jobs:
           ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Check labels
         # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-        if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
+        if: !contains( github.event.pull_request.labels.*.name, 'safe to test')
         run: |
           echo "Please add the 'safe to test' label in order to run 'Operator - CI' pipeline if it's safe to test this code"
           exit 1
