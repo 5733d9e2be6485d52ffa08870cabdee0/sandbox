@@ -616,12 +616,12 @@ status:
     - lastTransitionTime: "2021-12-03T14:46:16Z"
       message: no conflicts found
       reason: NoConflicts
-      status: "True"
+      status: "TRUE"
       type: NamesAccepted
     - lastTransitionTime: "2021-12-03T14:46:16Z"
       message: the initial names have been accepted
       reason: InitialNamesAccepted
-      status: "True"
+      status: "TRUE"
       type: Established
   storedVersions:
     - v1

@@ -56,7 +56,7 @@ public class Condition {
     }
 
     public Condition(final String type) {
-        this(type, ConditionStatus.Unknown);
+        this(type, ConditionStatus.UNKNOWN);
     }
 
     public String getType() {
