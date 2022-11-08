@@ -3,7 +3,7 @@ name: "CodeQL"
 on:
   pull_request:
     branches:
-      - 'MGDOBR-1207'
+      - 'MGDOBR-1207-ci2'
     paths-ignore:
       - 'LICENSE'
       - '**/.gitignore'
