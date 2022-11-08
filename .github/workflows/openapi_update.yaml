@@ -1,8 +1,8 @@
 name: Dispatch OpenAPI File Change event
 on:
   push:
-    branches: 
-      - main
+    branches:
+      - 'MGDOBR-1207'
     paths:
       - "openapi/*.yaml"
 
@@ -20,7 +20,7 @@ jobs:
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
       - uses: actions/checkout@v3
-        
+
       - name: Sandbox OpenAPI changed
         uses: peter-evans/repository-dispatch@v2.1.0
         with:

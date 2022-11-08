@@ -2,7 +2,7 @@ name: Bridge - CD
 on:
   push:
     branches:
-      - main
+      - 'MGDOBR-1207'
     paths-ignore:
       - 'LICENSE'
       - '**/.gitignore'

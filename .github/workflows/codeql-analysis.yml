@@ -2,8 +2,8 @@ name: "CodeQL"
 
 on:
   pull_request:
-    branches: 
-      - main 
+    branches:
+      - 'MGDOBR-1207'
     paths-ignore:
       - 'LICENSE'
       - '**/.gitignore'
@@ -31,23 +31,23 @@ jobs:
       fail-fast: false
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Java and Maven Setup
-      uses: ./.github/actions/java-maven-setup
-      with:
-        cache-key-prefix: ${{ runner.os }}
-    
-    # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2.1.28
-      with:
-        languages: 'java'
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2.1.28
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2.1.28
+        with:
+          languages: 'java'
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2.1.28
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2.1.28
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2.1.28
 
