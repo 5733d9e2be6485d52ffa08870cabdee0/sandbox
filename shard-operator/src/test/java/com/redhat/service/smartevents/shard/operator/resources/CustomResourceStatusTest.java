@@ -7,11 +7,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 
-import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.False;
 import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.True;
 import static org.assertj.core.api.Assertions.assertThat;

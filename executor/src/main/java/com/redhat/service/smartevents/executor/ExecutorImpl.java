@@ -11,12 +11,12 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluator;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
-import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.infra.transformations.TransformationEvaluator;
-import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
+import com.redhat.service.smartevents.infra.core.utils.CloudEventUtils;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
+import com.redhat.service.smartevents.infra.v1.api.models.transformations.TransformationEvaluator;
+import com.redhat.service.smartevents.infra.v1.api.models.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 import com.redhat.service.smartevents.processor.actions.ActionRuntime;
 

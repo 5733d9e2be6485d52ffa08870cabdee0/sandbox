@@ -10,8 +10,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.app.Orchestrator;
-import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
+import com.redhat.service.smartevents.infra.core.app.Orchestrator;
+import com.redhat.service.smartevents.infra.core.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressServiceImpl;
 
 import io.fabric8.kubernetes.api.model.Service;

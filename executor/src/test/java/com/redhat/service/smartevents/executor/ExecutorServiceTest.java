@@ -15,8 +15,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 
 import io.cloudevents.CloudEvent;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;

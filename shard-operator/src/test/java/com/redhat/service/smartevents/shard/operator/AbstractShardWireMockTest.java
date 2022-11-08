@@ -10,9 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
-import com.redhat.service.smartevents.infra.api.v1.V1APIConstants;
-import com.redhat.service.smartevents.infra.api.v1.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 

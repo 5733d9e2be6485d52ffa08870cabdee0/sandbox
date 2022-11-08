@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.metrics;
 
-import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.metrics.MetricsService;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsService;
 
 public interface OperatorMetricsService extends MetricsService<Object> {
 
