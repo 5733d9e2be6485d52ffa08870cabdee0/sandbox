@@ -31,6 +31,10 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-kafka</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>infra-v1</artifactId>
     </dependency>
