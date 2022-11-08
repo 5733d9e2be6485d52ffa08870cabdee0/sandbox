@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
   <parent>
     <groupId>com.redhat.service.smartevents</groupId>
-    <artifactId>build-parent</artifactId>
+    <artifactId>infra-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>infra-core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>SmartEvents :: Infra</name>
@@ -104,11 +104,11 @@
   <build>
     <testResources>
       <testResource>
-        <directory>${project.basedir}/src/test/resources</directory>
+        <directory>src/test/resources</directory>
         <filtering>false</filtering>
       </testResource>
       <testResource>
-        <directory>${project.basedir}/src/test/filtered-resources</directory>
+        <directory>src/test/filtered-resources</directory>
         <filtering>true</filtering>
       </testResource>
     </testResources>

@@ -3,9 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <parent>
     <groupId>com.redhat.service.smartevents</groupId>
-    <artifactId>build-parent</artifactId>
+    <artifactId>manager-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
