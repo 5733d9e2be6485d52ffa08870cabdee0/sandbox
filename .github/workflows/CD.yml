@@ -36,7 +36,7 @@ jobs:
       - name: Build JARs
         uses: ./.github/actions/maven
         with:
-          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip
+          maven-command: package --batch-mode -DskipTests -Dcheckstyle.skip
       - name: Login to Container Registry
         shell: bash
         env:
@@ -69,7 +69,7 @@ jobs:
         if: steps.filter.outputs.manager == 'true'
         run: |
           echo "Building and pushing docker image for Fleet Manager"
-          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME-jvm manager/
+          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME-jvm manager-parent/manager/
           docker push $FLEET_MANAGER_CONTAINER_NAME-jvm
 
       # run only if 'shard-operator' or any 'general' modules have changed
@@ -93,7 +93,7 @@ jobs:
         if: steps.filter.outputs.shard-operator == 'true'
         uses: ./.github/actions/maven
         with:
-          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip
+          maven-command: package --batch-mode -DskipTests -Dcheckstyle.skip
       - name: Build and Publish JVM Container - Minikube Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
         run: |
