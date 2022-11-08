@@ -15,10 +15,11 @@ Before starting, please add yourself to the #dev Google Chat Room and be sure to
 
 All the instructions to run the platform locally are provided in the [dev](dev) folder.
 
-# Running a Demo 
+# Running a Demo
 
 A walk-through, demonstration of the service is provided [here](DEMO.md).
 
 # How to deploy the platform service to a Kubernetes cluster
 
 See the specific documentation [here](kustomize/README.md)
+
