@@ -15,6 +15,7 @@
   <modules>
     <module>manager-integration-tests</module>
     <module>shard-operator-integration-tests</module>
+    <module>webhook-perf-test</module>
   </modules>
   <version>0.0.1-SNAPSHOT</version>
   <name>SmartEvents :: Integration Tests</name>
