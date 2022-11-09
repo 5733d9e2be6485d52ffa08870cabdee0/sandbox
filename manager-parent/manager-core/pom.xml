@@ -3,9 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <parent>
     <groupId>com.redhat.service.smartevents</groupId>
-    <artifactId>build-parent</artifactId>
+    <artifactId>manager-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -173,11 +172,11 @@
   <build>
     <testResources>
       <testResource>
-        <directory>${project.basedir}/src/test/resources</directory>
+        <directory>src/test/resources</directory>
         <filtering>false</filtering>
       </testResource>
       <testResource>
-        <directory>${project.basedir}/src/test/filtered-resources</directory>
+        <directory>src/test/filtered-resources</directory>
         <filtering>true</filtering>
       </testResource>
     </testResources>

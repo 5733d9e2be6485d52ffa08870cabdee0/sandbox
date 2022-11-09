@@ -89,7 +89,7 @@ jobs:
           maven-command: clean install --errors --quiet -Dquickly
       - name: Build and Publish JVM Container - Fleet Manager
         run: |
-          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager/
+          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager-parent/manager/
           kind load docker-image $FLEET_MANAGER_CONTAINER_NAME
       - name: Build and Publish JVM Container - Minikube Fleet Shard
         run: |
