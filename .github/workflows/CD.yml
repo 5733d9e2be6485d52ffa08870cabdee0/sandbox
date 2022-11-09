@@ -49,14 +49,14 @@ jobs:
         with:
           filters: |
             general: &general
-              - infra/**
+              - infra-parent/**
               - bom/**
               - build-parent/**
               - rhoas-client/**
               - processor/**
             manager:
               - *general
-              - manager/**
+              - manager-parent/**
             shard-operator:
               - *general
               - shard-operator/**
