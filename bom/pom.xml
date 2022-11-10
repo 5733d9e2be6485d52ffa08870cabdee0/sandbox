@@ -87,13 +87,6 @@
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
-      <dependency>
-        <groupId>com.redhat.service.smartevents</groupId>
-        <artifactId>manager-core</artifactId>
-        <type>test-jar</type>
-        <scope>test</scope>
-        <version>${project.version}</version>
-      </dependency>
 
       <dependency>
         <groupId>com.redhat.service.smartevents</groupId>
