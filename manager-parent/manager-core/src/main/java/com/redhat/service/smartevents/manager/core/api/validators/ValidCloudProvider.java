@@ -8,8 +8,6 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import com.redhat.service.smartevents.manager.core.api.models.requests.BridgeRequest;
-
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = CloudProviderConstraintValidator.class)

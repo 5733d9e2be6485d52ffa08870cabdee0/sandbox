@@ -190,9 +190,9 @@ public class BridgesAPITest {
         Action incompleteErrorHandler = new Action();
         incompleteErrorHandler.setType(WebhookAction.TYPE);
         ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequestV1("",
-                                                                                   DEFAULT_CLOUD_PROVIDER,
-                                                                                   DEFAULT_REGION,
-                                                                                   incompleteErrorHandler))
+                DEFAULT_CLOUD_PROVIDER,
+                DEFAULT_REGION,
+                incompleteErrorHandler))
                 .as(ErrorsResponse.class);
 
         // Missing name and Incomplete Error Handler definition
@@ -210,9 +210,9 @@ public class BridgesAPITest {
         Action incompleteErrorHandler = new Action();
         incompleteErrorHandler.setType(WebhookAction.TYPE);
         ErrorsResponse errorsResponse1 = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME,
-                                                                                    DEFAULT_CLOUD_PROVIDER,
-                                                                                    DEFAULT_REGION,
-                                                                                    incompleteErrorHandler))
+                DEFAULT_CLOUD_PROVIDER,
+                DEFAULT_REGION,
+                incompleteErrorHandler))
                 .as(ErrorsResponse.class);
 
         // Incomplete Error Handler definition. Note the duplicate name is NOT detected with this configuration.
@@ -222,9 +222,9 @@ public class BridgesAPITest {
         // Try creating the other Bridge again with the same name and complete Error Handler definition.
         Action completeErrorHandler = createWebhookAction();
         ErrorsResponse errorsResponse2 = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME,
-                                                                                    DEFAULT_CLOUD_PROVIDER,
-                                                                                    DEFAULT_REGION,
-                                                                                    completeErrorHandler))
+                DEFAULT_CLOUD_PROVIDER,
+                DEFAULT_REGION,
+                completeErrorHandler))
                 .as(ErrorsResponse.class);
 
         // Now the duplicate name IS detected and reported.

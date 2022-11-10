@@ -7,6 +7,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.manager.core.api.validators.BaseConstraintValidator;
@@ -14,7 +16,6 @@ import com.redhat.service.smartevents.manager.core.persistence.dao.CloudProvider
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvider;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudRegion;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
-import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class CloudProviderConstraintValidator extends BaseConstraintValidator<ValidCloudProvider, BridgeRequestV1> {

@@ -112,7 +112,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BridgeRequest'
+              $ref: '#/components/schemas/BridgeRequestV1'
       responses:
         "202":
           description: Accepted.
@@ -208,7 +208,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BridgeRequest'
+              $ref: '#/components/schemas/BridgeRequestV1'
       responses:
         "202":
           description: Accepted.
@@ -1470,7 +1470,7 @@ components:
           format: int64
           type: integer
           nullable: false
-    BridgeRequest:
+    BridgeRequestV1:
       required:
       - name
       - cloud_provider
@@ -1481,8 +1481,6 @@ components:
           minLength: 1
           type: string
           nullable: false
-        error_handler:
-          $ref: '#/components/schemas/Action'
         cloud_provider:
           minLength: 1
           type: string
@@ -1491,6 +1489,8 @@ components:
           minLength: 1
           type: string
           nullable: false
+        error_handler:
+          $ref: '#/components/schemas/Action'
     BridgeRequestV2:
       required:
       - name
