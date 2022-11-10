@@ -15,7 +15,7 @@ public class V2APIConstants {
     /**
      * Base Path for the Cloud Providers API
      */
-    public static final String V1_CLOUD_PROVIDERS_BASE_PATH = V2_ROOT + "/cloud_providers";
+    public static final String V2_CLOUD_PROVIDERS_BASE_PATH = V2_ROOT + "/cloud_providers";
 
     /**
      * Base Path for the user-facing API
