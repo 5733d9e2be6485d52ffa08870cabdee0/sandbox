@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.redhat.service.smartevents</groupId>
+    <artifactId>infra-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>infra-v2</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>SmartEvents :: Infra :: v2</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>infra-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>agent-java-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>logger-java-log4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

@@ -54,6 +54,24 @@
 
       <dependency>
         <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>infra-v2</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>infra-v2</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>infra-v2</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>executor</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -109,6 +127,24 @@
       <dependency>
         <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>manager-v1</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>manager-v2</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>manager-v2</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>manager-v2</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>

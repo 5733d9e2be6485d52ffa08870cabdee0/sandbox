@@ -21,6 +21,7 @@
   <modules>
     <module>infra-core</module>
     <module>infra-v1</module>
+    <module>infra-v2</module>
   </modules>
 
 </project>
