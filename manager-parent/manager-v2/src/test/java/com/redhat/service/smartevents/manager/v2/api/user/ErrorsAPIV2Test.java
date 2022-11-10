@@ -2,8 +2,6 @@ package com.redhat.service.smartevents.manager.v2.api.user;
 
 import java.util.Collection;
 
-import com.redhat.service.smartevents.test.resource.PostgresResource;
-import io.quarkus.test.common.QuarkusTestResource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +9,9 @@ import com.redhat.service.smartevents.infra.core.models.responses.ErrorListRespo
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.test.exceptions.ExceptionHelper;
+import com.redhat.service.smartevents.test.resource.PostgresResource;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
