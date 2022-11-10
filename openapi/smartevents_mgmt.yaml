@@ -1180,7 +1180,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CloudProviderListResponseV2'
+                $ref: '#/components/schemas/CloudProviderListResponse'
         "400":
           description: Bad request.
           content:
@@ -1214,7 +1214,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CloudProviderListResponseV2'
+                $ref: '#/components/schemas/CloudProviderListResponse'
         "400":
           description: Bad request.
           content:
@@ -1631,60 +1631,7 @@ components:
           format: int64
           type: integer
           nullable: false
-    CloudProviderListResponseV2:
-      required:
-      - kind
-      - page
-      - size
-      - total
-      type: object
-      properties:
-        kind:
-          type: string
-          nullable: false
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CloudProviderResponseV2'
-        page:
-          format: int64
-          type: integer
-          nullable: false
-        size:
-          format: int64
-          type: integer
-          nullable: false
-        total:
-          format: int64
-          type: integer
-          nullable: false
     CloudProviderResponse:
-      required:
-      - kind
-      - id
-      - href
-      - display_name
-      - enabled
-      type: object
-      properties:
-        kind:
-          type: string
-          nullable: false
-        id:
-          type: string
-          nullable: false
-        name:
-          type: string
-        href:
-          type: string
-          nullable: false
-        display_name:
-          type: string
-          nullable: false
-        enabled:
-          type: boolean
-          nullable: false
-    CloudProviderResponseV2:
       required:
       - kind
       - id

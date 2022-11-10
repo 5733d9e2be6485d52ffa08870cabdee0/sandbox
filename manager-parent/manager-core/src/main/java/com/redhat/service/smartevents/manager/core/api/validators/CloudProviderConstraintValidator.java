@@ -1,24 +1,20 @@
-package com.redhat.service.smartevents.manager.v2.api.user.validators;
+package com.redhat.service.smartevents.manager.core.api.validators;
 
 import java.util.Collections;
 import java.util.Optional;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
-import com.redhat.service.smartevents.manager.core.api.validators.BaseConstraintValidator;
+import com.redhat.service.smartevents.manager.core.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.core.persistence.dao.CloudProviderDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvider;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudRegion;
-import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequestV2;
+import org.apache.commons.lang3.StringUtils;
 
-@ApplicationScoped
-public class CloudProviderConstraintValidatorV2 extends BaseConstraintValidator<ValidCloudProviderV2, BridgeRequestV2> {
+public class CloudProviderConstraintValidator extends BaseConstraintValidator<ValidCloudProvider, BridgeRequest> {
 
     static final String ID_PARAM = "id";
 
@@ -36,24 +32,24 @@ public class CloudProviderConstraintValidatorV2 extends BaseConstraintValidator<
     CloudProviderDAO cloudProviderDAO;
 
     @Override
-    public boolean isValid(BridgeRequestV2 bridgeRequestV2, ConstraintValidatorContext context) {
+    public boolean isValid(BridgeRequest bridgeRequest, ConstraintValidatorContext context) {
 
         boolean valid = true;
 
-        if (StringUtils.isEmpty(bridgeRequestV2.getCloudProvider()) || StringUtils.isEmpty(bridgeRequestV2.getRegion())) {
+        if (StringUtils.isEmpty(bridgeRequest.getCloudProvider()) || StringUtils.isEmpty(bridgeRequest.getRegion())) {
             valid = false;
         }
 
         CloudProvider cloudProvider = null;
 
-        if (!StringUtils.isEmpty(bridgeRequestV2.getCloudProvider())) {
-            cloudProvider = cloudProviderDAO.findById(bridgeRequestV2.getCloudProvider());
+        if (!StringUtils.isEmpty(bridgeRequest.getCloudProvider())) {
+            cloudProvider = cloudProviderDAO.findById(bridgeRequest.getCloudProvider());
             if (cloudProvider == null) {
-                addConstraintViolation(context, CLOUD_PROVIDER_NOT_VALID, Collections.singletonMap(ID_PARAM, bridgeRequestV2.getCloudProvider()), InvalidCloudProviderException::new);
+                addConstraintViolation(context, CLOUD_PROVIDER_NOT_VALID, Collections.singletonMap(ID_PARAM, bridgeRequest.getCloudProvider()), InvalidCloudProviderException::new);
                 valid = false;
             } else {
                 if (!cloudProvider.isEnabled()) {
-                    addConstraintViolation(context, CLOUD_PROVIDER_NOT_ENABLED, Collections.singletonMap(ID_PARAM, bridgeRequestV2.getCloudProvider()), InvalidCloudProviderException::new);
+                    addConstraintViolation(context, CLOUD_PROVIDER_NOT_ENABLED, Collections.singletonMap(ID_PARAM, bridgeRequest.getCloudProvider()), InvalidCloudProviderException::new);
                     valid = false;
                 }
             }
@@ -62,16 +58,16 @@ public class CloudProviderConstraintValidatorV2 extends BaseConstraintValidator<
         Optional<CloudRegion> region = Optional.empty();
 
         if (cloudProvider != null) {
-            region = cloudProvider.getRegionByName(bridgeRequestV2.getRegion());
+            region = cloudProvider.getRegionByName(bridgeRequest.getRegion());
         }
 
-        if (region.isEmpty() && !StringUtils.isEmpty(bridgeRequestV2.getRegion())) {
-            addConstraintViolation(context, CLOUD_REGION_NOT_VALID, Collections.singletonMap(REGION_PARAM, bridgeRequestV2.getRegion()), InvalidRegionException::new);
+        if (region.isEmpty() && !StringUtils.isEmpty(bridgeRequest.getRegion())) {
+            addConstraintViolation(context, CLOUD_REGION_NOT_VALID, Collections.singletonMap(REGION_PARAM, bridgeRequest.getRegion()), InvalidRegionException::new);
             valid = false;
         } else {
             if (!region.isEmpty()) {
                 if (!region.get().isEnabled()) {
-                    addConstraintViolation(context, CLOUD_REGION_NOT_ENABLED, Collections.singletonMap(REGION_PARAM, bridgeRequestV2.getRegion()), InvalidRegionException::new);
+                    addConstraintViolation(context, CLOUD_REGION_NOT_ENABLED, Collections.singletonMap(REGION_PARAM, bridgeRequest.getRegion()), InvalidRegionException::new);
                     valid = false;
                 }
             }

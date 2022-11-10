@@ -14,7 +14,7 @@ import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
@@ -54,8 +54,8 @@ class ErrorHandlerConstraintValidatorTest {
 
     @Test
     public void nullErrorHandlerIsValid() {
-        BridgeRequest bridgeRequest = new BridgeRequest("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, null);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isTrue();
+        BridgeRequestV1 bridgeRequestV1 = new BridgeRequestV1("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, null);
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequestV1, validatorContextMock)).isTrue();
     }
 
     @Test
@@ -63,8 +63,8 @@ class ErrorHandlerConstraintValidatorTest {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
         action.setMapParameters(Collections.emptyMap());
-        BridgeRequest bridgeRequest = new BridgeRequest("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, action);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isTrue();
+        BridgeRequestV1 bridgeRequestV1 = new BridgeRequestV1("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, action);
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequestV1, validatorContextMock)).isTrue();
     }
 
     @Test
@@ -72,8 +72,8 @@ class ErrorHandlerConstraintValidatorTest {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
         action.setMapParameters(Collections.emptyMap());
-        BridgeRequest bridgeRequest = new BridgeRequest("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, action);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isTrue();
+        BridgeRequestV1 bridgeRequestV1 = new BridgeRequestV1("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, action);
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequestV1, validatorContextMock)).isTrue();
     }
 
     @Test
@@ -81,8 +81,8 @@ class ErrorHandlerConstraintValidatorTest {
         Action action = new Action();
         action.setType(AwsLambdaAction.TYPE);
         action.setMapParameters(Collections.emptyMap());
-        BridgeRequest bridgeRequest = new BridgeRequest("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, action);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isFalse();
+        BridgeRequestV1 bridgeRequestV1 = new BridgeRequestV1("bridge", TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION, action);
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequestV1, validatorContextMock)).isFalse();
     }
 
 }

@@ -5,7 +5,7 @@ import java.io.InputStream;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Constants;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
 
@@ -33,7 +33,7 @@ public class BridgeResource {
 
     public static Response addBridgeResponse(String token, String bridgeName, String cloudProvider, String region) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .body(new BridgeRequest(bridgeName, cloudProvider, region))
+                .body(new BridgeRequestV1(bridgeName, cloudProvider, region))
                 .post(BridgeUtils.MANAGER_URL + V1APIConstants.V1_USER_API_BASE_PATH);
     }
 

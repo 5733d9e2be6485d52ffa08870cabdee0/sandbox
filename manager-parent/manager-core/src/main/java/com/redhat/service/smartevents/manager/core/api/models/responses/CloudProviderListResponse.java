@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.api.models.responses;
+package com.redhat.service.smartevents.manager.core.api.models.responses;
 
 import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
 

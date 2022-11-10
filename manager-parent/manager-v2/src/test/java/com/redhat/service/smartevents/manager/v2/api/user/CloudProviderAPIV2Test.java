@@ -1,8 +1,8 @@
-package com.redhat.service.smartevents.manager.v1.api.user;
+package com.redhat.service.smartevents.manager.v2.api.user;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.manager.core.api.models.responses.CloudProviderListResponse;
 import com.redhat.service.smartevents.manager.core.api.models.responses.CloudProviderResponse;
 import com.redhat.service.smartevents.manager.core.api.models.responses.CloudRegionListResponse;
@@ -15,12 +15,12 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class CloudProviderAPITest {
+public class CloudProviderAPIV2Test {
 
     @Test
     public void listCloudProviders() {
         CloudProviderListResponse cloudProviders = given()
-                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH)
+                .basePath(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH)
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -37,13 +37,13 @@ public class CloudProviderAPITest {
         assertThat(cloudProviderResponse.getName()).isEqualTo("aws");
         assertThat(cloudProviderResponse.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(cloudProviderResponse.isEnabled()).isTrue();
-        assertThat(cloudProviderResponse.getHref()).isEqualTo(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws");
+        assertThat(cloudProviderResponse.getHref()).isEqualTo(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH + "/aws");
     }
 
     @Test
     public void getCloudProvider() {
         CloudProviderResponse cloudProvider = given()
-                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws")
+                .basePath(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH + "/aws")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -54,13 +54,13 @@ public class CloudProviderAPITest {
         assertThat(cloudProvider.getName()).isEqualTo("aws");
         assertThat(cloudProvider.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(cloudProvider.isEnabled()).isTrue();
-        assertThat(cloudProvider.getHref()).isEqualTo(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws");
+        assertThat(cloudProvider.getHref()).isEqualTo(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH + "/aws");
     }
 
     @Test
     public void listCloudProviderRegions() {
         CloudRegionListResponse cloudRegions = given()
-                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/aws/regions")
+                .basePath(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH + "/aws/regions")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -81,7 +81,7 @@ public class CloudProviderAPITest {
     @Test
     public void listCloudProviderRegions_unknownCloudProvider() {
         int fourOhFour = given()
-                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/azure/regions")
+                .basePath(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH + "/azure/regions")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -93,7 +93,7 @@ public class CloudProviderAPITest {
     @Test
     public void getCloudProvider_unknownCloudProvider() {
         int fourOhFour = given()
-                .basePath(V1APIConstants.V1_CLOUD_PROVIDERS_BASE_PATH + "/foobar")
+                .basePath(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH + "/foobar")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()

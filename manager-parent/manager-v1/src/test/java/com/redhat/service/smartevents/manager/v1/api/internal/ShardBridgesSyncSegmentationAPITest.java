@@ -15,7 +15,7 @@ import com.redhat.service.smartevents.manager.core.persistence.models.Shard;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
 import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v1.utils.TestUtils;
 
@@ -71,7 +71,7 @@ public class ShardBridgesSyncSegmentationAPITest {
     public void testShardSegmentation() {
         // the bridge gets assigned to the default shard
         mockJwt(TestConstants.SHARD_ID);
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION));
+        TestUtils.createBridge(new BridgeRequestV1(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION));
 
         final List<BridgeDTO> bridgesToDeployForDefaultShard = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {

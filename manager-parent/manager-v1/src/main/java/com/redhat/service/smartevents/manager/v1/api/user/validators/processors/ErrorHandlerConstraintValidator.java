@@ -9,7 +9,7 @@ import javax.validation.ConstraintValidatorContext;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.UnsupportedErrorHandlerGatewayException;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
 import com.redhat.service.smartevents.manager.v1.api.validators.processors.BaseGatewayConstraintValidator;
 import com.redhat.service.smartevents.manager.v1.services.ProcessingErrorService;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValidator<ValidErrorHandler, BridgeRequest> {
+public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValidator<ValidErrorHandler, BridgeRequestV1> {
 
     static final String UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR = "Only error handlers of type " +
             "\"" + ProcessingErrorService.ENDPOINT_ERROR_HANDLER_TYPE + "\", " +
@@ -33,8 +33,8 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
     }
 
     @Override
-    public boolean isValid(BridgeRequest bridgeRequest, ConstraintValidatorContext context) {
-        Action errorHandlerAction = bridgeRequest.getErrorHandler();
+    public boolean isValid(BridgeRequestV1 bridgeRequestV1, ConstraintValidatorContext context) {
+        Action errorHandlerAction = bridgeRequestV1.getErrorHandler();
 
         if (errorHandlerAction == null) {
             return true;
