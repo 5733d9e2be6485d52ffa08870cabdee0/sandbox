@@ -121,7 +121,7 @@ public class KubernetesResourcePatcher {
 
         KnativeBrokerStatus knativeBrokerStatus = new KnativeBrokerStatus();
         knativeBrokerStatus.setAddress(address);
-        knativeBrokerStatus.setConditions(Collections.singleton(new Condition(KnativeBrokerConditionTypeConstants.ADDRESSABLE, ConditionStatus.True)));
+        knativeBrokerStatus.setConditions(Collections.singleton(new Condition(KnativeBrokerConditionTypeConstants.ADDRESSABLE, ConditionStatus.TRUE)));
 
         KnativeBroker knativeBroker = kubernetesClient
                 .resources(KnativeBroker.class)

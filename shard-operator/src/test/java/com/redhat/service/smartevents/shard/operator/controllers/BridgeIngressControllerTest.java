@@ -77,16 +77,16 @@ public class BridgeIngressControllerTest {
         assertThat(bridgeIngress.getStatus()).isNotNull();
         assertThat(bridgeIngress.getStatus().isReady()).isFalse();
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.FALSE);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.SECRET_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.TRUE);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.CONFIG_MAP_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.TRUE);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.FALSE);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);

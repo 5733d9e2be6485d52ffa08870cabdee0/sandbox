@@ -45,7 +45,7 @@ public class KubernetesSteps {
                     if (deployment == null) {
                         return false;
                     }
-                    return deployment.getStatus().getConditions().stream().anyMatch(d -> d.getType().equals("Available") && d.getStatus().equals("True"));
+                    return deployment.getStatus().getConditions().stream().anyMatch(d -> d.getType().equals("Available") && d.getStatus().equals("TRUE"));
                 },
                 String.format("Timeout waiting for Deployment '%s' to be ready in namespace '%s'", name, context.getNamespace()));
     }
