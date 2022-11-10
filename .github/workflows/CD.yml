@@ -59,7 +59,7 @@ jobs:
               - manager-parent/**
             shard-operator:
               - *general
-              - shard-operator/**
+              - shard-operator-parent/**
             executor:
               - *general
               - executor/**
@@ -77,7 +77,7 @@ jobs:
         if: steps.filter.outputs.shard-operator == 'true'
         run: |
           echo "Building and pushing docker image for Fleet Shard"
-          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm shard-operator/
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm shard-operator-parent/shard-operator/
           docker push $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm
 
       # run only if 'executor' or any 'general' modules have changed
@@ -98,5 +98,5 @@ jobs:
         if: steps.filter.outputs.shard-operator == 'true'
         run: |
           echo "Building and pushing docker image for Fleet Shard with Minikube profile"
-          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm shard-operator/
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm shard-operator-parent/shard-operator/
           docker push $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm

@@ -6,10 +6,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.Context;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;

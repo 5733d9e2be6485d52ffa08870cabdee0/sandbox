@@ -51,7 +51,7 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean install --errors --quiet -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=$GITHUB_SHA -Dquarkus.kubernetes.image-pull-policy=if-not-present -Dquickly -Dquarkus.kubernetes.namespace=$NAMESPACE
-          working-directory: shard-operator
+          working-directory: shard-operator-parent
         # Load built image into KinD
       - name: Load Shard operator image into KinD
         run: |
@@ -79,9 +79,9 @@ jobs:
           --from-literal=EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET \
           -n $NAMESPACE
           # Deploy operator
-          kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/kubernetes.yml          
+          kubectl apply -f shard-operator-parent/shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator-parent/shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator-parent/shard-operator/target/kubernetes/kubernetes.yml
           kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
       - name: Run integration tests
