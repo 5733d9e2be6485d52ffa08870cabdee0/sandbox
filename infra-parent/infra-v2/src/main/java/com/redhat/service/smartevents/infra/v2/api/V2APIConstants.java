@@ -20,12 +20,12 @@ public class V2APIConstants {
     /**
      * Base Path for the user-facing API
      */
-    public static final String V1_USER_API_BASE_PATH = V2_ROOT + "/bridges/";
+    public static final String V2_USER_API_BASE_PATH = V2_ROOT + "/bridges/";
 
     /**
      * Base Path for Shard facing API.
      */
-    public static final String V1_SHARD_API_BASE_PATH = V2_ROOT + "/shard/bridges/";
+    public static final String V2_SHARD_API_BASE_PATH = V2_ROOT + "/shard/bridges/";
 
     private V2APIConstants() {
     }
