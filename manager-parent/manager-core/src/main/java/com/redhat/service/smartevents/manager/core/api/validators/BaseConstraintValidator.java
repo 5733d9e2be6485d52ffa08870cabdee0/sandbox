@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.api.validators.processors;
+package com.redhat.service.smartevents.manager.core.api.validators;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
