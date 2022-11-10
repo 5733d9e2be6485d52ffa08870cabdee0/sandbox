@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS SHARD;
-
 create table SHARD
 (
     id   varchar(255) NOT NULL PRIMARY KEY,
