@@ -59,5 +59,5 @@ mvn \
   \
   -Dquarkus.devservices.enabled=false \
   \
-  -f "$( dirname "$0" )/../../manager/pom.xml" \
+  -f "$( dirname "$0" )/../../manager-parent/manager/pom.xml" \
   clean compile quarkus:dev $@

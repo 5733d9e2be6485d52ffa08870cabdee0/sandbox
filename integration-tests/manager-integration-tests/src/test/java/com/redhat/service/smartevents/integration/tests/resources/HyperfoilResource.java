@@ -6,7 +6,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,12 +67,14 @@ public class HyperfoilResource {
         return run.getPhases().stream().anyMatch(Phase::getFailed);
     }
 
-    public static void storeBenchmarkReport(String perfTestName, String runId) throws IOException {
-        String generateReport = validation.generateReport(validation.getRun(runId));
-        String filename = String.format("%s-%s-%s.html", perfTestName, runId, LocalDateTime.now());
-        Path destination = Paths.get(BENCHMARK_REPORT_DESTINATION_FOLDER_PATH, filename);
+    public static String generateReport(String perfTestName, String runId) {
+        return validation.generateReport(validation.getRun(runId));
+    }
+
+    public static void storeToHyperfoilResultsFolder(String fileName, String fileContent) throws IOException {
+        Path destination = Paths.get(BENCHMARK_REPORT_DESTINATION_FOLDER_PATH, fileName);
         Files.createDirectories(destination.getParent());
-        Files.writeString(destination, generateReport);
+        Files.writeString(destination, fileContent);
     }
 
     public static int getTotalRequestsSent(String idRun, String phase, String metric) {
