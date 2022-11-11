@@ -16,21 +16,33 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.quarkiverse.operatorsdk</groupId>
-      <artifactId>quarkus-operator-sdk</artifactId>
+      <groupId>io.fabric8</groupId>
+      <artifactId>kubernetes-model-apps</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.quarkiverse.operatorsdk</groupId>
-      <artifactId>quarkus-operator-sdk-csv-generator</artifactId>
+      <groupId>io.fabric8</groupId>
+      <artifactId>kubernetes-client</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-scheduler</artifactId>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkiverse.operatorsdk</groupId>-->
+    <!--      <artifactId>quarkus-operator-sdk</artifactId>-->
+    <!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkiverse.operatorsdk</groupId>-->
+    <!--      <artifactId>quarkus-operator-sdk-csv-generator</artifactId>-->
+    <!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkus</groupId>-->
+    <!--      <artifactId>quarkus-micrometer-registry-prometheus</artifactId>-->
+    <!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkus</groupId>-->
+    <!--      <artifactId>quarkus-scheduler</artifactId>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-web-client</artifactId>
@@ -39,26 +51,26 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-vertx</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-health</artifactId>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkus</groupId>-->
+    <!--      <artifactId>quarkus-smallrye-health</artifactId>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>infra-v1</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-container-image-jib</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-oidc-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.fabric8</groupId>
-      <artifactId>openshift-model-monitoring</artifactId>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkus</groupId>-->
+    <!--      <artifactId>quarkus-container-image-jib</artifactId>-->
+    <!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkus</groupId>-->
+    <!--      <artifactId>quarkus-oidc-client</artifactId>-->
+    <!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>io.fabric8</groupId>-->
+    <!--      <artifactId>openshift-model-monitoring</artifactId>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>io.quarkiverse.loggingjson</groupId>
       <artifactId>quarkus-logging-json</artifactId>
@@ -74,35 +86,36 @@
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-test-openshift-client</artifactId>
-      <scope>test</scope>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkus</groupId>-->
+    <!--      <artifactId>quarkus-test-openshift-client</artifactId>-->
+    <!--      <scope>test</scope>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5-mockito</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>io.rest-assured</groupId>-->
+    <!--      <artifactId>rest-assured</artifactId>-->
+    <!--      <scope>test</scope>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>processor-core</artifactId>
-      <scope>test</scope>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>org.awaitility</groupId>-->
+    <!--      <artifactId>awaitility</artifactId>-->
+    <!--      <scope>test</scope>-->
+    <!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>com.redhat.service.smartevents</groupId>-->
+    <!--      <artifactId>processor-core</artifactId>-->
+    <!--      <scope>test</scope>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>com.epam.reportportal</groupId>
       <artifactId>agent-java-junit5</artifactId>
@@ -127,21 +140,21 @@
     </testResources>
 
     <plugins>
-      <plugin>
-        <groupId>${quarkus.platform.group-id}</groupId>
-        <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${quarkus.platform.version}</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-              <goal>generate-code</goal>
-              <goal>generate-code-tests</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+      <!--      <plugin>-->
+      <!--        <groupId>${quarkus.platform.group-id}</groupId>-->
+      <!--        <artifactId>quarkus-maven-plugin</artifactId>-->
+      <!--        <version>${quarkus.platform.version}</version>-->
+      <!--        <extensions>true</extensions>-->
+      <!--        <executions>-->
+      <!--          <execution>-->
+      <!--            <goals>-->
+      <!--              <goal>build</goal>-->
+      <!--              <goal>generate-code</goal>-->
+      <!--              <goal>generate-code-tests</goal>-->
+      <!--            </goals>-->
+      <!--          </execution>-->
+      <!--        </executions>-->
+      <!--      </plugin>-->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler-plugin.version}</version>
@@ -172,44 +185,44 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>attach-kubernetes-resources</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>attach-artifacts</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>attach-artifact</goal>
-                </goals>
-                <configuration>
-                  <artifacts>
-                    <artifact>
-                      <file>${project.build.directory}/kubernetes/kubernetes.yml</file>
-                      <type>yml</type>
-                      <classifier>kubernetes</classifier>
-                    </artifact>
-                    <artifact>
-                      <file>${project.build.directory}/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml</file>
-                      <type>yml</type>
-                      <classifier>crd-bridgeexecutors</classifier>
-                    </artifact>
-                    <artifact>
-                      <file>${project.build.directory}/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml</file>
-                      <type>yml</type>
-                      <classifier>crd-bridgeingresses</classifier>
-                    </artifact>
-                  </artifacts>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
+    <!--    <profile>-->
+    <!--      <id>attach-kubernetes-resources</id>-->
+    <!--      <build>-->
+    <!--        <plugins>-->
+    <!--          <plugin>-->
+    <!--            <groupId>org.codehaus.mojo</groupId>-->
+    <!--            <artifactId>build-helper-maven-plugin</artifactId>-->
+    <!--            <executions>-->
+    <!--              <execution>-->
+    <!--                <id>attach-artifacts</id>-->
+    <!--                <phase>package</phase>-->
+    <!--                <goals>-->
+    <!--                  <goal>attach-artifact</goal>-->
+    <!--                </goals>-->
+    <!--                <configuration>-->
+    <!--                  <artifacts>-->
+    <!--                    <artifact>-->
+    <!--                      <file>${project.build.directory}/kubernetes/kubernetes.yml</file>-->
+    <!--                      <type>yml</type>-->
+    <!--                      <classifier>kubernetes</classifier>-->
+    <!--                    </artifact>-->
+    <!--                    <artifact>-->
+    <!--                      <file>${project.build.directory}/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml</file>-->
+    <!--                      <type>yml</type>-->
+    <!--                      <classifier>crd-bridgeexecutors</classifier>-->
+    <!--                    </artifact>-->
+    <!--                    <artifact>-->
+    <!--                      <file>${project.build.directory}/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml</file>-->
+    <!--                      <type>yml</type>-->
+    <!--                      <classifier>crd-bridgeingresses</classifier>-->
+    <!--                    </artifact>-->
+    <!--                  </artifacts>-->
+    <!--                </configuration>-->
+    <!--              </execution>-->
+    <!--            </executions>-->
+    <!--          </plugin>-->
+    <!--        </plugins>-->
+    <!--      </build>-->
+    <!--    </profile>-->
   </profiles>
 </project>
