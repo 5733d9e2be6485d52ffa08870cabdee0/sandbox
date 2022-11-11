@@ -80,10 +80,10 @@ public class BridgeIngressControllerTest {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.SECRET_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.TRUE);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.CONFIG_MAP_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.TRUE);
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);

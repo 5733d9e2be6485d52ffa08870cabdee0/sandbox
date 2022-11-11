@@ -17,7 +17,7 @@ public final class DeploymentStatusUtils {
 
     public static final String PROGRESS_DEADLINE_EXCEEDED_CONDITION_REASON = "ProgressDeadlineExceeded";
 
-    public static final String STATUS_TRUE = "True";
+    public static final String STATUS_TRUE = "TRUE";
     public static final String STATUS_FALSE = "False";
 
     private DeploymentStatusUtils() {
