@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BridgeRequest {
+public abstract class AbstractBridgeRequest {
 
     @NotEmpty(message = "Bridge name cannot be null or empty")
     @JsonProperty("name")
@@ -28,10 +28,10 @@ public class BridgeRequest {
         return region;
     }
 
-    public BridgeRequest() {
+    public AbstractBridgeRequest() {
     }
 
-    public BridgeRequest(String name, String cloudProvider, String region) {
+    public AbstractBridgeRequest(String name, String cloudProvider, String region) {
         this.name = name;
         this.cloudProvider = cloudProvider;
         this.region = region;
