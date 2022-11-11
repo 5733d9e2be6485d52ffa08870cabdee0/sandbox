@@ -36,14 +36,6 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-container-image-jib</artifactId>
     </dependency>
-    <!--    <dependency>-->
-    <!--      <groupId>io.quarkus</groupId>-->
-    <!--      <artifactId>quarkus-oidc-client</artifactId>-->
-    <!--    </dependency>-->
-    <!--    <dependency>-->
-    <!--      <groupId>io.fabric8</groupId>-->
-    <!--      <artifactId>openshift-model-monitoring</artifactId>-->
-    <!--    </dependency>-->
   </dependencies>
   <build>
     <plugins>
