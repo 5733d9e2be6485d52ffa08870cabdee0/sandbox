@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.manager.core.api.models.responses.BaseManagedResourceResponse;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-// TODO: rename this class when https://github.com/redhat-developer/app-services-api-guidelines/issues/120 is fixed or when V1 is dropped.
-public class BridgeResponseV2DTO extends BaseManagedResourceResponse {
+public class BridgeResponse extends BaseManagedResourceResponse {
 
     @JsonProperty("endpoint")
     private String endpoint;
@@ -20,7 +19,7 @@ public class BridgeResponseV2DTO extends BaseManagedResourceResponse {
     @JsonProperty("status_message")
     private String statusMessage;
 
-    public BridgeResponseV2DTO() {
+    public BridgeResponse() {
         super("Bridge");
     }
 
