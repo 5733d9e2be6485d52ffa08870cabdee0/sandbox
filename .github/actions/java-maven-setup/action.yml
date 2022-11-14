@@ -18,7 +18,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup Maven And Java Version
-      uses: s4u/setup-maven-action@v1.5.1
+      uses: s4u/setup-maven-action@v1.6.0
       with:
         java-version: ${{ inputs.java-version }}
         maven-version: ${{ inputs.maven-version }}
