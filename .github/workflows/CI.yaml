@@ -57,15 +57,6 @@ jobs:
             -Dsonar.pullrequest.key=$PR_KEY \
             -Dsonar.pullrequest.branch=$PR_BRANCH \
             -Dsonar.pullrequest.base=$PR_BASE
-
-      - name: Publish Test Report
-        if: always()
-        uses: scacap/action-surefire-report@v1.0.10
-        with:
-          skip_publishing: true
-          check_name: Test Results
-          fail_on_test_failures: true
-          fail_if_no_tests: false
       - name: Validate openapi spec
         if: always()
         run: |
