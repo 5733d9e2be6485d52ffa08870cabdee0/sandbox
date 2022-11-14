@@ -66,8 +66,13 @@ jobs:
           check_name: Test Results
           fail_on_test_failures: true
           fail_if_no_tests: false
-      - name: Validate openapi spec
+      - name: Validate openapi spec V1
         if: always()
         run: |
-          differences=$(diff openapi/smartevents_mgmt.yaml manager-parent/manager/target/generated/openapi.yaml)
-          if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt.yaml is out of sync. Please move the manager-parent/manager/target/generated/openapi.yaml into openapi/smartevents_mgmt.yaml"; false ; fi
+          differences=$(diff openapi/smartevents_mgmt_v1.yaml manager-parent/manager-v1/target/generated/openapi.yaml)
+          if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt.yaml is out of sync. Please move the manager-parent/manager-v1/target/generated/openapi.yaml into openapi/smartevents_mgmt_v1.yaml"; false ; fi
+      - name: Validate openapi spec V2
+        if: always()
+        run: |
+          differences=$(diff openapi/smartevents_mgmt_v2.yaml manager-parent/manager-v2/target/generated/openapi.yaml)
+          if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt.yaml is out of sync. Please move the manager-parent/manager-v2/target/generated/openapi.yaml into openapi/smartevents_mgmt_v2.yaml"; false ; fi
