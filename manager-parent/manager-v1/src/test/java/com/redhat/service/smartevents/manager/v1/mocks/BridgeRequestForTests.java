@@ -1,18 +1,18 @@
 package com.redhat.service.smartevents.manager.v1.mocks;
 
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 
 /**
  * A clone of {@see BridgeRequest} however it has setters for the properties, useful in tests.
  */
-public class BridgeRequestV1ForTests extends BridgeRequestV1 {
+public class BridgeRequestForTests extends BridgeRequest {
 
-    public BridgeRequestV1ForTests(String name, String cloudProvider, String region) {
+    public BridgeRequestForTests(String name, String cloudProvider, String region) {
         super(name, cloudProvider, region);
     }
 
-    public BridgeRequestV1ForTests(String name, String cloudProvider, String region, Action action) {
+    public BridgeRequestForTests(String name, String cloudProvider, String region, Action action) {
         super(name, cloudProvider, region, action);
     }
 

@@ -16,8 +16,8 @@ import com.redhat.service.smartevents.manager.core.api.user.AbstractErrorsAPI;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RegisterRestClient
-public class ErrorsAPIV2 extends AbstractErrorsAPI {
-    public ErrorsAPIV2() {
+public class ErrorsAPI extends AbstractErrorsAPI {
+    public ErrorsAPI() {
         super(V2APIConstants.V2_ERROR_API_BASE_PATH);
     }
 }

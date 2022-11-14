@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.manager.core.persistence.dao.CloudProviderDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvider;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudRegion;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -32,7 +32,7 @@ public class CloudProviderConstraintValidatorTest {
     public void validate_nullCloudProvider() {
         CloudProvider cp = cloudProviderDAO.findById(DEFAULT_CLOUD_PROVIDER);
         CloudRegion region = cp.getRegions().get(0);
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, null, region.getName());
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, null, region.getName());
 
         Set<String> violations = Set.of(
                 "Cloud Provider cannot be null or empty.",
@@ -45,7 +45,7 @@ public class CloudProviderConstraintValidatorTest {
     public void validate_emptyCloudProvider() {
         CloudProvider cp = cloudProviderDAO.findById(DEFAULT_CLOUD_PROVIDER);
         CloudRegion region = cp.getRegions().get(0);
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, "", region.getName());
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, "", region.getName());
 
         Set<String> violations = Set.of(
                 "Cloud Provider cannot be null or empty.",
@@ -57,7 +57,7 @@ public class CloudProviderConstraintValidatorTest {
     @Test
     public void validate_nullRegion() {
         CloudProvider cp = cloudProviderDAO.findById(DEFAULT_CLOUD_PROVIDER);
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, cp.getId(), null);
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, cp.getId(), null);
 
         Set<String> violations = Set.of(
                 "Cloud Region cannot be null or empty.",
@@ -72,7 +72,7 @@ public class CloudProviderConstraintValidatorTest {
         String invalidCloudProvider = "dodgyProvider";
         CloudProvider cp = cloudProviderDAO.findById(DEFAULT_CLOUD_PROVIDER);
         CloudRegion region = cp.getRegions().get(0);
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, "dodgyProvider", region.getName());
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, "dodgyProvider", region.getName());
 
         Set<String> violations = Set.of(
                 "The requested Cloud Provider '" + invalidCloudProvider + "' is not valid.",
@@ -83,7 +83,7 @@ public class CloudProviderConstraintValidatorTest {
 
     @Test
     public void validate_invalidProviderAndRegion() {
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, "foo", "bar");
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, "foo", "bar");
         Set<String> violations = Set.of(
                 "The requested Cloud Provider '" + br.getCloudProvider() + "' is not valid.",
                 "The requested Region '" + br.getRegion() + "' is not valid.");
@@ -94,7 +94,7 @@ public class CloudProviderConstraintValidatorTest {
     @Test
     public void validate_emptyProviderAndRegion() {
 
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, "", "");
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, "", "");
 
         Set<String> violations = Set.of(
                 "Cloud Region cannot be null or empty.",
@@ -106,7 +106,7 @@ public class CloudProviderConstraintValidatorTest {
 
     @Test
     public void validate_nullProviderAndNullRegion() {
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, null, null);
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, null, null);
 
         Set<String> violations = Set.of(
                 "Cloud Region cannot be null or empty.",
@@ -119,7 +119,7 @@ public class CloudProviderConstraintValidatorTest {
     @Test
     public void validate_invalidCloudRegion() {
         String invalidRegion = "dodgyRegion";
-        BridgeRequestV1 br = new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, invalidRegion);
+        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, invalidRegion);
 
         Set<String> violations = Set.of(
                 "The requested Region '" + invalidRegion + "' is not valid.");
@@ -127,8 +127,8 @@ public class CloudProviderConstraintValidatorTest {
         validateConstraintMessage(br, violations);
     }
 
-    private void validateConstraintMessage(BridgeRequestV1 br, Set<String> expectedMessages) {
-        Set<ConstraintViolation<BridgeRequestV1>> violations = validatorFactory.getValidator().validate(br);
+    private void validateConstraintMessage(BridgeRequest br, Set<String> expectedMessages) {
+        Set<ConstraintViolation<BridgeRequest>> violations = validatorFactory.getValidator().validate(br);
         assertThat(violations)
                 .hasSize(expectedMessages.size())
                 .allSatisfy((v) -> expectedMessages.contains(v.getMessage()));

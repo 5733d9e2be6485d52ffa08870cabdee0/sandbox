@@ -32,9 +32,9 @@ import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
-import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequestV2;
-import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeListResponseV2;
-import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponseV2;
+import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequestV2DTO;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeListResponseV2DTO;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponseV2DTO;
 
 import io.quarkus.security.Authenticated;
 
@@ -50,7 +50,7 @@ import io.quarkus.security.Authenticated;
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
 @RegisterRestClient
-public class BridgesAPIV2 {
+public class BridgesAPI {
 
     @Inject
     IdentityResolver identityResolver;
@@ -60,7 +60,7 @@ public class BridgesAPIV2 {
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeListResponseV2.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeListResponseV2DTO.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Forbidden.", responseCode = "403", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
@@ -75,7 +75,7 @@ public class BridgesAPIV2 {
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponseV2.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponseV2DTO.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Not enough quota.", responseCode = "402", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
@@ -84,13 +84,13 @@ public class BridgesAPIV2 {
     })
     @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
-    public Response createBridge(@Valid BridgeRequestV2 bridgeRequestV2) {
+    public Response createBridge(@Valid BridgeRequestV2DTO bridgeRequestV2DTO) {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
     }
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponseV2.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponseV2DTO.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Forbidden.", responseCode = "403", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
@@ -100,13 +100,13 @@ public class BridgesAPIV2 {
     @Operation(summary = "Update a Bridge instance", description = "Update a Bridge instance for the authenticated user.")
     @PUT
     @Path("{bridgeId}")
-    public Response updateBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid BridgeRequestV2 bridgeRequestV2) {
+    public Response updateBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid BridgeRequestV2DTO bridgeRequestV2DTO) {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
     }
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponseV2.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponseV2DTO.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),

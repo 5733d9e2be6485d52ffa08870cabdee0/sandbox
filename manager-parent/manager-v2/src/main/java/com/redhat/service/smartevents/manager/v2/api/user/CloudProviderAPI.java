@@ -16,9 +16,9 @@ import com.redhat.service.smartevents.manager.core.api.user.AbstractCloudProvide
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RegisterRestClient
-public class CloudProviderAPIV2 extends AbstractCloudProviderAPI {
+public class CloudProviderAPI extends AbstractCloudProviderAPI {
 
-    public CloudProviderAPIV2() {
+    public CloudProviderAPI() {
         super(V2APIConstants.V2_CLOUD_PROVIDERS_BASE_PATH);
     }
 }

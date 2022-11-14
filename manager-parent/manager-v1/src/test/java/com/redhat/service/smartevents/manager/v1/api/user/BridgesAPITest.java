@@ -27,7 +27,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
@@ -121,13 +121,13 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge() {
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
     }
 
     @Test
     public void createBridgeNoAuthentication() {
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(401);
     }
 
@@ -135,21 +135,21 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridgeOrganisationWithNoQuota() {
         when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("organisation-with-no-quota");
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(402).body("kind", Matchers.equalTo("Errors"));
     }
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createInvalidBridge() {
-        TestUtils.createBridge(new BridgeRequestV1())
+        TestUtils.createBridge(new BridgeRequest())
                 .then().statusCode(400);
     }
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getBridge() {
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -168,7 +168,7 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getBridgeWithErrorHandler() {
         Action errorHandler = createWebhookAction();
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -189,7 +189,7 @@ public class BridgesAPITest {
     public void getBridgeWithNoNameWithIncompleteErrorHandler() {
         Action incompleteErrorHandler = new Action();
         incompleteErrorHandler.setType(WebhookAction.TYPE);
-        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequestV1("",
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest("",
                 DEFAULT_CLOUD_PROVIDER,
                 DEFAULT_REGION,
                 incompleteErrorHandler))
@@ -203,13 +203,13 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getBridgeWithDuplicateNameWithIncompleteErrorHandler() {
         // Create the first Bridge successfully.
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
 
         // Create another Bridge with the same name but incomplete Error Handler definition.
         Action incompleteErrorHandler = new Action();
         incompleteErrorHandler.setType(WebhookAction.TYPE);
-        ErrorsResponse errorsResponse1 = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME,
+        ErrorsResponse errorsResponse1 = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME,
                 DEFAULT_CLOUD_PROVIDER,
                 DEFAULT_REGION,
                 incompleteErrorHandler))
@@ -221,7 +221,7 @@ public class BridgesAPITest {
 
         // Try creating the other Bridge again with the same name and complete Error Handler definition.
         Action completeErrorHandler = createWebhookAction();
-        ErrorsResponse errorsResponse2 = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME,
+        ErrorsResponse errorsResponse2 = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME,
                 DEFAULT_CLOUD_PROVIDER,
                 DEFAULT_REGION,
                 completeErrorHandler))
@@ -235,7 +235,7 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge_withInvalidCloudProvider() {
-        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, "dodgyCloudProvider", DEFAULT_REGION))
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, "dodgyCloudProvider", DEFAULT_REGION))
                 .as(ErrorsResponse.class);
 
         assertErrorResponses(errorsResponse, Set.of(InvalidCloudProviderException.class, InvalidRegionException.class));
@@ -244,7 +244,7 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge_withInvalidRegion() {
-        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, "dodgyRegion"))
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, "dodgyRegion"))
                 .as(ErrorsResponse.class);
 
         assertErrorResponses(errorsResponse, Set.of(InvalidRegionException.class));
@@ -279,7 +279,7 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testCreateAndGetBridge() {
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
 
         BridgeListResponse bridgeListResponse = TestUtils.getBridges().as(BridgeListResponse.class);
@@ -325,8 +325,8 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     // See https://issues.redhat.com/browse/MGDOBR-1113
     public void testGetBridgesFilterByNameWithCreationByApi() {
-        BridgeRequestV1 bridge1 = new BridgeRequestV1(DEFAULT_BRIDGE_NAME + "1", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
-        BridgeRequestV1 bridge2 = new BridgeRequestV1(DEFAULT_BRIDGE_NAME + "2", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        BridgeRequest bridge1 = new BridgeRequest(DEFAULT_BRIDGE_NAME + "1", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        BridgeRequest bridge2 = new BridgeRequest(DEFAULT_BRIDGE_NAME + "2", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         TestUtils.createBridge(bridge1);
         TestUtils.createBridge(bridge2);
 
@@ -465,7 +465,7 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveProcessors() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         TestUtils.updateBridge(
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
@@ -486,7 +486,7 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveErrorHandler() {
         Action errorHandler = createWebhookAction();
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler)).as(BridgeResponse.class);
         TestUtils.updateBridge(
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
@@ -509,7 +509,7 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveErrorHandlerWhenBothFailed() {
         Action errorHandler = createWebhookAction();
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler)).as(BridgeResponse.class);
         TestUtils.updateBridge(
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
@@ -531,9 +531,9 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testAlreadyExistingBridge() {
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(400);
     }
 
@@ -541,7 +541,7 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void updateBridgeAddErrorHandler() {
         //Create Bridge without an ErrorHandler
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -563,7 +563,7 @@ public class BridgesAPITest {
 
         //Update Bridge removing ErrorHandler
         Action errorHandler = createWebhookAction();
-        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler));
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler));
         bridgeUpdateResponse.then().statusCode(202);
 
         BridgeResponse updatedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
@@ -576,7 +576,7 @@ public class BridgesAPITest {
     public void updateBridgeRemoveErrorHandler() {
         //Create Bridge with an ErrorHandler
         Action errorHandler = createWebhookAction();
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -598,7 +598,7 @@ public class BridgesAPITest {
                         new KafkaConnectionDTO()));
 
         //Update Bridge removing ErrorHandler
-        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
         bridgeUpdateResponse.then().statusCode(202);
 
         BridgeResponse updatedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
@@ -610,7 +610,7 @@ public class BridgesAPITest {
     public void updateBridgeUpdateErrorHandler() {
         //Create Bridge with an ErrorHandler
         Action errorHandler1 = createWebhookAction();
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler1));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler1));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -634,7 +634,7 @@ public class BridgesAPITest {
         //Update Bridge removing ErrorHandler
         Action errorHandler2 = createWebhookAction();
         errorHandler2.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/updated-error-handler"));
-        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler2));
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler2));
         bridgeUpdateResponse.then().statusCode(202);
 
         BridgeResponse updatedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
@@ -656,7 +656,7 @@ public class BridgesAPITest {
 
     private void doUpdateBridgeUpdateErrorHandlerType(Action errorHandler1, Action errorHandler2) {
         //Create Bridge with an ErrorHandler
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler1));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler1));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -678,7 +678,7 @@ public class BridgesAPITest {
                         new KafkaConnectionDTO()));
 
         //Update Bridge removing ErrorHandler
-        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler2));
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler2));
         bridgeUpdateResponse.then().statusCode(202);
 
         BridgeResponse updatedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
@@ -690,7 +690,7 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void updateBridgeUpdateNameNotSupported() {
         //Create Bridge
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -711,14 +711,14 @@ public class BridgesAPITest {
                         new KafkaConnectionDTO()));
 
         //Attempt to update Bridge name
-        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequestV1(DEFAULT_BRIDGE_NAME + "-updated", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME + "-updated", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
         bridgeUpdateResponse.then().statusCode(400);
     }
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testBasicMetricsForBridges() {
-        TestUtils.createBridge(new BridgeRequestV1(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
 
         String metrics = given()

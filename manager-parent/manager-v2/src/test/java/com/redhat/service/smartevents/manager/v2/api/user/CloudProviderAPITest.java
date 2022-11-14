@@ -15,7 +15,7 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class CloudProviderAPIV2Test {
+public class CloudProviderAPITest {
 
     @Test
     public void listCloudProviders() {

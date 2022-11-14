@@ -43,7 +43,7 @@ import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfig
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
@@ -120,15 +120,15 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     @Transactional
-    public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequestV1 bridgeRequestV1) {
-        if (bridgeDAO.findByNameAndCustomerId(bridgeRequestV1.getName(), customerId) != null) {
-            throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequestV1.getName(), customerId));
+    public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
+        if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
+            throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
 
         // Create resource on AMS - raise an exception is the organisation is out of quota
         String subscriptionId = createResourceOnAMS(organisationId);
 
-        Bridge bridge = bridgeRequestV1.toEntity();
+        Bridge bridge = bridgeRequest.toEntity();
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
@@ -136,13 +136,13 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setOwner(owner);
         bridge.setShardId(shardService.getAssignedShard(bridge.getId()).getId());
         bridge.setGeneration(0);
-        bridge.setCloudProvider(bridgeRequestV1.getCloudProvider());
-        bridge.setRegion(bridgeRequestV1.getRegion());
+        bridge.setCloudProvider(bridgeRequest.getCloudProvider());
+        bridge.setRegion(bridgeRequest.getRegion());
         bridge.setEndpoint(dnsService.buildBridgeEndpoint(bridge.getId(), customerId));
         bridge.setSubscriptionId(subscriptionId);
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
-        Action errorHandler = bridgeRequestV1.getErrorHandler();
+        Action errorHandler = bridgeRequest.getErrorHandler();
         Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridge.getId(), errorHandler);
         bridge.setDefinition(new BridgeDefinition(errorHandler, resolvedErrorHandler));
 
@@ -158,7 +158,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     @Transactional
-    public Bridge updateBridge(String bridgeId, String customerId, BridgeRequestV1 bridgeRequestV1) {
+    public Bridge updateBridge(String bridgeId, String customerId, BridgeRequest bridgeRequest) {
         // Extract existing definition
         Bridge existingBridge = getBridge(bridgeId, customerId);
 
@@ -172,20 +172,20 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Validate update.
         // Name cannot be updated.
-        if (!Objects.equals(existingBridge.getName(), bridgeRequestV1.getName())) {
+        if (!Objects.equals(existingBridge.getName(), bridgeRequest.getName())) {
             throw new BadRequestException("It is not possible to update the Bridge's name.");
         }
         // Cloud Provider cannot be updated.
-        if (!Objects.equals(existingBridge.getCloudProvider(), bridgeRequestV1.getCloudProvider())) {
+        if (!Objects.equals(existingBridge.getCloudProvider(), bridgeRequest.getCloudProvider())) {
             throw new BadRequestException("It is not possible to update the Bridge's Cloud Provider.");
         }
         // Cloud Region cannot be updated.
-        if (!Objects.equals(existingBridge.getRegion(), bridgeRequestV1.getRegion())) {
+        if (!Objects.equals(existingBridge.getRegion(), bridgeRequest.getRegion())) {
             throw new BadRequestException("It is not possible to update the Bridge's Region.");
         }
 
         // Construct updated definition
-        Action updatedErrorHandler = bridgeRequestV1.getErrorHandler();
+        Action updatedErrorHandler = bridgeRequest.getErrorHandler();
         Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridgeId, updatedErrorHandler);
         BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler, resolvedErrorHandler);
 

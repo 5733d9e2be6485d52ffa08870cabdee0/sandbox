@@ -4,12 +4,13 @@ import com.redhat.service.smartevents.manager.core.api.models.requests.AbstractB
 import com.redhat.service.smartevents.manager.core.api.validators.ValidCloudProvider;
 
 @ValidCloudProvider
-public class BridgeRequestV2 extends AbstractBridgeRequest {
+// TODO: rename this class when https://github.com/redhat-developer/app-services-api-guidelines/issues/120 is fixed or when V1 is dropped.
+public class BridgeRequestV2DTO extends AbstractBridgeRequest {
 
-    public BridgeRequestV2() {
+    public BridgeRequestV2DTO() {
     }
 
-    public BridgeRequestV2(String name, String cloudProvider, String region) {
+    public BridgeRequestV2DTO(String name, String cloudProvider, String region) {
         super(name, cloudProvider, region);
     }
 }

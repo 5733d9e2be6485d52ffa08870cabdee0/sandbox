@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class) // Needed until there is no test spinning up the PostgresResource in v2 tests.
-class ErrorsAPIV2Test {
+class ErrorsAPITest {
 
     private static Collection<Class<?>> exceptionClasses;
 

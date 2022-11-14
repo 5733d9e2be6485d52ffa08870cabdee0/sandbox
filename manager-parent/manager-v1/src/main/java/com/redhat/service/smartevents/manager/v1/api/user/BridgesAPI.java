@@ -33,7 +33,7 @@ import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInf
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
@@ -91,11 +91,11 @@ public class BridgesAPI {
     })
     @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
-    public Response createBridge(@Valid BridgeRequestV1 bridgeRequestV1) {
+    public Response createBridge(@Valid BridgeRequest bridgeRequest) {
         String customerId = identityResolver.resolve(jwt);
         String organisationId = identityResolver.resolveOrganisationId(jwt);
         String owner = identityResolver.resolveOwner(jwt);
-        Bridge bridge = bridgesService.createBridge(customerId, organisationId, owner, bridgeRequestV1);
+        Bridge bridge = bridgesService.createBridge(customerId, organisationId, owner, bridgeRequest);
         return Response.accepted(bridgesService.toResponse(bridge)).build();
     }
 
@@ -111,9 +111,9 @@ public class BridgesAPI {
     @Operation(summary = "Update a Bridge instance", description = "Update a Bridge instance for the authenticated user.")
     @PUT
     @Path("{bridgeId}")
-    public Response updateBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid BridgeRequestV1 bridgeRequestV1) {
+    public Response updateBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid BridgeRequest bridgeRequest) {
         String customerId = identityResolver.resolve(jwt);
-        Bridge bridge = bridgesService.updateBridge(bridgeId, customerId, bridgeRequestV1);
+        Bridge bridge = bridgesService.updateBridge(bridgeId, customerId, bridgeRequest);
         return Response.accepted(bridgesService.toResponse(bridge)).build();
     }
 

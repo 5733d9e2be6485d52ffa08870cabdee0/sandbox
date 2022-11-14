@@ -11,20 +11,20 @@ import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 
 @ValidCloudProvider
 @ValidErrorHandler
-public class BridgeRequestV1 extends AbstractBridgeRequest {
+public class BridgeRequest extends AbstractBridgeRequest {
 
     @JsonProperty("error_handler")
     @Valid
     protected Action errorHandler;
 
-    public BridgeRequestV1() {
+    public BridgeRequest() {
     }
 
-    public BridgeRequestV1(String name, String cloudProvider, String region) {
+    public BridgeRequest(String name, String cloudProvider, String region) {
         super(name, cloudProvider, region);
     }
 
-    public BridgeRequestV1(String name, String cloudProvider, String region, Action errorHandler) {
+    public BridgeRequest(String name, String cloudProvider, String region, Action errorHandler) {
         this(name, cloudProvider, region);
         this.errorHandler = errorHandler;
     }

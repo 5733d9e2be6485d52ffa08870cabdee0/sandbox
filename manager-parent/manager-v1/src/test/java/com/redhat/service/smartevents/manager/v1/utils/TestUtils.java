@@ -15,7 +15,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequestV1;
+import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
@@ -141,13 +141,13 @@ public class TestUtils {
                 .delete(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
     }
 
-    public static Response createBridge(BridgeRequestV1 request) {
+    public static Response createBridge(BridgeRequest request) {
         return jsonRequest()
                 .body(request)
                 .post(V1APIConstants.V1_USER_API_BASE_PATH);
     }
 
-    public static Response updateBridge(String bridgeId, BridgeRequestV1 request) {
+    public static Response updateBridge(String bridgeId, BridgeRequest request) {
         return jsonRequest()
                 .body(request)
                 .put(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId);
