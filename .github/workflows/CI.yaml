@@ -70,9 +70,9 @@ jobs:
         if: always()
         run: |
           differences=$(diff openapi/smartevents_mgmt_v1.yaml manager-parent/manager-v1/target/generated/openapi.yaml)
-          if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt.yaml is out of sync. Please move the manager-parent/manager-v1/target/generated/openapi.yaml into openapi/smartevents_mgmt_v1.yaml"; false ; fi
+          if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt_v1.yaml is out of sync. Please move the manager-parent/manager-v1/target/generated/openapi.yaml into openapi/smartevents_mgmt_v1.yaml"; false ; fi
       - name: Validate openapi spec V2
         if: always()
         run: |
           differences=$(diff openapi/smartevents_mgmt_v2.yaml manager-parent/manager-v2/target/generated/openapi.yaml)
-          if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt.yaml is out of sync. Please move the manager-parent/manager-v2/target/generated/openapi.yaml into openapi/smartevents_mgmt_v2.yaml"; false ; fi
+          if [ $? -ne 0 ]; then echo "openapi/smartevents_mgmt_v2.yaml is out of sync. Please move the manager-parent/manager-v2/target/generated/openapi.yaml into openapi/smartevents_mgmt_v2.yaml"; false ; fi
