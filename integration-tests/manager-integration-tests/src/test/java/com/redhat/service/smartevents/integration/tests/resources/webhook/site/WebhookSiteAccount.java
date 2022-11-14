@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.integration.tests.resources.webhook.site;
 
-import software.tnb.common.account.Accounts;
+import software.tnb.common.account.AccountFactory;
 import software.tnb.webhook.account.WebhookAccount;
 
 public class WebhookSiteAccount {
@@ -9,6 +9,6 @@ public class WebhookSiteAccount {
     }
 
     public static String getToken(String tokenName) {
-        return Accounts.get(WebhookAccount.class).token(tokenName);
+        return AccountFactory.create(WebhookAccount.class).token(tokenName);
     }
 }
