@@ -21,7 +21,7 @@ function header_text {
 
 header_text "Knative Eventing Kafka - Installer"
 header_text "Initializing Knative Eventing Core APIs"
-kubectl apply -f kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.5.6/eventing-crds.yaml
+kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.5.6/eventing-crds.yaml
 kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.5.6/eventing-core.yaml
 
 header_text "Waiting for Knative Eventing Core to become ready"
