@@ -22,7 +22,6 @@ function header_text {
 header_text "Knative Eventing Kafka - Installer"
 
 header_text "Initializing Knative Eventing Core APIs"
-kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-crds.yaml
 kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-core.yaml
 kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-post-install.yaml
 
