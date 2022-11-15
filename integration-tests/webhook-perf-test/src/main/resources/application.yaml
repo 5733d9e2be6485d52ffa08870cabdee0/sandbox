@@ -1,0 +1,22 @@
+quarkus:
+  resteasy:
+    path: /webhook
+  datasource:
+    db-kind: h2
+    jdbc:
+      url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: sa
+  hibernate-orm:
+    database:
+      generation: create
+
+  container-image:
+    group: rhose
+    name: webhook-perf-test
+    tag: 1.0
+    registry: quay.io
+
+  kubernetes:
+    replicas: 2
+    namespace: performance
