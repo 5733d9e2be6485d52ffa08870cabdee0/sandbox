@@ -2,7 +2,7 @@ name: Validate OpenAPI
 on:
   pull_request:
     branches:
-      - main
+      - MGDOBR-1211-2
 
 jobs:
   build:
