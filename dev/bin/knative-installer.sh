@@ -29,7 +29,7 @@ header_text "Waiting for Knative Eventing Core to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
 
 header_text "Initializing Knative Eventing Kafka APIs"
-kubectl apply -f https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/release-v1.4/openshift/release/artifacts/eventing-kafka.yaml
+kubectl apply -f  https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.4.3/eventing-kafka.yaml
 
 header_text "Patch the deployment to disable Source/Channel..."
 kubectl patch deployment \
