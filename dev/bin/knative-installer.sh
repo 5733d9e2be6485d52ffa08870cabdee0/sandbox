@@ -23,7 +23,7 @@ header_text "Knative Eventing Kafka - Installer"
 
 header_text "Initializing Knative Eventing Core APIs"
 kubectl apply -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-core.yaml
-kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-post-install.yaml
+kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-post-install.yaml || header_text "eventing-post-install.yaml was already deployed on this cluster. Skipping."
 
 header_text "Waiting for Knative Eventing Core to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
