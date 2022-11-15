@@ -22,15 +22,15 @@ function header_text {
 header_text "Knative Eventing Kafka - Installer"
 
 header_text "Initializing Knative Eventing Core APIs"
-kubectl apply -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-crds.yaml
-kubectl apply -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-core.yaml
-kubectl apply -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-post-install.yaml
+kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-crds.yaml
+kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-core.yaml
+kubectl create -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-post-install.yaml
 
 header_text "Waiting for Knative Eventing Core to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
 
 header_text "Initializing Knative Eventing Kafka APIs"
-kubectl apply -f https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/release-v1.4/openshift/release/artifacts/eventing-kafka.yaml
+kubectl create -f https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/release-v1.4/openshift/release/artifacts/eventing-kafka.yaml
 
 header_text "Patch the deployment to disable Source/Channel..."
 kubectl patch deployment \
