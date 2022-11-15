@@ -15,52 +15,21 @@ else
   reset=''
 fi
 
-CONFIGURE_SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
-# The Knative Core APIs, like Broker or Trigger from midstream
-eventing_core_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-eventing.yaml
-# Knative Kafka offering: All Kafka centric APIs from midstream
-eventing_kafka_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-kafka.yaml
-
 function header_text {
   echo "$header$*$reset"
 }
 
 header_text "Knative Eventing Kafka - Installer"
-
 header_text "Initializing Knative Eventing Core APIs"
-kubectl apply --filename $eventing_core_url
+kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.5.6/eventing-crds.yaml
+kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.5.6/eventing-core.yaml
 
 header_text "Waiting for Knative Eventing Core to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
 
 header_text "Initializing Knative Eventing Kafka APIs"
-kubectl apply --filename $eventing_kafka_url
-
-header_text "Patch the deployment to disable Source/Channel..."
-kubectl patch deployment \
-  kafka-controller \
-  --namespace knative-eventing \
-  --type='json' \
-  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args", "value": [
-  "--disable-controllers=source-controller,channel-controller"
-]}]'
+kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.5.8/eventing-kafka-controller.yaml
+kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releases/download/knative-v1.5.8/eventing-kafka-broker.yaml
 
 header_text "Waiting for Knative Eventing Kafka to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
-
-header_text "Registering 'Kafka' as default Knative Eventing Broker"
-cat <<-EOF | kubectl apply -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-br-defaults
-  namespace: knative-eventing
-data:
-  default-br-config: |
-    clusterDefault:
-      brokerClass: Kafka
-      apiVersion: v1
-      kind: ConfigMap
-      name: kafka-broker-config
-      namespace: knative-eventing
-EOF
