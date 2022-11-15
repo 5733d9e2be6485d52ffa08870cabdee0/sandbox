@@ -22,10 +22,10 @@ FROM registry.access.redhat.com/ubi8/openjdk-11:1.11
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 
-COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/lib/ /deployments/lib/
-COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/*.jar /deployments/
-COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/app/ /deployments/app/
-COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/quarkus/ /deployments/quarkus/
+COPY --from=builder --chown=185 /workspace/manager-parent/manager/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=builder --chown=185 /workspace/manager-parent/manager/target/quarkus-app/*.jar /deployments/
+COPY --from=builder --chown=185 /workspace/manager-parent/manager/target/quarkus-app/app/ /deployments/app/
+COPY --from=builder --chown=185 /workspace/manager-parent/manager/target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER 185
