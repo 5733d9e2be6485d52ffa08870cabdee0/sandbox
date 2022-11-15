@@ -15,12 +15,6 @@ else
   reset=''
 fi
 
-CONFIGURE_SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
-# The Knative Core APIs, like Broker or Trigger from midstream
-eventing_core_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-eventing.yaml
-# Knative Kafka offering: All Kafka centric APIs from midstream
-eventing_kafka_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-kafka.yaml
-
 function header_text {
   echo "$header$*$reset"
 }
@@ -28,13 +22,15 @@ function header_text {
 header_text "Knative Eventing Kafka - Installer"
 
 header_text "Initializing Knative Eventing Core APIs"
-kubectl apply --filename $eventing_core_url
+kubectl apply -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-core.yaml
+kubectl apply -f https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.4/openshift/release/artifacts/eventing-post-install.yaml
 
 header_text "Waiting for Knative Eventing Core to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
 
 header_text "Initializing Knative Eventing Kafka APIs"
-kubectl apply --filename $eventing_kafka_url
+kubectl apply -f https://raw.githubusercontent.com/openshift-knative/eventing-kafka-broker/release-v1.4/openshift/release/artifacts/eventing-kafka.yaml
 
 header_text "Patch the deployment to disable Source/Channel..."
 kubectl patch deployment \
