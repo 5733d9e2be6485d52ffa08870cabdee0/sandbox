@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.api.user.validators.processors;
+package com.redhat.service.smartevents.manager.core.api.validators;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

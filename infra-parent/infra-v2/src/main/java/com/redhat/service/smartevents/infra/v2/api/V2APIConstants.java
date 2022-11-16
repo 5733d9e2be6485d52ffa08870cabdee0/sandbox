@@ -27,6 +27,11 @@ public class V2APIConstants {
      */
     public static final String V2_SHARD_API_BASE_PATH = V2_ROOT + "/shard/bridges/";
 
+    /**
+     * Base Path for the error API
+     */
+    public static final String V2_ERROR_API_BASE_PATH = V2_ROOT + "/errors/";
+
     private V2APIConstants() {
     }
 }

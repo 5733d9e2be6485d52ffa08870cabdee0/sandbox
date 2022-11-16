@@ -21,6 +21,10 @@
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>manager-v1</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>manager-v2</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

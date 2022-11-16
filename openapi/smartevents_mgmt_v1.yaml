@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: Red Hat Openshift SmartEvents Fleet Manager
+  title: Red Hat Openshift SmartEvents Fleet Manager V1
   description: The API exposed by the fleet manager of the SmartEvents service.
   contact:
     name: Development Team
@@ -986,8 +986,6 @@ components:
           minLength: 1
           type: string
           nullable: false
-        error_handler:
-          $ref: '#/components/schemas/Action'
         cloud_provider:
           minLength: 1
           type: string
@@ -996,6 +994,8 @@ components:
           minLength: 1
           type: string
           nullable: false
+        error_handler:
+          $ref: '#/components/schemas/Action'
     BridgeResponse:
       required:
       - kind

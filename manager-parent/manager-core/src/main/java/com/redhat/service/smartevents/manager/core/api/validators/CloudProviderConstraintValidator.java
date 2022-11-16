@@ -1,9 +1,8 @@
-package com.redhat.service.smartevents.manager.v1.api.user.validators.processors;
+package com.redhat.service.smartevents.manager.core.api.validators;
 
 import java.util.Collections;
 import java.util.Optional;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
@@ -11,14 +10,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
+import com.redhat.service.smartevents.manager.core.api.models.requests.AbstractBridgeRequest;
 import com.redhat.service.smartevents.manager.core.persistence.dao.CloudProviderDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvider;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudRegion;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
-import com.redhat.service.smartevents.manager.v1.api.validators.processors.BaseConstraintValidator;
 
-@ApplicationScoped
-public class CloudProviderConstraintValidator extends BaseConstraintValidator<ValidCloudProvider, BridgeRequest> {
+public class CloudProviderConstraintValidator extends BaseConstraintValidator<ValidCloudProvider, AbstractBridgeRequest> {
 
     static final String ID_PARAM = "id";
 
@@ -36,7 +33,7 @@ public class CloudProviderConstraintValidator extends BaseConstraintValidator<Va
     CloudProviderDAO cloudProviderDAO;
 
     @Override
-    public boolean isValid(BridgeRequest bridgeRequest, ConstraintValidatorContext context) {
+    public boolean isValid(AbstractBridgeRequest bridgeRequest, ConstraintValidatorContext context) {
 
         boolean valid = true;
 

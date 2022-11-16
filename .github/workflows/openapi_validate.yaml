@@ -16,5 +16,7 @@ jobs:
           node-version: 15.x
       - name: Install RHOAS Guidelines
         run: npm i @rhoas/spectral-ruleset
-      - name: Validate OAS file
-        run: npx @rhoas/spectral-ruleset lint ./openapi/smartevents_mgmt.yaml
+      - name: Validate OAS file V1
+        run: npx @rhoas/spectral-ruleset lint ./openapi/smartevents_mgmt_v1.yaml
+      - name: Validate OAS file V2
+        run: npx @rhoas/spectral-ruleset lint ./openapi/smartevents_mgmt_v2.yaml
