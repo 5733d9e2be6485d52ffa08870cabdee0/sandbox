@@ -1,6 +1,6 @@
 apiVersion: v1
 data:
-  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:c87a787ac3c5ea51a5c0fdd909d984350c750596-jvm
+  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:3d80a00548ad760ae86833933c7e97427e4d3440-jvm
   EVENT_BRIDGE_ISTIO_GATEWAY_NAME: istio-ingressgateway
   EVENT_BRIDGE_ISTIO_GATEWAY_NAMESPACE: istio-system
   EVENT_BRIDGE_ISTIO_JWT_ISSUER: https://sso.redhat.com/auth/realms/redhat-external
