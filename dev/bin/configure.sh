@@ -26,6 +26,7 @@ required_tools="
 docker-compose
 istioctl
 jq
+kamel
 kubectl
 kustomize
 mvn

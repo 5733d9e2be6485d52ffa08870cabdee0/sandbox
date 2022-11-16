@@ -40,6 +40,8 @@ minikube -p "${MINIKUBE_PROFILE}" addons enable ingress
 sleep 5
 minikube -p "${MINIKUBE_PROFILE}" addons enable ingress-dns
 sleep 5
+minikube -p "${MINIKUBE_PROFILE}" addons enable registry
+sleep 5
 
 if [ "${disable_extra_components}" != 'true' ]; then
   kustomize build ${KUSTOMIZE_DIR}/overlays/local/keycloak | kubectl apply -f -
@@ -48,7 +50,11 @@ if [ "${disable_extra_components}" != 'true' ]; then
   sleep 5
   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
   . "${SCRIPT_DIR_PATH}/knative-installer.sh"
-  yes | istioctl manifest apply --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
+  istioctl manifest apply --skip-confirmation --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
+  sleep 5
+  # Camel-K installation
+  kubectl create namespace camel-k --dry-run=client -o yaml | kubectl apply -f -
+  kamel install --runtime-version 1.10.1 -n camel-k --force -w
 fi
 
 set +x
