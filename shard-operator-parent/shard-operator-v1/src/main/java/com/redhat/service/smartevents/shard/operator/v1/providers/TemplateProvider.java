@@ -2,11 +2,11 @@ package com.redhat.service.smartevents.shard.operator.v1.providers;
 
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.v1.resources.istio.authorizationpolicy.AuthorizationPolicy;
-import com.redhat.service.smartevents.shard.operator.v1.resources.istio.gateway.Gateway;
-import com.redhat.service.smartevents.shard.operator.v1.resources.istio.requestauthentication.RequestAuthentication;
-import com.redhat.service.smartevents.shard.operator.v1.resources.istio.virtualservice.VirtualService;
-import com.redhat.service.smartevents.shard.operator.v1.resources.knative.KnativeBroker;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
+import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
