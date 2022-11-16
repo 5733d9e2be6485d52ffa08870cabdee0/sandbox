@@ -8,13 +8,8 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
-@ToString
-@Getter
-@Setter
+
 public class WebhookRequest {
 
     @NotEmpty(message = "bridgeId cannot be null or empty")
@@ -40,6 +35,26 @@ public class WebhookRequest {
         return bridgeId;
     }
 
+    public void setBridgeId(String bridgeId) {
+        this.bridgeId = bridgeId;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public ZonedDateTime getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(ZonedDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
     public Event toEntity() {
         Event event = new Event();
         event.setBridgeId(bridgeId);
@@ -49,4 +64,12 @@ public class WebhookRequest {
         return event;
     }
 
+    @Override
+    public String toString() {
+        return "WebhookRequest{" +
+                "bridgeId='" + bridgeId + '\'' +
+                ", message='" + message + '\'' +
+                ", submittedAt=" + submittedAt +
+                '}';
+    }
 }

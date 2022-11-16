@@ -6,15 +6,19 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.performance.webhook.exceptions.BridgeNotFoundException;
 import com.redhat.service.smartevents.performance.webhook.exceptions.EventNotFoundException;
 import com.redhat.service.smartevents.performance.webhook.models.Event;
+
 import io.quarkus.panache.common.Parameters;
-import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
-@Slf4j
 public class WebhookServiceImpl implements WebhookService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookServiceImpl.class);
 
     @Override
     public List<Event> findAll() {
@@ -37,14 +41,14 @@ public class WebhookServiceImpl implements WebhookService {
     @Transactional
     public Event create(Event event) {
         event.persist();
-        log.info("event persisted with id {}", event.getId());
+        LOGGER.info("event persisted with id {}", event.getId());
         return event;
     }
 
     @Override
     public Long countEventsReceived(String bridgeId) {
         return Event.count("bridgeId = :bridgeId",
-                           Parameters.with("bridgeId", bridgeId));
+                Parameters.with("bridgeId", bridgeId));
     }
 
     @Override
@@ -52,7 +56,7 @@ public class WebhookServiceImpl implements WebhookService {
     public Event delete(Long id) throws EventNotFoundException {
         Event event = getEvent(id);
         event.delete();
-        log.info("event deleted {}", event.getId());
+        LOGGER.info("event deleted {}", event.getId());
         return event;
     }
 
@@ -60,7 +64,7 @@ public class WebhookServiceImpl implements WebhookService {
     @Transactional
     public long deleteAll() {
         long deletedRows = Event.deleteAll();
-        log.info("rows deleted {}", deletedRows);
+        LOGGER.info("rows deleted {}", deletedRows);
         return deletedRows;
     }
 }
