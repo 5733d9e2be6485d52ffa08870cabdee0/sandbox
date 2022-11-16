@@ -5,12 +5,12 @@ import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.v1.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.v1.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.v1.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Secret;

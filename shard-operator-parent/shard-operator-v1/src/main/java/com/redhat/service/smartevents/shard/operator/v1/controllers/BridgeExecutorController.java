@@ -30,13 +30,13 @@ import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
+import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
-import com.redhat.service.smartevents.shard.operator.v1.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;

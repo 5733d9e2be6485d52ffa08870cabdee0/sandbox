@@ -9,12 +9,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
-import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBrokerConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBrokerStatus;
+import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
+import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.utils.networking.NetworkingTestUtils;
 
 import io.fabric8.kubernetes.api.model.LoadBalancerStatus;

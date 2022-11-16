@@ -6,12 +6,12 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
-import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorClient;
+import com.redhat.service.smartevents.shard.operator.core.monitoring.ServiceMonitorClient;
 
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
-import static com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorClient.SERVICE_MONITOR_CRD_NAME;
+import static com.redhat.service.smartevents.shard.operator.core.monitoring.ServiceMonitorClient.SERVICE_MONITOR_CRD_NAME;
 
 /**
  * Test cases that requires Prometheus should inherit from this base Test Case

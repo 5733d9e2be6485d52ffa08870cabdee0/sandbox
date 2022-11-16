@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v1.monitoring;
+package com.redhat.service.smartevents.shard.operator.core.monitoring;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;

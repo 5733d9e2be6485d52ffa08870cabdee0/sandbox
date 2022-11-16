@@ -1,10 +1,9 @@
-package com.redhat.service.smartevents.shard.operator.v1.utils;
+package com.redhat.service.smartevents.shard.operator.core.utils;
 
 import java.util.Map;
 import java.util.Set;
 
-import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
-import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorClient;
+import com.redhat.service.smartevents.shard.operator.core.monitoring.ServiceMonitorClient;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 

@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
+import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v1.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.v1.providers.GlobalConfigurationsProvider;
@@ -20,9 +23,6 @@ import com.redhat.service.smartevents.shard.operator.v1.providers.IstioGatewayPr
 import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
-import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
-import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Namespace;
