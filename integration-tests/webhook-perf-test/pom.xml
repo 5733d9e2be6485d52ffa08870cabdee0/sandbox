@@ -13,7 +13,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.version>2.9.2.Final</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
-    <version.org.projectlombok.lombok>1.18.16</version.org.projectlombok.lombok>
     <version.io.cloudevents>2.3.0</version.io.cloudevents>
   </properties>
   <dependencyManagement>
@@ -24,12 +23,6 @@
         <version>${quarkus.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>${version.org.projectlombok.lombok}</version>
-        <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>io.cloudevents</groupId>
@@ -69,10 +62,6 @@
       <artifactId>quarkus-jdbc-h2</artifactId>
     </dependency>
     <!-- External dependencies -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-    </dependency>
     <dependency>
       <groupId>io.cloudevents</groupId>
       <artifactId>cloudevents-core</artifactId>

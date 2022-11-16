@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.performance.webhook.models;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,25 +14,14 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Accessors;
 
 @Entity
 @Table(name = "events")
-@EqualsAndHashCode(callSuper = false)
-@ToString
-@Accessors(chain = true)
-@Getter
-@Setter
 public class Event extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "eventIdSeq")
     @SequenceGenerator(name = "eventIdSeq", sequenceName = "EVENT_ID_SEQ")
-    @EqualsAndHashCode.Exclude
     private Long id;
 
     @NotBlank
@@ -50,11 +40,75 @@ public class Event extends PanacheEntityBase {
     @Column(name = "received_at")
     private ZonedDateTime receivedAt;
 
-    public Event copy(Event plan) {
-        this.bridgeId = plan.bridgeId;
-        this.message = plan.message;
-        this.submittedAt = plan.submittedAt;
-        this.receivedAt = plan.receivedAt;
+    public Long getId() {
+        return id;
+    }
+
+    public Event setId(Long id) {
+        this.id = id;
         return this;
+    }
+
+    public String getBridgeId() {
+        return bridgeId;
+    }
+
+    public Event setBridgeId(String bridgeId) {
+        this.bridgeId = bridgeId;
+        return this;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public Event setMessage(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public ZonedDateTime getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public Event setSubmittedAt(ZonedDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+        return this;
+    }
+
+    public ZonedDateTime getReceivedAt() {
+        return receivedAt;
+    }
+
+    public Event setReceivedAt(ZonedDateTime receivedAt) {
+        this.receivedAt = receivedAt;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Event event = (Event) o;
+        return id.equals(event.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "bridgeId='" + bridgeId + '\'' +
+                ", message='" + message + '\'' +
+                ", submittedAt=" + submittedAt +
+                ", receivedAt=" + receivedAt +
+                '}';
     }
 }

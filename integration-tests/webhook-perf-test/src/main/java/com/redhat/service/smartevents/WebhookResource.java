@@ -14,12 +14,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.performance.webhook.exceptions.BridgeNotFoundException;
 import com.redhat.service.smartevents.performance.webhook.exceptions.EventNotFoundException;
 import com.redhat.service.smartevents.performance.webhook.models.Event;
 import com.redhat.service.smartevents.performance.webhook.models.WebhookRequest;
 import com.redhat.service.smartevents.performance.webhook.services.WebhookService;
-import lombok.extern.slf4j.Slf4j;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -27,15 +29,16 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 @Path("/events")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Slf4j
 public class WebhookResource {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookResource.class);
 
     @Inject
     WebhookService webhookService;
 
     @GET
     public Response getAll() {
-        log.info("getting all events");
+        LOGGER.info("getting all events");
         return Response.ok(webhookService.findAll()).build();
     }
 
@@ -43,7 +46,7 @@ public class WebhookResource {
     @Path("/{bridgeId}/count")
     public Response countEventsReceived(@NotEmpty @PathParam("bridgeId") String bridgeId) {
         Long count = webhookService.countEventsReceived(bridgeId);
-        log.info("{} events received for {}", count, bridgeId);
+        LOGGER.info("{} events received for {}", count, bridgeId);
         return Response.ok(count).build();
     }
 
@@ -52,7 +55,7 @@ public class WebhookResource {
     public Response getBridgeEvents(@NotEmpty @PathParam("bridgeId") String bridgeId) {
         List<Event> events;
         try {
-            log.info("getting events for bridge {}", bridgeId);
+            LOGGER.info("getting events for bridge {}", bridgeId);
             events = webhookService.getEventsByBridgeId(bridgeId);
         } catch (BridgeNotFoundException e) {
             return Response.status(NOT_FOUND).build();
@@ -65,9 +68,9 @@ public class WebhookResource {
     public Response getEventById(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("id") Long id) {
         Event event;
         try {
-            log.info("getting id event {} from bridge {}", id, bridgeId);
+            LOGGER.info("getting id event {} from bridge {}", id, bridgeId);
             event = webhookService.getEvent(id);
-            log.info("returning event {}", event);
+            LOGGER.info("returning event {}", event);
         } catch (EventNotFoundException e) {
             return Response.status(NOT_FOUND).build();
         }
@@ -76,13 +79,13 @@ public class WebhookResource {
 
     @POST
     public Response consumeEvent(WebhookRequest request) {
-        log.info("request received {}", request);
+        LOGGER.info("request received {}", request);
         if (request.getBridgeId() != null && !request.getBridgeId().isEmpty()) {
             Event event = webhookService.create(request.toEntity());
-            log.info("new event created {}", event);
+            LOGGER.info("new event created {}", event);
             return Response.status(CREATED).entity(event).build();
         } else {
-            log.warn("skipping event creation");
+            LOGGER.warn("skipping event creation");
             return Response.accepted().build();
         }
     }
@@ -91,7 +94,7 @@ public class WebhookResource {
     @Path("/{id}")
     public Response delete(@NotEmpty @PathParam("id") Long id) {
         try {
-            log.info("deleting event id {}", id);
+            LOGGER.info("deleting event id {}", id);
             return Response.ok(webhookService.delete(id)).build();
         } catch (EventNotFoundException e) {
             return Response.status(NOT_FOUND).build();
@@ -100,7 +103,7 @@ public class WebhookResource {
 
     @DELETE
     public Response deleteAll() {
-        log.info("deleting all events");
+        LOGGER.info("deleting all events");
         return Response.ok(webhookService.deleteAll()).build();
     }
 }

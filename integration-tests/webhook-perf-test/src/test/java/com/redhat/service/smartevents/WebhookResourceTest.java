@@ -73,8 +73,8 @@ public class WebhookResourceTest {
             .body("", hasSize(0));
 
         List<Event> events = new ArrayList<>();
-        events.add(new Event().setBridgeId("bridgeId-1"));
-        events.add(new Event().setBridgeId("bridgeId-2"));
+        events.add(new Event().setId(1L).setBridgeId("bridgeId-1"));
+        events.add(new Event().setId(2L).setBridgeId("bridgeId-2"));
         Mockito.when(webhookService.findAll()).thenReturn(events);
 
         String results = given()
@@ -89,7 +89,7 @@ public class WebhookResourceTest {
 
     @Test
     void testGetEventById() throws EventNotFoundException {
-        Event event = new Event().setBridgeId("bridgeId-1");
+        Event event = new Event().setId(1L).setBridgeId("bridgeId-1");
         Mockito.when(webhookService.getEvent(1L)).thenThrow(new EventNotFoundException(1L)).thenReturn(event);
         given()
             .when()
@@ -112,8 +112,8 @@ public class WebhookResourceTest {
     @Test
     void testGetEventsByBridgeId() throws BridgeNotFoundException {
         List<Event> events = new ArrayList<>();
-        events.add(new Event().setBridgeId("bridgeId-1"));
-        events.add(new Event().setBridgeId("bridgeId-1"));
+        events.add(new Event().setId(1L).setBridgeId("bridgeId-1"));
+        events.add(new Event().setId(2L).setBridgeId("bridgeId-1"));
         Mockito.when(webhookService.getEventsByBridgeId("bridgeId-1")).thenThrow(new BridgeNotFoundException("bridgeId-1")).thenReturn(events);
         given()
                 .when()
