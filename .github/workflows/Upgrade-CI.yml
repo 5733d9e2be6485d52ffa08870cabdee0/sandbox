@@ -110,6 +110,10 @@ jobs:
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
+      - name: Install Camel K
+        run: |
+          chmod +x dev/bin/camel-k-installer.sh
+          ./dev/bin/camel-k-installer.sh
       - name: Install all resources
         run: kustomize build overlays/ci | oc apply -f -
         working-directory: kustomize
