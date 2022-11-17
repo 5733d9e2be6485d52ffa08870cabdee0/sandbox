@@ -52,9 +52,7 @@ if [ "${disable_extra_components}" != 'true' ]; then
   . "${SCRIPT_DIR_PATH}/knative-installer.sh"
   istioctl manifest apply --skip-confirmation --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
   sleep 5
-  # Camel-K installation
-  kubectl create namespace camel-k --dry-run=client -o yaml | kubectl apply -f -
-  kamel install --runtime-version 1.10.1 -n camel-k --force -w
+  . "${SCRIPT_DIR_PATH}/camel-k-installer.sh"
 fi
 
 set +x
