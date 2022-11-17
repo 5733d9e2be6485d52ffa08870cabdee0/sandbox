@@ -14,6 +14,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>SmartEvents :: Shard Operator</name>
 
+
   <dependencies>
     <dependency>
       <groupId>io.quarkiverse.operatorsdk</groupId>
