@@ -30,6 +30,7 @@ kubectl
 kustomize
 mvn
 ping
+uname
 "
 
 # check if required tools are installed

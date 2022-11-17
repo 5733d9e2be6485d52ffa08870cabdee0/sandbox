@@ -16,6 +16,7 @@ You will need the following installed locally on your machine to support local d
 * [jq](https://stedolan.github.io/jq/)
 * [curl](https://curl.se/) (or any other HTTP client)
 * [istioctl](https://istio.io/latest/docs/setup/getting-started/#download)
+* [Camel K CLI (kamel)](https://camel.apache.org/camel-k/1.10.x/cli/cli.html) v1.10.1 or above
 * Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
 
 ### macOS users:
