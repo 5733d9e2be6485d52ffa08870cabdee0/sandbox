@@ -92,7 +92,7 @@ jobs:
       - name: Install Camel K
         run: |
           chmod +x dev/bin/camel-k-installer.sh
-          ./dev/bin/camel-k-installer.sh
+          ./dev/bin/camel-k-installer.sh --registry kind-registry:5000
       - name: Deploy Shard operator
         env:
           DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
