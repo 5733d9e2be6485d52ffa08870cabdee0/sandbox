@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.api.user.models.responses;
 
+import javax.validation.constraints.NotNull;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,11 +18,13 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
     }
 
     @JsonProperty("name")
+    @NotNull
     protected String name;
 
     @JsonProperty("flows")
     // ObjectNode is not rendered properly by swagger
     @Schema(implementation = Object.class, required = true)
+    @NotNull
     private ObjectNode flows;
 
     @Override

@@ -291,7 +291,7 @@ paths:
       summary: Get the list of Processors of a Bridge instance
       description: Get the list of Processors of a Bridge instance for the authenticated
         user.
-      operationId: ProcessorsAPI_listProcessors
+      operationId: ProcessorsAPI_getProcessors
       parameters:
       - name: bridgeId
         in: path
@@ -362,7 +362,7 @@ paths:
       - Processors
       summary: Create a Processor of a Bridge instance
       description: Create a Processor of a Bridge instance for the authenticated user.
-      operationId: ProcessorsAPI_addProcessorToBridge
+      operationId: ProcessorsAPI_createProcessor
       parameters:
       - name: bridgeId
         in: path
@@ -1214,6 +1214,7 @@ components:
       - submitted_at
       - status
       - owner
+      - name
       - flows
       type: object
       properties:
@@ -1245,8 +1246,10 @@ components:
           nullable: false
         name:
           type: string
+          nullable: false
         flows:
           type: object
+          nullable: false
   securitySchemes:
     bearer:
       type: http
