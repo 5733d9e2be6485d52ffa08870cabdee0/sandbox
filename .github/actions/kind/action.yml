@@ -14,7 +14,7 @@ runs:
       uses: container-tools/kind-action@v2
       with:
         config: .github/kind-config.yaml
-        registry: false                  # Registry not needed
+        registry: true
         node_image: kindest/node:v1.22.2 # Newest image
     - name: Check cluster status
       shell: bash
