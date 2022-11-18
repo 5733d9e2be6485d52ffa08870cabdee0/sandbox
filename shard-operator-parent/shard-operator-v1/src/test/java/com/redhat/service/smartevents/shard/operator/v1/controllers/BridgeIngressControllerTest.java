@@ -10,11 +10,11 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.v1.TestSupport;
-import com.redhat.service.smartevents.shard.operator.v1.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.v1.utils.KubernetesResourcePatcher;

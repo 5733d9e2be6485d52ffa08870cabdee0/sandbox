@@ -26,6 +26,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
+import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
@@ -36,7 +37,6 @@ import com.redhat.service.smartevents.shard.operator.v1.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.v1.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.v1.networking.NetworkingService;
-import com.redhat.service.smartevents.shard.operator.v1.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressStatus;
 

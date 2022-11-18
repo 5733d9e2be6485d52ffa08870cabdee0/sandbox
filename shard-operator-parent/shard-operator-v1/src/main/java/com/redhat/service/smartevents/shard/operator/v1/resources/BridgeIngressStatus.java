@@ -6,6 +6,7 @@ import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
+import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
 /**
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>

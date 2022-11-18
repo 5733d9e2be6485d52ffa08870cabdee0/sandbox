@@ -5,6 +5,7 @@ import java.util.HashSet;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
+import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
 // used for testing purposes
 public class FooResourceStatus extends CustomResourceStatus {

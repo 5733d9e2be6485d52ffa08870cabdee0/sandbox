@@ -6,6 +6,7 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.shard.operator.core.utils.WebClientUtils;
 
 import io.vertx.mutiny.core.Vertx;
@@ -20,6 +21,7 @@ public class WebClientManagerProducer {
     @Inject
     Vertx vertx;
 
+    @V1
     @Produces
     public WebClient produce() {
         return WebClientUtils.getClient(vertx, eventBridgeManagerUrl);

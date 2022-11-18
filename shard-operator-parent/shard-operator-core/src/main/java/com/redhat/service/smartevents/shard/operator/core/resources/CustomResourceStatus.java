@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v1.resources;
+package com.redhat.service.smartevents.shard.operator.core.resources;
 
 import java.util.Collections;
 import java.util.Date;
@@ -12,14 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
-import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
 
-import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
 
 /**
@@ -110,58 +103,6 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
                 bridgeError.getReason(),
                 bridgeError.getReason(),
                 bridgeError.getCode());
-    }
-
-    @JsonIgnore
-    public final void setStatusFromDeployment(Deployment deployment) {
-        if (deployment.getStatus() == null) {
-            if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE)) {
-                markConditionFalse(ConditionTypeConstants.READY,
-                        ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE,
-                        "");
-            }
-            if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
-                markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
-            }
-        } else if (Readiness.isDeploymentReady(deployment)) {
-            if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_AVAILABLE)) {
-                markConditionFalse(ConditionTypeConstants.READY,
-                        ConditionReasonConstants.DEPLOYMENT_AVAILABLE,
-                        "");
-            }
-            if (!isConditionTypeTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
-                markConditionTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
-            }
-        } else {
-            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED)) {
-                    markConditionFalse(ConditionTypeConstants.READY,
-                            ConditionReasonConstants.DEPLOYMENT_FAILED,
-                            DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
-                }
-                if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
-                    markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
-                }
-            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED)) {
-                    markConditionFalse(ConditionTypeConstants.READY,
-                            ConditionReasonConstants.DEPLOYMENT_FAILED,
-                            DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
-                }
-                if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
-                    markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
-                }
-            } else {
-                if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE)) {
-                    markConditionFalse(ConditionTypeConstants.READY,
-                            ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE,
-                            "");
-                }
-                if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
-                    markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
-                }
-            }
-        }
     }
 
     public abstract ManagedResourceStatus inferManagedResourceStatus();
