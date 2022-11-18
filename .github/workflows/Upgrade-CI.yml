@@ -98,7 +98,7 @@ jobs:
           kind load docker-image $FLEET_MANAGER_CONTAINER_NAME
       - name: Build and Publish JVM Container - Minikube Fleet Shard
         run: |
-          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator/
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator-parent/shard-operator/
           kind load docker-image $FLEET_SHARD_MINIKUBE_CONTAINER_NAME
       - name: Build and Publish JVM Container - Executor
         run: |
@@ -183,7 +183,7 @@ jobs:
           kind load docker-image $FLEET_MANAGER_CONTAINER_NAME
       - name: Build and Publish JVM Container - Minikube Fleet Shard
         run: |
-          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator/
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator-parent/shard-operator/
           kind load docker-image $FLEET_SHARD_MINIKUBE_CONTAINER_NAME
       - name: Build and Publish JVM Container - Executor
         run: |

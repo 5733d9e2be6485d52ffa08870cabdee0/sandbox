@@ -43,10 +43,10 @@
     <module>test-utils</module>
     <module>processor</module>
     <module>executor</module>
-    <module>shard-operator</module>
     <module>rhoas-client</module>
     <module>infra-parent</module>
     <module>manager-parent</module>
+    <module>shard-operator-parent</module>
   </modules>
 
   <profiles>
