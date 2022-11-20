@@ -1,15 +1,12 @@
 package com.redhat.service.smartevents.shard.operator;
 
-import java.util.List;
-
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
-
+import com.redhat.service.smartevents.shard.operator.resources.Condition;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.core.buffer.Buffer;
-import io.vertx.mutiny.ext.web.client.HttpResponse;
+
+import java.util.List;
+import java.util.Set;
 
 public interface ManagerClient {
 
@@ -17,7 +14,7 @@ public interface ManagerClient {
 
     Uni<List<ProcessorDTO>> fetchProcessorsToDeployOrDelete();
 
-    Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(ManagedResourceStatusUpdateDTO dto);
+    void notifyBridgeStatusChange(String bridgeId, Set<Condition> conditions);
 
-    Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorManagedResourceStatusUpdateDTO dto);
+    void notifyProcessorStatusChange(String processorId, Set<Condition> conditions);
 }

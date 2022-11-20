@@ -1,16 +1,15 @@
 package com.redhat.service.smartevents.manager.metrics;
 
-import java.time.ZonedDateTime;
-import java.util.stream.Stream;
-
+import com.redhat.service.smartevents.infra.models.dto.ManagedBridgeStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
+import com.redhat.service.smartevents.manager.models.ManagedResource;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
-import com.redhat.service.smartevents.manager.models.ManagedResource;
+import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,7 +25,7 @@ public class ManagedResourceOperationMapperTest {
         managedResource.setStatus(managedResourceStatus);
         managedResource.setModifiedAt(isManagedResourceModified ? ZonedDateTime.now() : null);
 
-        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO();
+        ManagedBridgeStatusUpdateDTO updateDTO = new ManagedBridgeStatusUpdateDTO();
         updateDTO.setStatus(updateStatus);
 
         assertThat(ManagedResourceOperationMapper.inferOperation(managedResource, updateDTO)).isEqualTo(operation);

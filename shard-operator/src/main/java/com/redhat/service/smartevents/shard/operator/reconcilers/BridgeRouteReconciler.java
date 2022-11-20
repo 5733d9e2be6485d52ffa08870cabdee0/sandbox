@@ -2,12 +2,9 @@ package com.redhat.service.smartevents.shard.operator.reconcilers;
 
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
-import com.redhat.service.smartevents.shard.operator.comparators.IngressComparator;
 import com.redhat.service.smartevents.shard.operator.comparators.RouteComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.services.BridgeNetworkResourceService;
 import com.redhat.service.smartevents.shard.operator.services.BridgeRouteService;
-import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.openshift.api.model.Route;
 
 import javax.enterprise.context.ApplicationScoped;

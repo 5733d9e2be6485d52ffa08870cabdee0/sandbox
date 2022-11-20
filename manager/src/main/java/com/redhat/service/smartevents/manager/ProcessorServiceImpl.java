@@ -1,42 +1,16 @@
 package com.redhat.service.smartevents.manager;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.*;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.models.dto.*;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
@@ -57,6 +31,15 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
 import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
@@ -356,7 +339,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Processor updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO) {
+    public Processor updateProcessorStatus(ProcessorManagedBridgeStatusUpdateDTO updateDTO) {
         Bridge bridge = bridgesService.getBridge(updateDTO.getBridgeId());
         Processor processor = processorDAO.findById(updateDTO.getId());
         if (bridge == null || processor == null) {
@@ -391,7 +374,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                         bridge.setErrorId(null);
                         bridge.setErrorUUID(null);
                         bridge.setDependencyStatus(ManagedResourceStatus.READY);
-                        bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.PREPARING));
+                        bridgesService.updateBridgeStatus(new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.PREPARING));
                     }
                 }
                 metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);

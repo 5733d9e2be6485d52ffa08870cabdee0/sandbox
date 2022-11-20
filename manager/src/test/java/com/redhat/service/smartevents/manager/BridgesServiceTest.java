@@ -1,20 +1,5 @@
 package com.redhat.service.smartevents.manager;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
@@ -25,8 +10,8 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaA
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedBridgeStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
@@ -35,29 +20,25 @@ import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
-
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ENDPOINT;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_TLS_CERTIFICATE;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_TLS_KEY;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE_SIZE;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGION;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.SHARD_ID;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.*;
+import static com.redhat.service.smartevents.manager.TestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -185,7 +166,7 @@ public class BridgesServiceTest {
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
 
         // Emulate Shard setting Bridge status to PROVISIONING
-        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
+        ManagedBridgeStatusUpdateDTO updateDTO = new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
         bridgesService.updateBridgeStatus(updateDTO);
 
         // PROVISIONING Bridges are also notified to the Shard Operator.
@@ -208,7 +189,7 @@ public class BridgesServiceTest {
         ZonedDateTime modifiedAt = bridge.getModifiedAt();
 
         // Emulate Shard setting Bridge status to PROVISIONING
-        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
+        ManagedBridgeStatusUpdateDTO updateDTO = new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
         bridgesService.updateBridgeStatus(updateDTO);
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
@@ -217,7 +198,7 @@ public class BridgesServiceTest {
         assertThat(retrievedBridge.getPublishedAt()).isNull();
 
         // Once ready it should have its published date set
-        updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), READY);
+        updateDTO = new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), READY);
         bridgesService.updateBridgeStatus(updateDTO);
 
         Bridge publishedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
@@ -247,7 +228,7 @@ public class BridgesServiceTest {
 
         // Emulate Shard setting Bridge status to FAILED with Error
         BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
-        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), FAILED, bei);
+        ManagedBridgeStatusUpdateDTO updateDTO = new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), FAILED, bei);
 
         Bridge updated = bridgesService.updateBridgeStatus(updateDTO);
 
@@ -268,11 +249,11 @@ public class BridgesServiceTest {
 
         // Emulate Shard setting Bridge status to FAILED with Error
         BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
-        ManagedResourceStatusUpdateDTO updateDTOFailed = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), FAILED, bei);
+        ManagedBridgeStatusUpdateDTO updateDTOFailed = new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), FAILED, bei);
         bridgesService.updateBridgeStatus(updateDTOFailed);
 
         // Emulate Shard setting Bridge status to READY
-        ManagedResourceStatusUpdateDTO updateDTOReady = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), READY);
+        ManagedBridgeStatusUpdateDTO updateDTOReady = new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), READY);
 
         Bridge updated = bridgesService.updateBridgeStatus(updateDTOReady);
 
@@ -338,8 +319,8 @@ public class BridgesServiceTest {
         assertThat(bridgeDTO.getEndpoint()).isEqualTo(DEFAULT_BRIDGE_ENDPOINT);
         assertThat(bridgeDTO.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
         assertThat(bridgeDTO.getOwner()).isEqualTo(DEFAULT_CUSTOMER_ID);
-        assertThat(bridgeDTO.getTlsCertificate()).isEqualTo(DEFAULT_BRIDGE_TLS_CERTIFICATE);
-        assertThat(bridgeDTO.getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
+        assertThat(bridgeDTO.getDnsConfiguration().getTlsCertificate()).isEqualTo(DEFAULT_BRIDGE_TLS_CERTIFICATE);
+        assertThat(bridgeDTO.getDnsConfiguration().getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
     }
 
     @ParameterizedTest

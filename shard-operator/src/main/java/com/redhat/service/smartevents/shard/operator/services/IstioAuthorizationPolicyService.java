@@ -5,7 +5,7 @@ import com.redhat.service.smartevents.shard.operator.resources.istio.authorizati
 
 public interface IstioAuthorizationPolicyService {
 
-    AuthorizationPolicy createIstioAuthorizationPolicy(BridgeIngress bridgeIngress);
+    AuthorizationPolicy createIstioAuthorizationPolicy(BridgeIngress bridgeIngress, String path);
 
     AuthorizationPolicy fetchIstioAuthorizationPolicy(BridgeIngress bridgeIngress);
 }

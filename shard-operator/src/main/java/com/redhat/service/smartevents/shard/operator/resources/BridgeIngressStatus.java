@@ -2,8 +2,6 @@ package com.redhat.service.smartevents.shard.operator.resources;
 
 import java.util.HashSet;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-
 /**
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>
  * <p>
@@ -20,33 +18,16 @@ public class BridgeIngressStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> INGRESS_CONDITIONS = new HashSet<>() {
         {
-            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
-            add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.False));
+            add(new Condition(SECRET_AVAILABLE, ConditionStatus.False));
+            add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.False));
+            add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.False));
+            add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.False));
+            add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.False));
         }
     };
 
     public BridgeIngressStatus() {
         super(INGRESS_CONDITIONS);
     }
-
-    @Override
-    public ManagedResourceStatus inferManagedResourceStatus() {
-        if (isReady()) {
-            return ManagedResourceStatus.READY;
-        }
-        if (isConditionTypeFalse(ConditionTypeConstants.READY)
-                && !isConditionTypeTrue(SECRET_AVAILABLE)
-                && !isConditionTypeTrue(CONFIG_MAP_AVAILABLE)
-                && !isConditionTypeTrue(KNATIVE_BROKER_AVAILABLE)
-                && !isConditionTypeTrue(AUTHORISATION_POLICY_AVAILABLE)
-                && !isConditionTypeTrue(NETWORK_RESOURCE_AVAILABLE)) {
-            return ManagedResourceStatus.FAILED;
-        }
-        return ManagedResourceStatus.PROVISIONING;
-    }
-
 }

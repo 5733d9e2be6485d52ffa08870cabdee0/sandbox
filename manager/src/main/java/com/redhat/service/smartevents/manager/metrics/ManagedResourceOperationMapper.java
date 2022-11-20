@@ -1,11 +1,11 @@
 package com.redhat.service.smartevents.manager.metrics;
 
-import java.util.Objects;
-
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.models.dto.ManagedBridgeStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
+
+import java.util.Objects;
 
 public final class ManagedResourceOperationMapper {
 
@@ -43,7 +43,7 @@ public final class ManagedResourceOperationMapper {
 
     /**
      * Infer an operation from the state of an existing {@link ManagedResource}
-     * and an update to be applied {@link ManagedResourceStatusUpdateDTO}.
+     * and an update to be applied {@link ManagedBridgeStatusUpdateDTO}.
      * Only the "happy path" inference is handled; i.e. known transitions. All other
      * transitions result in {@see ManagedResourceOperation.NONE} being returned.
      * 
@@ -51,7 +51,7 @@ public final class ManagedResourceOperationMapper {
      * @param updateDTO
      * @return
      */
-    public static ManagedResourceOperation inferOperation(ManagedResource managedResource, ManagedResourceStatusUpdateDTO updateDTO) {
+    public static ManagedResourceOperation inferOperation(ManagedResource managedResource, ManagedBridgeStatusUpdateDTO updateDTO) {
         ManagedResourceStatus updateStatus = updateDTO.getStatus();
         ManagedResourceStatus resourceStatus = managedResource.getStatus();
         if (resourceStatus.equals(ManagedResourceStatus.DEPROVISION)

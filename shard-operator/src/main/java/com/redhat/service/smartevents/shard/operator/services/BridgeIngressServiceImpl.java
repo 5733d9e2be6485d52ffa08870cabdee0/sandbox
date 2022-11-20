@@ -25,12 +25,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     TemplateProvider templateProvider;
 
     @Override
-    public Ingress createBridgeIngress(BridgeIngress bridgeIngress) {
-        Service service = istioGatewayProvider.getIstioGatewayService();
-        return buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
+    public Ingress createBridgeIngress(BridgeIngress bridgeIngress, String path) {
+        Service istioGatewayService = istioGatewayProvider.getIstioGatewayService();
+        return buildIngress(bridgeIngress, istioGatewayService, istioGatewayProvider.getIstioGatewayServicePort(), path);
     }
 
-    private Ingress buildIngress(BridgeIngress bridgeIngress, Service service, Integer port, String path) {
+    private Ingress buildIngress(BridgeIngress bridgeIngress, Service istioGatewayService, Integer istioGatewayServicePort, String path) {
         /**
          * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
          */
@@ -38,12 +38,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .withNameFromParent()
                 .withPrimaryResourceFromParent());
         // Inherit the namespace from the service
-        ingress.getMetadata().setNamespace(service.getMetadata().getNamespace());
+        ingress.getMetadata().setNamespace(istioGatewayService.getMetadata().getNamespace());
 
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()
-                        .withName(service.getMetadata().getName())
-                        .withPort(new ServiceBackendPortBuilder().withNumber(port).build())
+                        .withName(istioGatewayService.getMetadata().getName())
+                        .withPort(new ServiceBackendPortBuilder().withNumber(istioGatewayServicePort).build())
                         .build())
                 .build();
 

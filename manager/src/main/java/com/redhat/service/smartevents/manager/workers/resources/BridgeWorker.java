@@ -1,17 +1,8 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.models.dto.ManagedBridgeStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.ProcessorService;
@@ -24,8 +15,14 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
-
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.Objects;
+import java.util.Optional;
 
 @ApplicationScoped
 public class BridgeWorker extends AbstractWorker<Bridge> {
@@ -220,7 +217,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
         // Updating the status through the service ensures metrics are correctly handled.
         BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(errorHandler.getErrorId(), errorHandler.getErrorUUID());
-        return bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.FAILED, bei));
+        return bridgesService.updateBridgeStatus(new ManagedBridgeStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.FAILED, bei));
     }
 
 }

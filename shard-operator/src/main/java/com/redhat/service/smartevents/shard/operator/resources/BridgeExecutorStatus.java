@@ -2,8 +2,6 @@ package com.redhat.service.smartevents.shard.operator.resources;
 
 import java.util.HashSet;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-
 public class BridgeExecutorStatus extends CustomResourceStatus {
 
     public static final String SECRET_AVAILABLE = "SecretAvailable";
@@ -14,33 +12,16 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> EXECUTOR_CONDITIONS = new HashSet<>() {
         {
-            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
-            add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(IMAGE_NAME_CORRECT, ConditionStatus.Unknown));
-            add(new Condition(DEPLOYMENT_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(SERVICE_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(SERVICE_MONITOR_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.False));
+            add(new Condition(SECRET_AVAILABLE, ConditionStatus.False));
+            add(new Condition(IMAGE_NAME_CORRECT, ConditionStatus.False));
+            add(new Condition(DEPLOYMENT_AVAILABLE, ConditionStatus.False));
+            add(new Condition(SERVICE_AVAILABLE, ConditionStatus.False));
+            add(new Condition(SERVICE_MONITOR_AVAILABLE, ConditionStatus.False));
         }
     };
 
     public BridgeExecutorStatus() {
         super(EXECUTOR_CONDITIONS);
     }
-
-    @Override
-    public ManagedResourceStatus inferManagedResourceStatus() {
-        if (isReady()) {
-            return ManagedResourceStatus.READY;
-        }
-        if (isConditionTypeFalse(ConditionTypeConstants.READY)
-                && !isConditionTypeTrue(SECRET_AVAILABLE)
-                && !isConditionTypeTrue(IMAGE_NAME_CORRECT)
-                && !isConditionTypeTrue(DEPLOYMENT_AVAILABLE)
-                && !isConditionTypeTrue(SERVICE_AVAILABLE)
-                && !isConditionTypeTrue(SERVICE_MONITOR_AVAILABLE)) {
-            return ManagedResourceStatus.FAILED;
-        }
-        return ManagedResourceStatus.PROVISIONING;
-    }
-
 }

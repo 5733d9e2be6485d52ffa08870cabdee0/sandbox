@@ -1,37 +1,15 @@
 package com.redhat.service.smartevents.manager;
 
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
-import com.redhat.service.smartevents.infra.models.dto.*;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.AMSFailException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.TermsNotAcceptedYetException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.*;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
+import com.redhat.service.smartevents.infra.models.dto.*;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -45,13 +23,27 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
-
 import dev.bf2.ffm.ams.core.AccountManagementService;
 import dev.bf2.ffm.ams.core.exceptions.TermsRequiredException;
 import dev.bf2.ffm.ams.core.models.AccountInfo;
 import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.ResourceCreated;
 import dev.bf2.ffm.ams.core.models.TermsRequest;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
 
@@ -285,7 +277,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public Bridge updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO) {
+    public Bridge updateBridgeStatus(ManagedBridgeStatusUpdateDTO updateDTO) {
         Bridge bridge = getBridge(updateDTO.getId(), updateDTO.getCustomerId());
         ManagedResourceOperation operation = inferOperation(bridge, updateDTO);
         bridge.setStatus(updateDTO.getStatus());

@@ -1,13 +1,11 @@
 package com.redhat.service.smartevents.shard.operator.services;
 
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorClient;
-import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorServiceImpl;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 import io.fabric8.kubernetes.api.model.LabelSelector;
-import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import org.slf4j.Logger;
@@ -15,12 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Optional;
 
 @ApplicationScoped
 public class BridgeExecutorServiceMonitorServiceImpl implements BridgeExecutorServiceMonitorService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceMonitorServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorServiceMonitorServiceImpl.class);
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -32,16 +29,11 @@ public class BridgeExecutorServiceMonitorServiceImpl implements BridgeExecutorSe
     public ServiceMonitor createBridgeExecutorServiceMonitorService(BridgeExecutor bridgeExecutor) {
         if (!ServiceMonitorClient.isServiceMonitorAvailable(kubernetesClient)) {
             LOGGER.warn("Prometheus Operator is not available in this cluster");
-            return Optional.empty();
+            return null;
         }
-
-        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource, TemplateImportConfig.withDefaults());
-        if (expected.getSpec().getSelector() == null) {
-            expected.getSpec().setSelector(new LabelSelector());
-        }
-        this.ensureLabels(expected, service, componentName);
-
-
+        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(bridgeExecutor, TemplateImportConfig.withDefaults());
+        ensureLabels(expected);
+        return expected;
     }
 
     @Override
@@ -51,8 +43,16 @@ public class BridgeExecutorServiceMonitorServiceImpl implements BridgeExecutorSe
                 .get();
     }
 
-    private void ensureLabels(final ServiceMonitor serviceMonitor, final Service service, final String component) {
-        serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).build());
-        serviceMonitor.getMetadata().setLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).withComponent(component).buildWithDefaults());
+    private void ensureLabels(final ServiceMonitor serviceMonitor) {
+        if (serviceMonitor.getSpec().getSelector() == null) {
+            serviceMonitor.getSpec().setSelector(new LabelSelector());
+        }
+        serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder()
+                .withAppInstance(serviceMonitor.getMetadata().getName())
+                .build());
+        serviceMonitor.getMetadata().setLabels(new LabelsBuilder()
+                .withAppInstance(serviceMonitor.getMetadata().getName())
+                .withComponent(BridgeExecutor.COMPONENT_NAME)
+                .buildWithDefaults());
     }
 }

@@ -1,36 +1,31 @@
 package com.redhat.service.smartevents.shard.operator;
 
-import java.util.List;
-import java.util.function.Function;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import io.smallrye.mutiny.unchecked.Unchecked;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.models.dto.*;
+import com.redhat.service.smartevents.shard.operator.converters.ConditionConverter;
 import com.redhat.service.smartevents.shard.operator.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
+import com.redhat.service.smartevents.shard.operator.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.utils.WebClientUtils;
-
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpRequest;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 @ApplicationScoped
 public class ManagerClientImpl implements ManagerClient {
@@ -48,6 +43,9 @@ public class ManagerClientImpl implements ManagerClient {
 
     @Inject
     ObjectMapper mapper;
+
+    @Inject
+    ConditionConverter conditionConverter;
 
     @Override
     public Uni<List<BridgeDTO>> fetchBridgesToDeployOrDelete() {
@@ -76,21 +74,37 @@ public class ManagerClientImpl implements ManagerClient {
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(ManagedResourceStatusUpdateDTO dto) {
-        LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", dto.getId());
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(dto))
+    public void notifyBridgeStatusChange(String bridgeId, Set<Condition> conditions) {
+        LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", bridgeId);
+
+        List<ConditionDTO> conditionDTOList = conditionConverter.fromConditionsToConditionDTOs(conditions);
+        ManagedBridgeStatusUpdateDTO updateDTO = new ManagedBridgeStatusUpdateDTO(bridgeId, conditionDTOList);
+
+        Uni<HttpResponse<Buffer>> responseUni = getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(updateDTO))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
+
+        responseUni.subscribe().with(
+                success -> LOGGER.info("Updating Bridge with id '{}' done", updateDTO.getBridgeId()),
+                failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", updateDTO.getBridgeId(), failure));
+
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorManagedResourceStatusUpdateDTO dto) {
-        LOGGER.debug("Notifying manager about the new status of the Processor '{}'", dto.getId());
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(dto))
+    public void notifyProcessorStatusChange(String processorId, Set<Condition> conditions) {
+        LOGGER.debug("Notifying manager about the new status of the Processor '{}'", processorId);
+        List<ConditionDTO> conditionDTOList = conditionConverter.fromConditionsToConditionDTOs(conditions);
+        ManagedProcessorStatusUpdateDTO updateDTO = new ManagedProcessorStatusUpdateDTO(processorId, conditionDTOList);
+
+        Uni<HttpResponse<Buffer>> responseUni =  getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(updateDTO))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
+
+        responseUni.subscribe().with(
+                success -> LOGGER.info("Updating Processor with id '{}' done", processorId),
+                failure -> LOGGER.error("Updating Processor with id '{}' FAILED", processorId, failure));
     }
 
     private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {

@@ -4,12 +4,8 @@ import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.IngressComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.services.BridgeIngressService;
-import com.redhat.service.smartevents.shard.operator.services.BridgeNetworkResourceService;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
-import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -25,9 +21,9 @@ public class BridgeIngressReconciler {
     @Inject
     BridgeIngressService bridgeIngressService;
 
-    public void reconcile(BridgeIngress bridgeIngress){
+    public void reconcile(BridgeIngress bridgeIngress, String path){
 
-        List<Ingress> requestResource = createRequiredResources(bridgeIngress);
+        List<Ingress> requestResource = createRequiredResources(bridgeIngress, path);
 
         List<Ingress> deployedResources = fetchDeployedResources(bridgeIngress);
 
@@ -52,8 +48,8 @@ public class BridgeIngressReconciler {
         */
     }
 
-    private List<Ingress> createRequiredResources(BridgeIngress bridgeIngress) {
-        Ingress requestedIngress = bridgeIngressService.createBridgeIngress(bridgeIngress);
+    private List<Ingress> createRequiredResources(BridgeIngress bridgeIngress, String path) {
+        Ingress requestedIngress = bridgeIngressService.createBridgeIngress(bridgeIngress, path);
         return Collections.singletonList(requestedIngress);
     }
 

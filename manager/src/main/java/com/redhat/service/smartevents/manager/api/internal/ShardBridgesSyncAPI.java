@@ -1,16 +1,17 @@
 package com.redhat.service.smartevents.manager.api.internal;
 
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.auth.IdentityResolver;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ForbiddenRequestException;
+import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedBridgeStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.manager.BridgesService;
+import com.redhat.service.smartevents.manager.ProcessorService;
+import com.redhat.service.smartevents.manager.ShardService;
+import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.Processor;
+import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -26,20 +27,11 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ForbiddenRequestException;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.manager.BridgesService;
-import com.redhat.service.smartevents.manager.ProcessorService;
-import com.redhat.service.smartevents.manager.ShardService;
-import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.Processor;
-
-import io.quarkus.security.Authenticated;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
@@ -86,7 +78,7 @@ public class ShardBridgesSyncAPI {
     @Operation(hidden = true, summary = "Update a Processor status.", description = "Update a Processor status.")
     @PUT
     @Path("processors")
-    public Response updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO) {
+    public Response updateProcessorStatus(ProcessorManagedBridgeStatusUpdateDTO updateDTO) {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Processing update from shard for Processor with id '{}' and bridgeId '{}' with status '{}'",
@@ -153,7 +145,7 @@ public class ShardBridgesSyncAPI {
     })
     @Operation(hidden = true, summary = "Update a Bridge status.", description = "Update a Bridge status.")
     @PUT
-    public Response updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO) {
+    public Response updateBridgeStatus(ManagedBridgeStatusUpdateDTO updateDTO) {
         String subject = identityResolver.resolve(jwt);
         failIfNotAuthorized(subject);
         LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", updateDTO.getId(), updateDTO.getStatus());

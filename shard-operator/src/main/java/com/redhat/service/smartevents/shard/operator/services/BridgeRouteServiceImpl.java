@@ -1,22 +1,20 @@
 package com.redhat.service.smartevents.shard.operator.services;
 
-import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import io.fabric8.kubernetes.api.model.IntOrString;
-import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RoutePortBuilder;
 import io.fabric8.openshift.api.model.RouteTargetReferenceBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Base64;
 
+@ApplicationScoped
 public class BridgeRouteServiceImpl implements BridgeRouteService {
 
     @Inject

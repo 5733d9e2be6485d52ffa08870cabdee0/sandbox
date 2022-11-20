@@ -1,23 +1,5 @@
 package com.redhat.service.smartevents.manager;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -26,22 +8,12 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.*;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.infra.models.dto.ManagedBridgeStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
-import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
-import com.redhat.service.smartevents.infra.models.filters.StringContains;
-import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.StringIn;
+import com.redhat.service.smartevents.infra.models.filters.*;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -57,26 +29,25 @@ import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
-
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import javax.inject.Inject;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.*;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.ERROR_HANDLER;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.*;
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
 import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,10 +56,7 @@ import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test {@link ProcessorService} methods mocking all dependencies
@@ -307,7 +275,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatus() {
-        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        ProcessorManagedBridgeStatusUpdateDTO updateDto = new ProcessorManagedBridgeStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(FAILED);
@@ -320,7 +288,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatusReadyPublishedAt() {
-        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        ProcessorManagedBridgeStatusUpdateDTO updateDto = new ProcessorManagedBridgeStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
@@ -342,7 +310,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatus_bridgeDoesNotExist() {
-        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        ProcessorManagedBridgeStatusUpdateDTO updateDto = new ProcessorManagedBridgeStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
@@ -353,7 +321,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatus_processorDoesNotExist() {
-        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        ProcessorManagedBridgeStatusUpdateDTO updateDto = new ProcessorManagedBridgeStatusUpdateDTO();
         updateDto.setId(NON_EXISTING_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
@@ -364,7 +332,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatusIncludingBridgeError() {
-        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        ProcessorManagedBridgeStatusUpdateDTO updateDto = new ProcessorManagedBridgeStatusUpdateDTO();
         BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
         updateDto.setId(PROVISIONING_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
@@ -381,7 +349,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatusClearsBridgeErrorWhenUndefined() {
-        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        ProcessorManagedBridgeStatusUpdateDTO updateDto = new ProcessorManagedBridgeStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
@@ -409,7 +377,7 @@ class ProcessorServiceTest {
         when(processorDAO.findById(DEFAULT_PROCESSOR_ID)).thenReturn(errorHandlerProcessor);
         when(bridgesServiceMock.getBridge(FAILED_BRIDGE_ID)).thenReturn(failedBridge);
 
-        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        ProcessorManagedBridgeStatusUpdateDTO updateDto = new ProcessorManagedBridgeStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
@@ -424,10 +392,10 @@ class ProcessorServiceTest {
         assertThat(failedBridge.getErrorId()).isNull();
         assertThat(failedBridge.getErrorUUID()).isNull();
 
-        ArgumentCaptor<ManagedResourceStatusUpdateDTO> statusArgumentCaptor = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
+        ArgumentCaptor<ManagedBridgeStatusUpdateDTO> statusArgumentCaptor = ArgumentCaptor.forClass(ManagedBridgeStatusUpdateDTO.class);
         verify(bridgesServiceMock).updateBridgeStatus(statusArgumentCaptor.capture());
 
-        ManagedResourceStatusUpdateDTO statusArgument = statusArgumentCaptor.getValue();
+        ManagedBridgeStatusUpdateDTO statusArgument = statusArgumentCaptor.getValue();
         assertThat(statusArgument).isNotNull();
         assertThat(statusArgument.getId()).isEqualTo(failedBridge.getId());
         assertThat(statusArgument.getCustomerId()).isEqualTo(failedBridge.getCustomerId());

@@ -1,50 +1,27 @@
 package com.redhat.service.smartevents.shard.operator.controllers;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import com.redhat.service.smartevents.shard.operator.reconcilers.*;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.reconcilers.*;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
-import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
+import com.redhat.service.smartevents.shard.operator.services.KnativeKafkaBrokerService;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
-
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.javaoperatorsdk.operator.api.reconciler.Context;
-import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
-import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
-import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
-import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
-import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
-import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
-import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
@@ -53,12 +30,6 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
-    @ConfigProperty(name = "event-bridge.ingress.deployment.timeout-seconds")
-    int ingressTimeoutSeconds;
-
-    @ConfigProperty(name = "event-bridge.ingress.poll-interval.milliseconds")
-    int ingressPollIntervalMilliseconds;
-
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -66,16 +37,10 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     ManagerClient managerClient;
 
     @Inject
-    BridgeIngressService bridgeIngressService;
-
-    @Inject
     NetworkingService networkingService;
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
-
-    @Inject
-    BridgeErrorHelper bridgeErrorHelper;
 
     @Inject
     OperatorMetricsService metricsService;
@@ -98,6 +63,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @Inject
     BridgeRouteReconciler bridgeRouteReconciler;
 
+    @Inject
+    KnativeKafkaBrokerService knativeKafkaBrokerService;
+
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
 
@@ -117,29 +85,24 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 bridgeIngress.getMetadata().getName(),
                 bridgeIngress.getMetadata().getNamespace());
 
-        knativeKafkaBrokerSecretReconciler.reconcile(bridgeIngress);
+        try {
+            knativeKafkaBrokerSecretReconciler.reconcile(bridgeIngress);
 
-        knativeKafkaBrokerConfigMapReconciler.reconcile(bridgeIngress);
+            knativeKafkaBrokerConfigMapReconciler.reconcile(bridgeIngress);
 
-        knativeKafkaBrokerReconciler.reconcile(bridgeIngress);
+            knativeKafkaBrokerReconciler.reconcile(bridgeIngress);
 
-        bridgeIngressReconciler.reconcile(bridgeIngress);
+            String path = knativeKafkaBrokerService.extractBrokerPath(bridgeIngress);
 
-        bridgeRouteReconciler.reconcile(bridgeIngress);
+            bridgeIngressReconciler.reconcile(bridgeIngress, path);
 
-        istioAuthorizationPolicyReconciler.reconcile(bridgeIngress);
+            bridgeRouteReconciler.reconcile(bridgeIngress);
 
-        // Only issue a Status Update once.
-        // This is a work-around for non-deterministic Unit Tests.
-        // See https://issues.redhat.com/browse/MGDOBR-1002
-        BridgeIngressStatus status = bridgeIngress.getStatus();
-        if (!status.isReady()) {
-            metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
-            status.markConditionTrue(ConditionTypeConstants.READY);
-            notifyManager(bridgeIngress, ManagedResourceStatus.READY);
+            istioAuthorizationPolicyReconciler.reconcile(bridgeIngress, path);
+        } catch (RuntimeException e) {
+            managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
             return UpdateControl.updateStatus(bridgeIngress);
         }
-
         return UpdateControl.noUpdate();
     }
 
@@ -161,14 +124,14 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
         metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
-        notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
+        managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
 
         return DeleteControl.defaultDelete();
     }
 
     @Override
     public Optional<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, RetryInfo retryInfo, RuntimeException e) {
-        if (retryInfo.isLastAttempt()) {
+        /*if (retryInfo.isLastAttempt()) {
 
             BridgeIngressStatus status = bridgeIngress.getStatus();
             status.markConditionFalse(ConditionTypeConstants.READY);
@@ -180,54 +143,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeIngress.getStatus().setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeIngress, bei);
-        }
+        }*/
         return Optional.of(bridgeIngress);
-    }
-
-    private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
-        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
-
-        managerClient.notifyBridgeStatusChange(updateDTO)
-                .subscribe().with(
-                        success -> LOGGER.info("Updating Bridge with id '{}' done", updateDTO.getId()),
-                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", updateDTO.getId(), failure));
-    }
-
-    private void notifyManagerOfFailure(BridgeIngress bridgeIngress, Exception e) {
-        BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
-        notifyManagerOfFailure(bridgeIngress, bei);
-    }
-
-    private void notifyManagerOfFailure(BridgeIngress bridgeIngress, BridgeErrorInstance bei) {
-        LOGGER.error("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                bridgeIngress.getMetadata().getName(),
-                bridgeIngress.getMetadata().getNamespace(),
-                bei.getReason());
-
-        metricsService.onOperationFailed(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
-
-        String id = bridgeIngress.getSpec().getId();
-        String customerId = bridgeIngress.getSpec().getCustomerId();
-        ManagedResourceStatusUpdateDTO dto = new ManagedResourceStatusUpdateDTO(id,
-                customerId,
-                FAILED,
-                bei);
-
-        managerClient.notifyBridgeStatusChange(dto)
-                .subscribe().with(
-                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
-                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
-    }
-
-    private String extractBrokerPath(KnativeBroker broker) {
-        if (broker == null || broker.getStatus() == null || broker.getStatus().getAddress().getUrl() == null) {
-            return null;
-        }
-        try {
-            return new URL(broker.getStatus().getAddress().getUrl()).getPath();
-        } catch (MalformedURLException e) {
-            LOGGER.info("Could not extract URL of the broker of BridgeIngress '{}'", broker.getMetadata().getName());
-            return null;
-        }
     }
 }

@@ -22,10 +22,10 @@ public class BridgeExecutorClusterIPServiceImpl implements BridgeExecutorCluster
     @Override
     public Service createBridgeExecutorClusterIPService(BridgeExecutor bridgeExecutor) {
         Service expected = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor, TemplateImportConfig.withDefaults());
-        expected.getMetadata().getLabels().put(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
+        expected.getMetadata().getLabels().put(LabelsBuilder.INSTANCE_LABEL, bridgeExecutor.getMetadata().getName());
 
         // Specs
-        expected.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
+        expected.getSpec().setSelector(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
         return expected;
     }
 

@@ -21,9 +21,9 @@ public class IstioAuthorizationPolicyReconciler {
     @Inject
     IstioAuthorizationPolicyService istioAuthorizationPolicyService;
 
-    public void reconcile(BridgeIngress bridgeIngress){
+    public void reconcile(BridgeIngress bridgeIngress, String path){
 
-        List<AuthorizationPolicy> requestResource = createRequiredResources(bridgeIngress);
+        List<AuthorizationPolicy> requestResource = createRequiredResources(bridgeIngress, path);
 
         List<AuthorizationPolicy> deployedResources = fetchDeployedResources(bridgeIngress);
 
@@ -38,8 +38,8 @@ public class IstioAuthorizationPolicyReconciler {
         */
     }
 
-    private List<AuthorizationPolicy> createRequiredResources(BridgeIngress bridgeIngress) {
-        AuthorizationPolicy requestedAuthorizationPolicy = istioAuthorizationPolicyService.createIstioAuthorizationPolicy(bridgeIngress);
+    private List<AuthorizationPolicy> createRequiredResources(BridgeIngress bridgeIngress, String path) {
+        AuthorizationPolicy requestedAuthorizationPolicy = istioAuthorizationPolicyService.createIstioAuthorizationPolicy(bridgeIngress, path);
         return Collections.singletonList(requestedAuthorizationPolicy);
     }
 

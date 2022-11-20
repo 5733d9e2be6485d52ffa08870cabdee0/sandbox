@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ProcessorType implements BaseEnumeration {
     SOURCE(Constants.SOURCE_VALUE),
-    SINK(Constants.SINK_VALUE),
-    ERROR_HANDLER(Constants.ERROR_HANDLER_VALUE);
+    SINK(Constants.SINK_VALUE);
 
     final String value;
 

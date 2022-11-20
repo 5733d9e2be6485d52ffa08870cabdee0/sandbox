@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.services;
 
+import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
@@ -25,8 +26,11 @@ public class IstioAuthorizationPolicyServiceImpl implements IstioAuthorizationPo
     @Inject
     IstioGatewayProvider istioGatewayProvider;
 
+    @Inject
+    GlobalConfigurationsProvider globalConfigurationsProvider;
+
     @Override
-    public AuthorizationPolicy createIstioAuthorizationPolicy(BridgeIngress bridgeIngress) {
+    public AuthorizationPolicy createIstioAuthorizationPolicy(BridgeIngress bridgeIngress, String path) {
         AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress,
                 new TemplateImportConfig().withNameFromParent()
                         .withPrimaryResourceFromParent());

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.models.dto.DnsConfigurationDTO;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -470,12 +471,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
                         bridgeResponse.getEndpoint(),
-                        null,
-                        null,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(null, null)));
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 
@@ -491,12 +490,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
                         bridgeResponse.getEndpoint(),
-                        DEFAULT_BRIDGE_TLS_CERTIFICATE,
-                        DEFAULT_BRIDGE_TLS_KEY,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(DEFAULT_BRIDGE_TLS_CERTIFICATE, DEFAULT_BRIDGE_TLS_KEY)));
 
         // The call to create a Bridge above is stubbed to be a NOP as WorkManager is mocked.
         // Therefore, manually create the Error Handler records that would have otherwise existed.
@@ -514,12 +511,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
                         bridgeResponse.getEndpoint(),
-                        DEFAULT_BRIDGE_TLS_CERTIFICATE,
-                        DEFAULT_BRIDGE_TLS_KEY,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         FAILED,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(DEFAULT_BRIDGE_TLS_CERTIFICATE, DEFAULT_BRIDGE_TLS_KEY)));
 
         // The call to create a Bridge above is stubbed to be a NOP as WorkManager is mocked.
         // Therefore, manually create the Error Handler records that would have otherwise existed.
@@ -554,12 +549,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
-                        DEFAULT_BRIDGE_TLS_CERTIFICATE,
-                        DEFAULT_BRIDGE_TLS_KEY,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(DEFAULT_BRIDGE_TLS_CERTIFICATE, DEFAULT_BRIDGE_TLS_KEY)));
 
         //Update Bridge removing ErrorHandler
         Action errorHandler = createWebhookAction();
@@ -590,12 +583,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
-                        DEFAULT_BRIDGE_TLS_CERTIFICATE,
-                        DEFAULT_BRIDGE_TLS_KEY,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(DEFAULT_BRIDGE_TLS_CERTIFICATE, DEFAULT_BRIDGE_TLS_KEY)));
 
         //Update Bridge removing ErrorHandler
         Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
@@ -624,12 +615,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
-                        DEFAULT_BRIDGE_TLS_CERTIFICATE,
-                        DEFAULT_BRIDGE_TLS_KEY,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(DEFAULT_BRIDGE_TLS_CERTIFICATE, DEFAULT_BRIDGE_TLS_KEY)));
 
         //Update Bridge removing ErrorHandler
         Action errorHandler2 = createWebhookAction();
@@ -670,12 +659,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
-                        DEFAULT_BRIDGE_TLS_CERTIFICATE,
-                        DEFAULT_BRIDGE_TLS_KEY,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(DEFAULT_BRIDGE_TLS_CERTIFICATE, DEFAULT_BRIDGE_TLS_KEY)));
 
         //Update Bridge removing ErrorHandler
         Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler2));
@@ -703,12 +690,10 @@ public class BridgesAPITest {
                 new BridgeDTO(bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
-                        DEFAULT_BRIDGE_TLS_CERTIFICATE,
-                        DEFAULT_BRIDGE_TLS_KEY,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,
-                        new KafkaConfigurationDTO()));
+                        new KafkaConfigurationDTO(), new DnsConfigurationDTO(DEFAULT_BRIDGE_TLS_CERTIFICATE, DEFAULT_BRIDGE_TLS_KEY)));
 
         //Attempt to update Bridge name
         Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME + "-updated", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));

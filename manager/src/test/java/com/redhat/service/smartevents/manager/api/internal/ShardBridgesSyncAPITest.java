@@ -7,14 +7,11 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.models.dto.*;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -46,14 +43,8 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGION;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.SHARD_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.*;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_TLS_KEY;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -101,12 +92,10 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TestConstants.DEFAULT_BRIDGE_ENDPOINT,
-                TEST_BRIDGE_TLS_CERTIFICATE,
-                TEST_BRIDGE_TLS_KEY,
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConfigurationDTO());
+                new KafkaConfigurationDTO(), new DnsConfigurationDTO(TEST_BRIDGE_TLS_CERTIFICATE, TEST_BRIDGE_TLS_KEY));
         TestUtils.updateBridge(bridge);
 
         //Create a Processor for the Bridge
@@ -143,12 +132,10 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeId,
                 bridgeResponse.getName(),
                 endpoint,
-                TEST_BRIDGE_TLS_CERTIFICATE,
-                TEST_BRIDGE_TLS_KEY,
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConfigurationDTO());
+                new KafkaConfigurationDTO(), new DnsConfigurationDTO(TEST_BRIDGE_TLS_CERTIFICATE, TEST_BRIDGE_TLS_KEY));
         TestUtils.updateBridge(bridge);
 
         //Create a Processor for the Bridge
@@ -183,13 +170,10 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TestConstants.DEFAULT_BRIDGE_ENDPOINT,
-                TEST_BRIDGE_TLS_CERTIFICATE,
-                TEST_BRIDGE_TLS_KEY,
-
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConfigurationDTO());
+                new KafkaConfigurationDTO(), new DnsConfigurationDTO(TEST_BRIDGE_TLS_CERTIFICATE, TEST_BRIDGE_TLS_KEY));
         TestUtils.updateBridge(bridge);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
@@ -221,13 +205,10 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TestConstants.DEFAULT_BRIDGE_ENDPOINT,
-                TEST_BRIDGE_TLS_CERTIFICATE,
-                TEST_BRIDGE_TLS_KEY,
-
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
-                new KafkaConfigurationDTO());
+                new KafkaConfigurationDTO(), new DnsConfigurationDTO(TEST_BRIDGE_TLS_CERTIFICATE, TEST_BRIDGE_TLS_KEY));
         TestUtils.updateBridge(bridge);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 

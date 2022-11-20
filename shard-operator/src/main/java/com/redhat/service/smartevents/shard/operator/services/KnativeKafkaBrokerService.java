@@ -8,4 +8,6 @@ public interface KnativeKafkaBrokerService {
     KnativeBroker createKnativeKafkaBroker(BridgeIngress bridgeIngress);
 
     KnativeBroker fetchKnativeKafkaBroker(BridgeIngress bridgeIngress);
+
+    String extractBrokerPath(BridgeIngress bridgeIngress);
 }
