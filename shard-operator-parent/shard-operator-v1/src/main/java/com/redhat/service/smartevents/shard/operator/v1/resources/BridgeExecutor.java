@@ -1,4 +1,5 @@
 package com.redhat.service.smartevents.shard.operator.v1.resources;
+import com.redhat.service.smartevents.shard.operator.v1.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,19 +187,14 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         }
 
         private void validate() {
-            requireNonNull(emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
-            requireNonNull(emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
-            requireNonNull(emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
-            requireNonNull(emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
-            requireNonNull(emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
-            requireNonNull(emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
             requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
         }
     }
-    static boolean stringIsNullOrEmpty(String string) {
-        return string == null || string.isEmpty();
-    }
-    static String emptyToNull(String string) {
-        return stringIsNullOrEmpty(string) ? null : string;
-    }
+
 }

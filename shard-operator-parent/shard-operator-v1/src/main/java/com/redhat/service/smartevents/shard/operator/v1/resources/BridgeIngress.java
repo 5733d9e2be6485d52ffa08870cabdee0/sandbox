@@ -7,6 +7,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 
+import com.redhat.service.smartevents.shard.operator.v1.utils.StringUtils;
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -139,17 +140,12 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         }
 
         private void validate() {
-            requireNonNull(emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
-            requireNonNull(emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
-            requireNonNull(emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
-            requireNonNull(emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
-            requireNonNull(emptyToNull(this.host), "[BridgeIngress] Host can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.host), "[BridgeIngress] Host can't be null");
         }
     }
-    static boolean stringIsNullOrEmpty(String string) {
-        return string == null || string.isEmpty();
-    }
-    static String emptyToNull(String string) {
-        return stringIsNullOrEmpty(string) ? null : string;
-    }
+
 }
