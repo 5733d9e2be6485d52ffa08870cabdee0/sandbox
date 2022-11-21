@@ -18,12 +18,11 @@ public class BridgeIngressStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> INGRESS_CONDITIONS = new HashSet<>() {
         {
-            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.False));
-            add(new Condition(SECRET_AVAILABLE, ConditionStatus.False));
-            add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.False));
-            add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.False));
-            add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.False));
-            add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.False));
+            add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.Unknown));
         }
     };
 

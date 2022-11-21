@@ -29,7 +29,6 @@ public class BridgeExecutorSecretServiceImpl implements BridgeExecutorSecretServ
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR, kafkaConfiguration.getClientSecret());
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR, kafkaConfiguration.getSecurityProtocol());
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR, kafkaConfiguration.getTopic());
-        expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR, kafkaConfiguration.getErrorTopic());
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR, bridgeExecutor.getSpec().getId());
 
         return expected;

@@ -1,9 +1,5 @@
 package com.redhat.service.smartevents.executor;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
@@ -18,9 +14,12 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ExecutorTestUtils {
 
@@ -99,7 +98,6 @@ public class ExecutorTestUtils {
                 "test",
                 "PLAINTEXT",
                 "PLAIN",
-                "ob-bridgeid-1",
-                "ob-bridgeid-1-errors");
+                "ob-bridgeid-1");
     }
 }

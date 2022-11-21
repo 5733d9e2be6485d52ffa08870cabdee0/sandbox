@@ -28,17 +28,10 @@ public class DeltaProcessorServiceImpl implements DeltaProcessorService {
             return false;
         }
 
-        kubernetesClient.resources(resourceType).create(toArray(resourceDelta.getCreated(), resourceType));
-        kubernetesClient.resources(resourceType).createOrReplace(toArray(resourceDelta.getUpdated(), resourceType));
-        kubernetesClient.resources(resourceType).delete(resourceDelta.getDeleted());
-        return true;
-    }
 
-    private static <T> T[] toArray(List<T> resources, Class<T> resourceType) {
-        T[] resourceArray = (T[]) java.lang.reflect.Array.newInstance(resourceType, resources.size());
-        for (int i = 0; i < resources.size(); i++) {
-            resourceArray[i] = resources.get(i);
-        }
-        return resourceArray;
+        resourceDelta.getCreated().forEach(resource -> kubernetesClient.resources(resourceType).inNamespace(resource.getMetadata().getNamespace()).create(resource));
+        resourceDelta.getUpdated().forEach(resource -> kubernetesClient.resources(resourceType).inNamespace(resource.getMetadata().getNamespace()).createOrReplace(resource));
+        resourceDelta.getDeleted().forEach(resource -> kubernetesClient.resources(resourceType).inNamespace(resource.getMetadata().getNamespace()).delete(resource));
+        return true;
     }
 }

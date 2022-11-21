@@ -6,6 +6,6 @@ public class IngressComparator implements Comparator<Ingress> {
 
     @Override
     public boolean compare(Ingress requestedResource, Ingress deployedResource) {
-        return false;
+        return requestedResource.getSpec().equals(deployedResource.getSpec());
     }
 }

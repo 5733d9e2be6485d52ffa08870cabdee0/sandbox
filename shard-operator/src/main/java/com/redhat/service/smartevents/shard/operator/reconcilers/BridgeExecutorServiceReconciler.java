@@ -46,17 +46,17 @@ public class BridgeExecutorServiceReconciler {
     }
 
     private List<Service> createRequiredResources(BridgeExecutor bridgeExecutor) {
-        Service requestedKafkaSecret = bridgeExecutorClusterIPService.createBridgeExecutorClusterIPService(bridgeExecutor);
-        return Collections.singletonList(requestedKafkaSecret);
+        Service requestedService = bridgeExecutorClusterIPService.createBridgeExecutorClusterIPService(bridgeExecutor);
+        return Collections.singletonList(requestedService);
     }
 
     private List<Service> fetchDeployedResources(BridgeExecutor bridgeExecutor) {
-        Service deployedKafkaSecret = bridgeExecutorClusterIPService.fetchBridgeExecutorClusterIPService(bridgeExecutor);
-        return Collections.singletonList(deployedKafkaSecret);
+        Service deployedService = bridgeExecutorClusterIPService.fetchBridgeExecutorClusterIPService(bridgeExecutor);
+        return deployedService == null ? Collections.EMPTY_LIST : Collections.singletonList(deployedService);
     }
 
     private void processDelta(List<Service> requestedResources, List<Service> deployedResources) {
         Comparator<Service> serviceComparator = new ServiceComparator();
-        boolean deltaProcessed = deltaProcessorService.processDelta(Service.class, serviceComparator, requestedResources, deployedResources);
+        deltaProcessorService.processDelta(Service.class, serviceComparator, requestedResources, deployedResources);
     }
 }

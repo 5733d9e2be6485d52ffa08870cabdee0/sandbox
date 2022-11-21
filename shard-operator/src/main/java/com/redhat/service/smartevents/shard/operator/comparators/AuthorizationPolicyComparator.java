@@ -6,6 +6,6 @@ public class AuthorizationPolicyComparator implements Comparator<AuthorizationPo
 
     @Override
     public boolean compare(AuthorizationPolicy requestedResource, AuthorizationPolicy deployedResource) {
-        return false;
+        return requestedResource.getSpec().getRules().equals(deployedResource.getSpec().getRules());
     }
 }

@@ -12,12 +12,11 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> EXECUTOR_CONDITIONS = new HashSet<>() {
         {
-            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.False));
-            add(new Condition(SECRET_AVAILABLE, ConditionStatus.False));
-            add(new Condition(IMAGE_NAME_CORRECT, ConditionStatus.False));
-            add(new Condition(DEPLOYMENT_AVAILABLE, ConditionStatus.False));
-            add(new Condition(SERVICE_AVAILABLE, ConditionStatus.False));
-            add(new Condition(SERVICE_MONITOR_AVAILABLE, ConditionStatus.False));
+            add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(IMAGE_NAME_CORRECT, ConditionStatus.Unknown));
+            add(new Condition(DEPLOYMENT_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(SERVICE_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(SERVICE_MONITOR_AVAILABLE, ConditionStatus.Unknown));
         }
     };
 

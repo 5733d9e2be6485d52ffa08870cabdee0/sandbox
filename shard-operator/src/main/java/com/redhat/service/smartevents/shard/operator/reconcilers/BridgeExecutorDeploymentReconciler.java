@@ -1,20 +1,11 @@
 package com.redhat.service.smartevents.shard.operator.reconcilers;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningReplicaFailureException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.DeploymentComparator;
-import com.redhat.service.smartevents.shard.operator.comparators.SecretComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorDeploymentService;
-import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorSecretService;
-import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
-import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.client.internal.readiness.Readiness;
-import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -70,13 +61,13 @@ public class BridgeExecutorDeploymentReconciler {
     }
 
     private List<Deployment> createRequiredResources(BridgeExecutor bridgeExecutor) {
-        Deployment requestedKafkaSecret = bridgeExecutorDeploymentService.createBridgeExecutorDeployment(bridgeExecutor);
-        return Collections.singletonList(requestedKafkaSecret);
+        Deployment requestedDeployment = bridgeExecutorDeploymentService.createBridgeExecutorDeployment(bridgeExecutor);
+        return Collections.singletonList(requestedDeployment);
     }
 
     private List<Deployment> fetchDeployedResources(BridgeExecutor bridgeExecutor) {
-        Deployment deployedKafkaSecret = bridgeExecutorDeploymentService.fetchBridgeExecutorDeployment(bridgeExecutor);
-        return Collections.singletonList(deployedKafkaSecret);
+        Deployment deployedDeployment = bridgeExecutorDeploymentService.fetchBridgeExecutorDeployment(bridgeExecutor);
+        return deployedDeployment == null ? Collections.EMPTY_LIST : Collections.singletonList(deployedDeployment);
     }
 
     private void processDelta(List<Deployment> requestedResources, List<Deployment> deployedResources) {

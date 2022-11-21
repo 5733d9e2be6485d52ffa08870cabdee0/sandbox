@@ -9,8 +9,6 @@ import java.util.Objects;
  */
 public class BridgeIngressSpec {
 
-    private String image;
-
     private String customerId;
 
     private String owner;
@@ -24,14 +22,6 @@ public class BridgeIngressSpec {
     private KafkaConfiguration kafkaConfiguration;
 
     private DnsConfiguration dnsConfiguration;
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
 
     public String getCustomerId() {
         return customerId;
@@ -98,8 +88,7 @@ public class BridgeIngressSpec {
             return false;
         }
         BridgeIngressSpec that = (BridgeIngressSpec) o;
-        return Objects.equals(image, that.image)
-                && Objects.equals(customerId, that.customerId)
+        return Objects.equals(customerId, that.customerId)
                 && Objects.equals(owner, that.owner)
                 && Objects.equals(bridgeName, that.bridgeName)
                 && Objects.equals(id, that.id)
@@ -108,6 +97,6 @@ public class BridgeIngressSpec {
 
     @Override
     public int hashCode() {
-        return Objects.hash(image, customerId, bridgeName, id, host);
+        return Objects.hash(customerId, bridgeName, id, host);
     }
 }

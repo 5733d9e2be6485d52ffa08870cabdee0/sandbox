@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConfigurationDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorSpec;
 import com.redhat.service.smartevents.shard.operator.resources.KafkaConfiguration;
@@ -55,7 +54,6 @@ public class BridgeExecutorConverter {
         kafkaConfiguration.setSecurityProtocol(kafkaConfigurationDTO.getSecurityProtocol());
         kafkaConfiguration.setSaslMechanism(kafkaConfigurationDTO.getSaslMechanism());
         kafkaConfiguration.setTopic(kafkaConfigurationDTO.getTopic());
-        kafkaConfiguration.setErrorTopic(kafkaConfigurationDTO.getErrorTopic());
         kafkaConfiguration.setClientId(kafkaConfigurationDTO.getClientId());
         kafkaConfiguration.setClientSecret(kafkaConfigurationDTO.getClientSecret());
         return kafkaConfiguration;

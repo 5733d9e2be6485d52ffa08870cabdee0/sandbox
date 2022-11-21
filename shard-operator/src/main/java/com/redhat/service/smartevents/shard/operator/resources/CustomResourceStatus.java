@@ -3,10 +3,8 @@ package com.redhat.service.smartevents.shard.operator.resources;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -37,56 +35,8 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     }
 
     @JsonIgnore
-    public final boolean isReady() {
-        return conditions.stream().anyMatch(c -> ConditionTypeConstants.READY.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
-    }
-
-    @JsonIgnore
     public final boolean isConditionTypeTrue(final String conditionType) {
         return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
     }
 
-    @JsonIgnore
-    public final boolean isConditionTypeFalse(final String conditionType) {
-        return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.False.equals(c.getStatus()));
-    }
-
-    public void markConditionFalse(final String conditionType, final String reason, final String message, final String errorCode) {
-        final Optional<Condition> condition = this.getConditionByType(conditionType);
-        if (condition.isPresent()) {
-            condition.get().setMessage(message);
-            condition.get().setErrorCode(errorCode);
-            condition.get().setReason(reason);
-            condition.get().setStatus(ConditionStatus.False);
-            condition.get().setLastTransitionTime(new Date());
-            this.conditions.add(condition.get());
-        }
-    }
-
-    public void markConditionFalse(final String conditionType) {
-        markConditionFalse(conditionType, null, "", null);
-    }
-
-    public void markConditionTrue(final String conditionType, final String reason) {
-        final Optional<Condition> condition = this.getConditionByType(conditionType);
-        if (condition.isPresent()) {
-            condition.get().setMessage("");
-            condition.get().setReason(reason);
-            condition.get().setStatus(ConditionStatus.True);
-            condition.get().setLastTransitionTime(new Date());
-            this.conditions.add(condition.get());
-        }
-    }
-
-    public void markConditionTrue(final String conditionType) {
-        markConditionTrue(conditionType, null);
-    }
-
-    @JsonIgnore
-    public final void setStatusFromBridgeError(BridgeError bridgeError) {
-        markConditionFalse(ConditionTypeConstants.READY,
-                bridgeError.getReason(),
-                bridgeError.getReason(),
-                bridgeError.getCode());
-    }
 }

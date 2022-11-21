@@ -9,6 +9,6 @@ public class BridgeExecutorComparator implements Comparator<BridgeExecutor> {
 
     @Override
     public boolean compare(BridgeExecutor requestedResource, BridgeExecutor deployedResource) {
-        return false;
+        return requestedResource.getSpec().equals(deployedResource.getSpec());
     }
 }

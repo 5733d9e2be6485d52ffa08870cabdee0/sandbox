@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.shard.operator.resources;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class KafkaConfiguration {
 
     private String bootstrapServers;
@@ -15,8 +13,6 @@ public class KafkaConfiguration {
     private String saslMechanism;
 
     private String topic;
-
-    private String errorTopic;
 
     public String getBootstrapServers() {
         return bootstrapServers;
@@ -64,13 +60,5 @@ public class KafkaConfiguration {
 
     public void setTopic(String topic) {
         this.topic = topic;
-    }
-
-    public String getErrorTopic() {
-        return errorTopic;
-    }
-
-    public void setErrorTopic(String errorTopic) {
-        this.errorTopic = errorTopic;
     }
 }

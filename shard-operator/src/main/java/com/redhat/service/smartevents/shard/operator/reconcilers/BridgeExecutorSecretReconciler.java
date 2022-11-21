@@ -4,11 +4,8 @@ import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.SecretComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorSecretService;
 import io.fabric8.kubernetes.api.model.Secret;
-import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -54,7 +51,7 @@ public class BridgeExecutorSecretReconciler {
 
     private List<Secret> fetchDeployedResources(BridgeExecutor bridgeExecutor) {
         Secret deployedKafkaSecret = bridgeExecutorSecretService.fetchBridgeExecutorSecret(bridgeExecutor);
-        return Collections.singletonList(deployedKafkaSecret);
+        return deployedKafkaSecret == null ? Collections.EMPTY_LIST : Collections.singletonList(deployedKafkaSecret);
     }
 
     private void processDelta(List<Secret> requestedResources, List<Secret> deployedResources) {

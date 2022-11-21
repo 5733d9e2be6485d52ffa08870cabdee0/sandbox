@@ -24,20 +24,16 @@ public class KafkaConfigurationDTO {
     @JsonProperty("topic")
     private String topic;
 
-    @JsonProperty("errorTopic")
-    private String errorTopic;
-
     public KafkaConfigurationDTO() {
     }
 
-    public KafkaConfigurationDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String saslMechanism, String topic, String errorTopic) {
+    public KafkaConfigurationDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String saslMechanism, String topic) {
         this.bootstrapServers = bootstrapServers;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.securityProtocol = securityProtocol;
         this.saslMechanism = saslMechanism;
         this.topic = topic;
-        this.errorTopic = errorTopic;
     }
 
     public String getBootstrapServers() {
@@ -64,10 +60,6 @@ public class KafkaConfigurationDTO {
         return topic;
     }
 
-    public String getErrorTopic() {
-        return errorTopic;
-    }
-
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
     }
@@ -92,10 +84,6 @@ public class KafkaConfigurationDTO {
         this.topic = topic;
     }
 
-    public void setErrorTopic(String errorTopic) {
-        this.errorTopic = errorTopic;
-    }
-
     @Override
     public String toString() {
         return "KafkaConnection{" +
@@ -105,7 +93,6 @@ public class KafkaConfigurationDTO {
                 ", securityProtocol='" + securityProtocol + '\'' +
                 ", saslMechanism='" + saslMechanism + '\'' +
                 ", topic=" + topic + '\'' +
-                ", errorTopic=" + errorTopic + '\'' +
                 '}';
     }
 }

@@ -339,12 +339,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Processor updateProcessorStatus(ProcessorManagedBridgeStatusUpdateDTO updateDTO) {
-        Bridge bridge = bridgesService.getBridge(updateDTO.getBridgeId());
-        Processor processor = processorDAO.findById(updateDTO.getId());
-        if (bridge == null || processor == null) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", updateDTO.getId(), updateDTO.getBridgeId(),
-                    updateDTO.getCustomerId()));
+    public Processor updateProcessorStatus(ManagedProcessorStatusUpdateDTO updateDTO) {
+        Processor processor = processorDAO.findById(updateDTO.getProcessorId());
+        if (processor == null) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist", updateDTO.getProcessorId()));
         }
         ManagedResourceOperation operation = inferOperation(processor, updateDTO);
         processor.setStatus(updateDTO.getStatus());
@@ -466,14 +464,11 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 internalKafkaConfigurationProvider.getSaslMechanism(),
-                getProcessorTopicName(processor),
-                resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
+                getProcessorTopicName(processor));
     }
 
     private String getProcessorTopicName(Processor processor) {
         switch (processor.getType()) {
-            case ERROR_HANDLER:
-                return resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
             case SOURCE:
                 return resourceNamesProvider.getProcessorTopicName(processor.getId());
             default:

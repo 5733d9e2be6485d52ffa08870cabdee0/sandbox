@@ -6,6 +6,6 @@ public class KnativeBrokerComparator implements Comparator<KnativeBroker> {
 
     @Override
     public boolean compare(KnativeBroker requestedResource, KnativeBroker deployedResource) {
-        return false;
+        return requestedResource.getSpec().equals(deployedResource.getSpec());
     }
 }

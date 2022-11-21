@@ -45,7 +45,6 @@ public class BridgeIngressConverter {
         kafkaConfiguration.setSaslMechanism(kafkaConfigurationDTO.getSaslMechanism());
         kafkaConfiguration.setSecurityProtocol(kafkaConfigurationDTO.getSecurityProtocol());
         kafkaConfiguration.setTopic(kafkaConfigurationDTO.getTopic());
-        kafkaConfiguration.setErrorTopic(kafkaConfigurationDTO.getErrorTopic());
         return kafkaConfiguration;
     }
 

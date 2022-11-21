@@ -6,6 +6,6 @@ public class RouteComparator implements Comparator<Route> {
 
     @Override
     public boolean compare(Route requestedResource, Route deployedResource) {
-        return false;
+        return requestedResource.getSpec().equals(deployedResource.getSpec());
     }
 }

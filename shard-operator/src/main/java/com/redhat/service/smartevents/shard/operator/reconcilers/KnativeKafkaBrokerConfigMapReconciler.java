@@ -3,9 +3,14 @@ package com.redhat.service.smartevents.shard.operator.reconcilers;
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.ConfigMapComparator;
+import com.redhat.service.smartevents.shard.operator.exceptions.ReconcilationFailedException;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.services.KnativeKafkaBrokerConfigMapService;
+import com.redhat.service.smartevents.shard.operator.services.StatusService;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -14,27 +19,30 @@ import java.util.List;
 
 @ApplicationScoped
 public class KnativeKafkaBrokerConfigMapReconciler {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(KnativeKafkaBrokerConfigMapReconciler.class);
     @Inject
     DeltaProcessorService deltaProcessorService;
 
     @Inject
     KnativeKafkaBrokerConfigMapService knativeKafkaBrokerConfigMapService;
 
+    @Inject
+    StatusService statusService;
+
     public void reconcile(BridgeIngress bridgeIngress){
 
-        List<ConfigMap> requestResource = createRequiredResources(bridgeIngress);
+        try {
+            List<ConfigMap> requestResource = createRequiredResources(bridgeIngress);
 
-        List<ConfigMap> deployedResources = fetchDeployedResources(bridgeIngress);
+            List<ConfigMap> deployedResources = fetchDeployedResources(bridgeIngress);
 
-        processDelta(requestResource, deployedResources);
+            processDelta(requestResource, deployedResources);
 
-/*
-        // Nothing to check for ConfigMap
-        ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
-        if (!status.isConditionTypeTrue(BridgeIngressStatus.CONFIG_MAP_AVAILABLE)) {
-            status.markConditionTrue(BridgeIngressStatus.CONFIG_MAP_AVAILABLE);
-        }*/
+            statusService.updateStatusForSuccessfulReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.CONFIG_MAP_AVAILABLE);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to reconcile Knative Kafka Broker ConfigMap", e);
+            throw new ReconcilationFailedException(BridgeIngressStatus.CONFIG_MAP_AVAILABLE, e);
+        }
     }
 
     private List<ConfigMap> createRequiredResources(BridgeIngress bridgeIngress) {
@@ -44,11 +52,11 @@ public class KnativeKafkaBrokerConfigMapReconciler {
 
     private List<ConfigMap> fetchDeployedResources(BridgeIngress bridgeIngress) {
         ConfigMap deployedKafkaSecret = knativeKafkaBrokerConfigMapService.fetchKnativeKafkaBrokerConfigMap(bridgeIngress);
-        return Collections.singletonList(deployedKafkaSecret);
+        return deployedKafkaSecret == null ? Collections.EMPTY_LIST : Collections.singletonList(deployedKafkaSecret);
     }
 
     private void processDelta(List<ConfigMap> requestedResources, List<ConfigMap> deployedResources) {
         Comparator<ConfigMap> configMapComparator = new ConfigMapComparator();
-        boolean deltaProcessed = deltaProcessorService.processDelta(ConfigMap.class, configMapComparator, requestedResources, deployedResources);
+        deltaProcessorService.processDelta(ConfigMap.class, configMapComparator, requestedResources, deployedResources);
     }
 }

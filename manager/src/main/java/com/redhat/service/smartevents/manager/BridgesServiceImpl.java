@@ -332,8 +332,7 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 internalKafkaConfigurationProvider.getSaslMechanism(),
-                resourceNamesProvider.getBridgeTopicName(bridge.getId()),
-                resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
+                resourceNamesProvider.getBridgeTopicName(bridge.getId()));
         DnsConfigurationDTO dncConfiguration = new DnsConfigurationDTO(tlsCertificate, tlsKey);
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());

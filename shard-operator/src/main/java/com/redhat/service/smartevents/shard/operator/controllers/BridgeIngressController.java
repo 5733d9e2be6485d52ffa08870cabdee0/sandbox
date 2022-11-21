@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator.controllers;
 
 import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
+import com.redhat.service.smartevents.shard.operator.exceptions.ReconcilationFailedException;
 import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
@@ -9,8 +10,8 @@ import com.redhat.service.smartevents.shard.operator.reconcilers.*;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.services.KnativeKafkaBrokerService;
+import com.redhat.service.smartevents.shard.operator.services.StatusService;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
-import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration()
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
         EventSourceInitializer<BridgeIngress>, ErrorStatusHandler<BridgeIngress> {
 
@@ -66,6 +67,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @Inject
     KnativeKafkaBrokerService knativeKafkaBrokerService;
 
+    @Inject
+    StatusService statusService;
+
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
 
@@ -99,11 +103,13 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             bridgeRouteReconciler.reconcile(bridgeIngress);
 
             istioAuthorizationPolicyReconciler.reconcile(bridgeIngress, path);
-        } catch (RuntimeException e) {
-            managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
-            return UpdateControl.updateStatus(bridgeIngress);
+
+        } catch (ReconcilationFailedException e) {
+            statusService.updateStatusForFailedReconciliation(bridgeIngress.getStatus(), e);
         }
-        return UpdateControl.noUpdate();
+//        managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
+        return UpdateControl.updateStatus(bridgeIngress);
+        //return UpdateControl.noUpdate();
     }
 
     @Override
