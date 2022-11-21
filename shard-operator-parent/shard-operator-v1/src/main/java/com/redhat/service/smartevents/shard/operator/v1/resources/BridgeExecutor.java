@@ -1,11 +1,9 @@
 package com.redhat.service.smartevents.shard.operator.v1.resources;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
@@ -188,13 +186,19 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         }
 
         private void validate() {
-            requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
-            requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
-            requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
-            requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
-            requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
-            requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
+            requireNonNull(emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
+            requireNonNull(emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
+            requireNonNull(emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
+            requireNonNull(emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
+            requireNonNull(emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
+            requireNonNull(emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
             requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
         }
+    }
+    static boolean stringIsNullOrEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
+    static String emptyToNull(String string) {
+        return stringIsNullOrEmpty(string) ? null : string;
     }
 }
