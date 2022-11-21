@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator;
 
 import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeReconciler;
 import com.redhat.service.smartevents.shard.operator.reconcilers.ProcessorReconciler;
+import io.quarkus.scheduler.Scheduled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +21,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     ProcessorReconciler processorReconciler;
 
     @Override
-//    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     public void syncUpdatesFromManager() {
-        LOGGER.info("Fetching updates from Manager for Bridges and Processors to deploy and delete");
+        LOGGER.debug("Fetching updates from Manager for Bridges and Processors to deploy and delete");
         bridgeReconciler.reconcile();
         processorReconciler.reconcile();
     }
