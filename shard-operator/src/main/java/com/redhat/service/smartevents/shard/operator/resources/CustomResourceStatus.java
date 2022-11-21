@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,4 +40,16 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
         return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CustomResourceStatus that = (CustomResourceStatus) o;
+        return Objects.equals(conditions, that.conditions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(conditions);
+    }
 }

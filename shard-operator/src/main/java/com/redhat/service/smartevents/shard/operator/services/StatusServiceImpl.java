@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.shard.operator.services;
 
-import com.redhat.service.smartevents.shard.operator.exceptions.ReconcilationFailedException;
 import com.redhat.service.smartevents.shard.operator.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.CustomResourceStatus;
@@ -19,19 +18,22 @@ public class StatusServiceImpl implements StatusService {
     }
 
     @Override
-    public void updateStatusForFailedReconciliation(CustomResourceStatus customResourceStatus, ReconcilationFailedException e) {
-        Optional<Condition> conditionOpt =  customResourceStatus.getConditionByType(e.getConditionType());
+    public void updateStatusForFailedReconciliation(CustomResourceStatus customResourceStatus, String conditionType, RuntimeException e) {
+        Optional<Condition> conditionOpt =  customResourceStatus.getConditionByType(conditionType);
         updateCondition(conditionOpt.get(), e);
     }
 
     private void updateCondition(Condition condition, RuntimeException e) {
         if (e == null) {
+            if (condition.getStatus() != ConditionStatus.True) {
+                condition.setLastTransitionTime(new Date());
+            }
             condition.setStatus(ConditionStatus.True);
-            condition.setMessage("");
+            condition.setMessage(null);
         } else {
             condition.setStatus(ConditionStatus.False);
             condition.setMessage(e.getMessage());
+            condition.setLastTransitionTime(new Date());
         }
-        condition.setLastTransitionTime(new Date());
     }
 }

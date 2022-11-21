@@ -5,7 +5,6 @@ import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.RouteComparator;
-import com.redhat.service.smartevents.shard.operator.exceptions.ReconcilationFailedException;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeRouteService;
@@ -48,7 +47,8 @@ public class BridgeRouteReconciler {
                 statusService.updateStatusForSuccessfulReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
             } catch (RuntimeException e) {
                 LOGGER.error("Failed to reconcile Bridge Route", e);
-                throw new ReconcilationFailedException(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE, e);
+                statusService.updateStatusForFailedReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE, e);
+                throw e;
             }
         }
     }

@@ -5,7 +5,6 @@ import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.IngressComparator;
-import com.redhat.service.smartevents.shard.operator.exceptions.ReconcilationFailedException;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeIngressService;
@@ -48,26 +47,10 @@ public class BridgeIngressReconciler {
                 statusService.updateStatusForSuccessfulReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
             } catch (RuntimeException e) {
                 LOGGER.error("Failed to reconcile Bridge Ingress", e);
-                throw new ReconcilationFailedException(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE, e);
+                statusService.updateStatusForFailedReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE, e);
+                throw e;
             }
         }
-        /*if (!networkResource.isReady()) {
-            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready",
-                    bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
-            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                status.markConditionFalse(ConditionTypeConstants.READY);
-            }
-            if (!status.isConditionTypeFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
-                status.markConditionFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
-            }
-            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalMilliseconds);
-        } else if (!status.isConditionTypeTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
-            status.markConditionTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
-        }
-
-        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
-        */
     }
 
     private List<Ingress> createRequiredResources(BridgeIngress bridgeIngress, String path) {

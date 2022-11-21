@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.shard.operator.reconcilers;
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.AuthorizationPolicyComparator;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
-import com.redhat.service.smartevents.shard.operator.exceptions.ReconcilationFailedException;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
@@ -40,7 +39,8 @@ public class IstioAuthorizationPolicyReconciler {
             statusService.updateStatusForSuccessfulReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to reconcile Istio Authorization Policy", e);
-            throw new ReconcilationFailedException(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE, e);
+            statusService.updateStatusForFailedReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE, e);
+            throw e;
         }
     }
 

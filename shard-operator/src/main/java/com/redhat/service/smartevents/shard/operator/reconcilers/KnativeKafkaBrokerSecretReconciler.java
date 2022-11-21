@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.shard.operator.reconcilers;
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.SecretComparator;
-import com.redhat.service.smartevents.shard.operator.exceptions.ReconcilationFailedException;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.services.KnativeKafkaBrokerSecretService;
@@ -43,7 +42,8 @@ public class KnativeKafkaBrokerSecretReconciler {
             statusService.updateStatusForSuccessfulReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.SECRET_AVAILABLE);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to reconcile Knative kafka broker secret", e);
-            throw new ReconcilationFailedException(BridgeIngressStatus.SECRET_AVAILABLE, e);
+            statusService.updateStatusForFailedReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.SECRET_AVAILABLE, e);
+            throw e;
         }
     }
 

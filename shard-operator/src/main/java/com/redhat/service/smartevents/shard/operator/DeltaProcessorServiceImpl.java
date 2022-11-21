@@ -24,7 +24,7 @@ public class DeltaProcessorServiceImpl implements DeltaProcessorService {
 
         ResourceDelta<T> resourceDelta = comparator.compare(requestedResources, deployedResources);
         if (!resourceDelta.HasChanged()) {
-            LOGGER.info("No delta found");
+            LOGGER.debug("No delta found");
             return false;
         }
 

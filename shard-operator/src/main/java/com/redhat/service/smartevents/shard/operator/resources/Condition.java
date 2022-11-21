@@ -1,11 +1,11 @@
 package com.redhat.service.smartevents.shard.operator.resources;
 
-import java.util.Date;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Date;
+import java.util.Objects;
 
 /**
  * From the Kubernetes API Conventions:
@@ -103,22 +103,16 @@ public class Condition {
         this.errorCode = errorCode;
     }
 
-    // type is our hash key for this object.
-    // in a Set we will identify its uniqueness by this hash
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Condition condition = (Condition) o;
-        return type == condition.type;
+        return type.equals(condition.type) && status == condition.status && Objects.equals(reason, condition.reason) && Objects.equals(message, condition.message) && Objects.equals(errorCode, condition.errorCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type);
+        return Objects.hash(type, status, reason, message, errorCode);
     }
 }
