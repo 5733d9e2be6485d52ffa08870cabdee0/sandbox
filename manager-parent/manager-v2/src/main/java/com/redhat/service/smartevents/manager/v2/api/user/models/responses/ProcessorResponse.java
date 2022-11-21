@@ -27,6 +27,9 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
     @NotNull
     private ObjectNode flows;
 
+    @JsonProperty("status_message")
+    private String statusMessage;
+
     @Override
     public String getName() {
         return name;
@@ -44,4 +47,13 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
     public void setFlows(ObjectNode flows) {
         this.flows = flows;
     }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
+
 }
