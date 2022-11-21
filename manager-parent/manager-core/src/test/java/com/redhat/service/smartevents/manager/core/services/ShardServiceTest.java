@@ -47,4 +47,18 @@ public class ShardServiceTest {
         assertThat(shard.getId()).isEqualTo(TestConstants.SHARD_ID);
         assertThat(shard.getRouterCanonicalHostname()).isEqualTo(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
     }
+
+    @Test
+    public void testUpdateShardCanonicalHostnameIfNotAligned() {
+        databaseManagerUtils.cleanUp();
+        Shard shard = new Shard();
+        shard.setRouterCanonicalHostname("unalignedcanonicalhostname.com");
+        shardDAO.persist(shard);
+
+        ((ShardServiceImpl) shardService).init();
+
+        Shard retrieved = shardService.getAssignedShard("myId");
+
+        assertThat(retrieved.getRouterCanonicalHostname()).isEqualTo(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
+    }
 }
