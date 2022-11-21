@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +21,10 @@ public class ShardServiceImpl implements ShardService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardServiceImpl.class);
 
-    private Set<String> shards;
+    private Set<String> shardIds;
+
+    @ConfigProperty(name = "quarkus.flyway.placeholders.shard-router-canonical-hostname")
+    String shardRouterCanonicalHostnameFromProperties;
 
     @Inject
     ShardDAO shardDAO;
@@ -30,7 +35,25 @@ public class ShardServiceImpl implements ShardService {
          * Fetch the list of authorized shards at startup.
          * This needs to be changed when admin api will include the CRUD of a shard at runtime.
          */
-        shards = shardDAO.listAll().stream().map(Shard::getId).collect(Collectors.toSet());
+        shardIds = shardDAO.listAll().stream().map(Shard::getId).collect(Collectors.toSet());
+
+        // Align Shard router canonical hostname database entry with value provided by properties - https://issues.redhat.com/browse/MGDOBR-1241
+        List<Shard> shards = shardDAO.listAll();
+        if (shards.size() == 1) {
+            Shard shard = shards.get(0);
+            String routerCanonicalHostname = shard.getRouterCanonicalHostname();
+            if (!shardRouterCanonicalHostnameFromProperties.equals(routerCanonicalHostname)) {
+                LOGGER.warn("Shard router canonical hostname '{}' doesn't match expected value '{}' from properties file, replacing hostname to match properties.", routerCanonicalHostname,
+                        shardRouterCanonicalHostnameFromProperties);
+                shard.setRouterCanonicalHostname(shardRouterCanonicalHostnameFromProperties);
+                persist(shard);
+            }
+        }
+    }
+
+    @Transactional
+    protected void persist(Shard shard) {
+        shardDAO.getEntityManager().merge(shard);
     }
 
     @Override
@@ -47,6 +70,6 @@ public class ShardServiceImpl implements ShardService {
 
     @Override
     public boolean isAuthorizedShard(String shardId) {
-        return shards.contains(shardId);
+        return shardIds.contains(shardId);
     }
 }
