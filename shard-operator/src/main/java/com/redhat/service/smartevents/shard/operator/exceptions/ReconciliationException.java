@@ -9,6 +9,11 @@ public class ReconciliationException extends RuntimeException {
         this.reconciliationInterval = reconciliationInterval;
     }
 
+    public ReconciliationException(long reconciliationInterval, String message) {
+        super(message);
+        this.reconciliationInterval = reconciliationInterval;
+    }
+
     public long getReconciliationInterval() {
         return reconciliationInterval;
     }

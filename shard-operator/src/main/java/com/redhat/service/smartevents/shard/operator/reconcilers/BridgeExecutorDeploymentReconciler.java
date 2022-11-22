@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator.reconcilers;
 import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.DeploymentComparator;
+import com.redhat.service.smartevents.shard.operator.exceptions.ReconciliationException;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorDeploymentService;
@@ -39,6 +40,8 @@ public class BridgeExecutorDeploymentReconciler {
 
             processDelta(requestResource, deployedResources);
 
+            validateDeploymentIsReady(bridgeExecutor);
+
             statusService.updateStatusForSuccessfulReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
         } catch (RuntimeException e) {
             LOGGER.error("Failed to reconcile Bridge Executor Deployment", e);
@@ -60,5 +63,12 @@ public class BridgeExecutorDeploymentReconciler {
     private void processDelta(List<Deployment> requestedResources, List<Deployment> deployedResources) {
         Comparator<Deployment> deploymentComparator = new DeploymentComparator();
         boolean deltaProcessed = deltaProcessorService.processDelta(Deployment.class, deploymentComparator, requestedResources, deployedResources);
+    }
+
+    private void validateDeploymentIsReady(BridgeExecutor bridgeExecutor) {
+        boolean deploymentReady = bridgeExecutorDeploymentService.isBridgeExecutorDeploymentReady(bridgeExecutor);
+        if (!deploymentReady) {
+            throw new ReconciliationException(30000, "Bridge Executor Deployment is not ready");
+        }
     }
 }

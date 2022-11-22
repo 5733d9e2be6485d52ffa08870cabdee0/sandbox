@@ -8,4 +8,6 @@ public interface BridgeExecutorDeploymentService {
     Deployment createBridgeExecutorDeployment(BridgeExecutor bridgeExecutor);
 
     Deployment fetchBridgeExecutorDeployment(BridgeExecutor bridgeExecutor);
+
+    boolean isBridgeExecutorDeploymentReady(BridgeExecutor bridgeExecutor);
 }

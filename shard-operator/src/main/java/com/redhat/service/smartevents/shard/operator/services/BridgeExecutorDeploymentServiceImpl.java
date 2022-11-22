@@ -9,6 +9,7 @@ import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
@@ -68,5 +69,14 @@ public class BridgeExecutorDeploymentServiceImpl implements BridgeExecutorDeploy
                 .inNamespace(bridgeExecutor.getMetadata().getNamespace())
                 .withName(bridgeExecutor.getMetadata().getName())
                 .get();
+    }
+
+    @Override
+    public boolean isBridgeExecutorDeploymentReady(BridgeExecutor bridgeExecutor) {
+        Deployment deployment = fetchBridgeExecutorDeployment(bridgeExecutor);
+        for(DeploymentCondition deploymentCondition : deployment.getStatus().getConditions()) {
+            return "Ready".equals(deploymentCondition.getType()) && "True".equals(deploymentCondition.getStatus());
+        }
+        return false;
     }
 }
