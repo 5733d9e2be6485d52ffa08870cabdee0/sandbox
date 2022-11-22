@@ -4,10 +4,40 @@ on:
     types: [ opened, labeled, unlabeled, synchronize ]
     paths:
       - '.github/workflows/Operator-CI.yaml'
-      - 'shard-operator/**'
+      - 'shard-operator-parent/**'
       - 'integration-tests/shard-operator-integration-tests/**'
 jobs:
+  start-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-aws-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-aws-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Check labels
+        # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+        if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
+        run: |
+          echo "Please add the 'safe to test' label in order to run 'Operator - CI' pipeline if it's safe to test this code"
+          exit 1
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Start AWS runner
+        id: start-aws-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ env.KSUTA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.KSUTA_AWS_REGION }}
+          github-token: ${{ env.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+        env:
+          KSUTA_AWS_ACCESS_KEY_ID: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
+          KSUTA_AWS_SECRET_ACCESS_KEY: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          KSUTA_AWS_REGION: ${{ secrets.KSUTA_AWS_REGION }}
+          KSUTA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
   event-bridge-build:
+    needs: start-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     env:
       NAMESPACE: mynamespace
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
@@ -16,19 +46,12 @@ jobs:
       group: event-bridge-operator-pr-${{ github.head_ref }}
       cancel-in-progress: true
     timeout-minutes: 45
-    runs-on: ubuntu-latest
     name: Build and Test Operator
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
-      - name: Check labels
-        # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-        if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
-        run: |
-          echo "Please add the 'safe to test' label in order to run 'Operator - CI' pipeline if it's safe to test this code"
-          exit 1
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
@@ -104,3 +127,27 @@ jobs:
         if: always()
         run: |
           kubectl logs deployment/shard-operator -n $NAMESPACE
+  stop-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-runner # required to get output from the start-runner job
+      - event-bridge-build # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Stop AWS runner
+        uses: ./.github/actions/stop-aws-runner
+        with:
+          aws-access-key-id: ${{ env.KSUTA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.KSUTA_AWS_REGION }}
+          github-token: ${{ env.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
+        env:
+          KSUTA_AWS_ACCESS_KEY_ID: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
+          KSUTA_AWS_SECRET_ACCESS_KEY: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          KSUTA_AWS_REGION: ${{ secrets.KSUTA_AWS_REGION }}
+          KSUTA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
