@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.core.metrics;
+package com.redhat.service.smartevents.manager.v1.metrics;
 
 import java.time.Duration;
 import java.time.ZoneOffset;
@@ -13,13 +13,13 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.manager.core.models.ManagedResource;
+import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 
 @ApplicationScoped
-public class MetricsServiceImpl implements ManagerMetricsService {
+public class MetricsServiceImpl implements ManagerMetricsServiceV1 {
 
     /*
      * Constant for the metric tag for the resource instance we're operating on e.g. Processor/Bridge.
@@ -47,7 +47,7 @@ public class MetricsServiceImpl implements ManagerMetricsService {
     }
 
     @Override
-    public void onOperationStart(ManagedResource managedResource, MetricsOperation operation) {
+    public void onOperationStart(ManagedResourceV1 managedResource, MetricsOperation operation) {
         incrementCounter(operationTotalCountMetricName, buildTags(managedResource, operation));
     }
 
@@ -56,14 +56,14 @@ public class MetricsServiceImpl implements ManagerMetricsService {
     }
 
     @Override
-    public void onOperationComplete(ManagedResource managedResource, MetricsOperation operation) {
+    public void onOperationComplete(ManagedResourceV1 managedResource, MetricsOperation operation) {
         if (isOperationSuccessful(managedResource, operation)) {
             incrementCounter(operationTotalSuccessCountMetricName, buildTags(managedResource, operation));
             recordOperationDuration(managedResource, operation);
         }
     }
 
-    private boolean isOperationSuccessful(ManagedResource managedResource, MetricsOperation operation) {
+    private boolean isOperationSuccessful(ManagedResourceV1 managedResource, MetricsOperation operation) {
         if (MetricsOperation.MANAGER_RESOURCE_PROVISION == operation || MetricsOperation.MANAGER_RESOURCE_MODIFY == operation) {
             return ManagedResourceStatus.READY == managedResource.getStatus();
         }
@@ -72,23 +72,23 @@ public class MetricsServiceImpl implements ManagerMetricsService {
     }
 
     @Override
-    public void onOperationFailed(ManagedResource managedResource, MetricsOperation operation) {
+    public void onOperationFailed(ManagedResourceV1 managedResource, MetricsOperation operation) {
         if (isOperationFailed(managedResource)) {
             incrementCounter(operationTotalFailureCountMetricName, buildTags(managedResource, operation));
             recordOperationDuration(managedResource, operation);
         }
     }
 
-    private boolean isOperationFailed(ManagedResource managedResource) {
+    private boolean isOperationFailed(ManagedResourceV1 managedResource) {
         return ManagedResourceStatus.FAILED == managedResource.getStatus();
     }
 
-    private List<Tag> buildTags(ManagedResource managedResource, MetricsOperation operation) {
+    private List<Tag> buildTags(ManagedResourceV1 managedResource, MetricsOperation operation) {
         Tag instanceTag = Tag.of(RESOURCE_TAG, managedResource.getClass().getSimpleName().toLowerCase());
         return List.of(instanceTag, operation.getMetricTag());
     }
 
-    private Duration calculateOperationDuration(ManagedResource managedResource, MetricsOperation operation) {
+    private Duration calculateOperationDuration(ManagedResourceV1 managedResource, MetricsOperation operation) {
         switch (operation) {
             case MANAGER_RESOURCE_PROVISION:
                 return Duration.between(managedResource.getSubmittedAt(), ZonedDateTime.now(ZoneOffset.UTC));
@@ -101,7 +101,7 @@ public class MetricsServiceImpl implements ManagerMetricsService {
         }
     }
 
-    private void recordOperationDuration(ManagedResource managedResource, MetricsOperation operation) {
+    private void recordOperationDuration(ManagedResourceV1 managedResource, MetricsOperation operation) {
         Duration operationDuration = calculateOperationDuration(managedResource, operation);
         meterRegistry.timer(operationDurationMetricName, buildTags(managedResource, operation)).record(operationDuration);
     }

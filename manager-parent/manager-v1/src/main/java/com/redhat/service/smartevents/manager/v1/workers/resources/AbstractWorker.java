@@ -22,6 +22,7 @@ import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
+import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
@@ -35,7 +36,7 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 
-public abstract class AbstractWorker<T extends ManagedResource> implements Worker<T> {
+public abstract class AbstractWorker<T extends ManagedResourceV1> implements Worker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 

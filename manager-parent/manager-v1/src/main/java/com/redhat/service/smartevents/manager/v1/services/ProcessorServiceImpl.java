@@ -44,8 +44,6 @@ import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDe
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.core.ams.ProcessorsQuotaService;
-import com.redhat.service.smartevents.manager.core.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
-import com.redhat.service.smartevents.manager.core.metrics.ManagerMetricsService;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
@@ -53,13 +51,15 @@ import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.v1.connectors.ConnectorsService;
+import com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
+import com.redhat.service.smartevents.manager.v1.metrics.ManagerMetricsServiceV1;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
 
-import static com.redhat.service.smartevents.manager.core.metrics.ManagedResourceOperationMapper.inferOperation;
+import static com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.inferOperation;
 import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 
 @ApplicationScoped
@@ -89,7 +89,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     WorkManager workManager;
 
     @Inject
-    ManagerMetricsService metricsService;
+    ManagerMetricsServiceV1 metricsService;
 
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
