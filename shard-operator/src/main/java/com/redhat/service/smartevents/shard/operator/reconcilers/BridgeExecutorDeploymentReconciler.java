@@ -4,8 +4,12 @@ import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.DeploymentComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorDeploymentService;
+import com.redhat.service.smartevents.shard.operator.services.StatusService;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,49 +19,32 @@ import java.util.List;
 @ApplicationScoped
 public class BridgeExecutorDeploymentReconciler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorDeploymentReconciler.class);
+
     @Inject
     DeltaProcessorService deltaProcessorService;
 
     @Inject
     BridgeExecutorDeploymentService bridgeExecutorDeploymentService;
 
+    @Inject
+    StatusService statusService;
+
     public void reconcile(BridgeExecutor bridgeExecutor){
 
-        List<Deployment> requestResource = createRequiredResources(bridgeExecutor);
+        try{
+            List<Deployment> requestResource = createRequiredResources(bridgeExecutor);
 
-        List<Deployment> deployedResources = fetchDeployedResources(bridgeExecutor);
+            List<Deployment> deployedResources = fetchDeployedResources(bridgeExecutor);
 
-        processDelta(requestResource, deployedResources);
+            processDelta(requestResource, deployedResources);
 
-        /*if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-
-            status.setStatusFromDeployment(deployment);
-
-            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                notifyManagerOfFailure(bridgeExecutor,
-                        new ProvisioningTimeOutException(DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment)));
-                // Don't reschedule reconciliation if we're in a FAILED state
-                return UpdateControl.updateStatus(bridgeExecutor);
-            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                notifyManagerOfFailure(bridgeExecutor,
-                        new ProvisioningReplicaFailureException(DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment)));
-                // Don't reschedule reconciliation if we're in a FAILED state
-                return UpdateControl.updateStatus(bridgeExecutor);
-            } else {
-                // State may otherwise be recoverable so reschedule
-                return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
-            }
-        } else {
-            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
-                status.markConditionTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
-            }
-        }*/
+            statusService.updateStatusForSuccessfulReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to reconcile Bridge Executor Deployment", e);
+            statusService.updateStatusForFailedReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.DEPLOYMENT_AVAILABLE, e);
+            throw e;
+        }
     }
 
     private List<Deployment> createRequiredResources(BridgeExecutor bridgeExecutor) {

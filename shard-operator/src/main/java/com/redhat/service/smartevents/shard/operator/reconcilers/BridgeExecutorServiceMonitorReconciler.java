@@ -4,8 +4,12 @@ import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.ServiceMonitorComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorServiceMonitorService;
+import com.redhat.service.smartevents.shard.operator.services.StatusService;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,42 +19,32 @@ import java.util.List;
 @ApplicationScoped
 public class BridgeExecutorServiceMonitorReconciler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorServiceMonitorReconciler.class);
+
     @Inject
     DeltaProcessorService deltaProcessorService;
 
     @Inject
     BridgeExecutorServiceMonitorService bridgeExecutorServiceMonitorService;
 
+    @Inject
+    StatusService statusService;
+
     public void reconcile(BridgeExecutor bridgeExecutor){
 
-        List<ServiceMonitor> requestResource = createRequiredResources(bridgeExecutor);
+        try{
+            List<ServiceMonitor> requestResource = createRequiredResources(bridgeExecutor);
 
-        List<ServiceMonitor> deployedResources = fetchDeployedResources(bridgeExecutor);
+            List<ServiceMonitor> deployedResources = fetchDeployedResources(bridgeExecutor);
 
-        processDelta(requestResource, deployedResources);
+            processDelta(requestResource, deployedResources);
 
-        /*if (serviceMonitor.isEmpty()) {
-            LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE)) {
-                status.markConditionFalse(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE);
-            }
-            PrometheusNotInstalledException prometheusNotInstalledException = new PrometheusNotInstalledException(ConditionReasonConstants.PROMETHEUS_UNAVAILABLE);
-            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(prometheusNotInstalledException);
-            status.setStatusFromBridgeError(bei);
-            notifyManagerOfFailure(bridgeExecutor, bei);
-
-            return UpdateControl.updateStatus(bridgeExecutor);
-        } else {
-            // this is an optional resource
-            LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeTrue(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE)) {
-                status.markConditionTrue(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE);
-            }
-        }*/
+            statusService.updateStatusForSuccessfulReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to reconcile Bridge Executor Service Monitor", e);
+            statusService.updateStatusForFailedReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE, e);
+            throw e;
+        }
     }
 
     private List<ServiceMonitor> createRequiredResources(BridgeExecutor bridgeExecutor) {

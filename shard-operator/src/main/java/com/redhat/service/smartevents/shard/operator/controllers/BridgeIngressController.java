@@ -21,12 +21,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 @ControllerConfiguration()
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
-        EventSourceInitializer<BridgeIngress>, ErrorStatusHandler<BridgeIngress> {
+        EventSourceInitializer<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -130,26 +129,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
         metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
-        managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
+        //managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
 
         return DeleteControl.defaultDelete();
-    }
-
-    @Override
-    public Optional<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, RetryInfo retryInfo, RuntimeException e) {
-        /*if (retryInfo.isLastAttempt()) {
-
-            BridgeIngressStatus status = bridgeIngress.getStatus();
-            status.markConditionFalse(ConditionTypeConstants.READY);
-
-            LOGGER.warn("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                    bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace(),
-                    e.getMessage());
-            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
-            bridgeIngress.getStatus().setStatusFromBridgeError(bei);
-            notifyManagerOfFailure(bridgeIngress, bei);
-        }*/
-        return Optional.of(bridgeIngress);
     }
 }

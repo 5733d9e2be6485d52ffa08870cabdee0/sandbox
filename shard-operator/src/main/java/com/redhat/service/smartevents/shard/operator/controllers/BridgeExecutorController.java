@@ -6,8 +6,8 @@ import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeExecutorS
 import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeExecutorServiceMonitorReconciler;
 import com.redhat.service.smartevents.shard.operator.reconcilers.BridgeExecutorServiceReconciler;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.services.ReconciliationResultService;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
-import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
@@ -18,12 +18,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration()
 public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
-        EventSourceInitializer<BridgeExecutor>, ErrorStatusHandler<BridgeExecutor> {
+        EventSourceInitializer<BridgeExecutor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorController.class);
 
@@ -45,6 +44,9 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     @Inject
     BridgeExecutorServiceMonitorReconciler bridgeExecutorServiceMonitorReconciler;
 
+    @Inject
+    ReconciliationResultService reconciliationResultService;
+
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
 
@@ -63,43 +65,24 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                 bridgeExecutor.getMetadata().getName(),
                 bridgeExecutor.getMetadata().getNamespace());
         try {
-        bridgeExecutorSecretReconciler.reconcile(bridgeExecutor);
+            bridgeExecutorSecretReconciler.reconcile(bridgeExecutor);
 
-        bridgeExecutorDeploymentReconciler.reconcile(bridgeExecutor);
+            bridgeExecutorDeploymentReconciler.reconcile(bridgeExecutor);
 
-        bridgeExecutorServiceReconciler.reconcile(bridgeExecutor);
+            bridgeExecutorServiceReconciler.reconcile(bridgeExecutor);
 
-        bridgeExecutorServiceMonitorReconciler.reconcile(bridgeExecutor);
+            bridgeExecutorServiceMonitorReconciler.reconcile(bridgeExecutor);
 
-        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready",
-                bridgeExecutor.getMetadata().getName(),
-                bridgeExecutor.getMetadata().getNamespace());
+            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready",
+                    bridgeExecutor.getMetadata().getName(),
+                    bridgeExecutor.getMetadata().getNamespace());
 
         } catch (RuntimeException e) {
             managerClient.notifyProcessorStatusChange(bridgeExecutor.getSpec().getId(), bridgeExecutor.getStatus().getConditions());
-            return UpdateControl.updateStatus(bridgeExecutor);
         }
-
-        return UpdateControl.noUpdate();
-    }
-
-    @Override
-    public DeleteControl cleanup(BridgeExecutor bridgeExecutor, Context context) {
-        /*LOGGER.info("Deleted BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
-
-        // Linked resources are automatically deleted
-        metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
-        notifyManager(bridgeExecutor, ManagedResourceStatus.DELETED);*/
-        return DeleteControl.defaultDelete();
-    }
-
-    @Override
-    public Optional<BridgeExecutor> updateErrorStatus(BridgeExecutor bridgeExecutor, RetryInfo retryInfo, RuntimeException e) {
-        /*if (retryInfo.isLastAttempt()) {
-            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
-            bridgeExecutor.getStatus().setStatusFromBridgeError(bei);
-            notifyManagerOfFailure(bridgeExecutor, bei);
-        }*/
-        return Optional.of(bridgeExecutor);
+        finally {
+            //managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
+        }
+        return reconciliationResultService.getReconciliationResult(bridgeExecutor);
     }
 }

@@ -4,8 +4,12 @@ import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.SecretComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorSecretService;
+import com.redhat.service.smartevents.shard.operator.services.StatusService;
 import io.fabric8.kubernetes.api.model.Secret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,33 +19,31 @@ import java.util.List;
 @ApplicationScoped
 public class BridgeExecutorSecretReconciler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorSecretReconciler.class);
     @Inject
     DeltaProcessorService deltaProcessorService;
 
     @Inject
     BridgeExecutorSecretService bridgeExecutorSecretService;
 
+    @Inject
+    StatusService statusService;
+
     public void reconcile(BridgeExecutor bridgeExecutor){
 
-        List<Secret> requestResource = createRequiredResources(bridgeExecutor);
+        try{
+            List<Secret> requestResource = createRequiredResources(bridgeExecutor);
 
-        List<Secret> deployedResources = fetchDeployedResources(bridgeExecutor);
+            List<Secret> deployedResources = fetchDeployedResources(bridgeExecutor);
 
-        processDelta(requestResource, deployedResources);
+            processDelta(requestResource, deployedResources);
 
-        /*if (secret == null) {
-            LOGGER.info("Secrets for the BridgeProcessor '{}' have been not created yet.",
-                    bridgeExecutor.getMetadata().getName());
-            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                status.markConditionFalse(ConditionTypeConstants.READY);
-            }
-            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SECRET_AVAILABLE)) {
-                status.markConditionFalse(BridgeExecutorStatus.SECRET_AVAILABLE);
-            }
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
-        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SECRET_AVAILABLE)) {
-            status.markConditionTrue(BridgeExecutorStatus.SECRET_AVAILABLE);
-        }*/
+            statusService.updateStatusForSuccessfulReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.SECRET_AVAILABLE);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to reconcile Knative kafka broker secret", e);
+            statusService.updateStatusForFailedReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.SECRET_AVAILABLE, e);
+            throw e;
+        }
     }
 
     private List<Secret> createRequiredResources(BridgeExecutor bridgeExecutor) {
@@ -56,6 +58,6 @@ public class BridgeExecutorSecretReconciler {
 
     private void processDelta(List<Secret> requestedResources, List<Secret> deployedResources) {
         Comparator<Secret> secretComparator = new SecretComparator();
-        boolean deltaProcessed = deltaProcessorService.processDelta(Secret.class, secretComparator, requestedResources, deployedResources);
+        deltaProcessorService.processDelta(Secret.class, secretComparator, requestedResources, deployedResources);
     }
 }

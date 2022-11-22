@@ -4,8 +4,12 @@ import com.redhat.service.smartevents.shard.operator.DeltaProcessorService;
 import com.redhat.service.smartevents.shard.operator.comparators.Comparator;
 import com.redhat.service.smartevents.shard.operator.comparators.ServiceComparator;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.services.BridgeExecutorClusterIPService;
+import com.redhat.service.smartevents.shard.operator.services.StatusService;
 import io.fabric8.kubernetes.api.model.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,34 +19,32 @@ import java.util.List;
 @ApplicationScoped
 public class BridgeExecutorServiceReconciler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorServiceReconciler.class);
+
     @Inject
     DeltaProcessorService deltaProcessorService;
 
     @Inject
     BridgeExecutorClusterIPService bridgeExecutorClusterIPService;
 
+    @Inject
+    StatusService statusService;
+
     public void reconcile(BridgeExecutor bridgeExecutor){
 
-        List<Service> requestResource = createRequiredResources(bridgeExecutor);
+        try{
+            List<Service> requestResource = createRequiredResources(bridgeExecutor);
 
-        List<Service> deployedResources = fetchDeployedResources(bridgeExecutor);
+            List<Service> deployedResources = fetchDeployedResources(bridgeExecutor);
 
-        processDelta(requestResource, deployedResources);
+            processDelta(requestResource, deployedResources);
 
-        /*if (service.getStatus() == null) {
-            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready",
-                    bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                status.markConditionFalse(ConditionTypeConstants.READY);
-            }
-            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
-                status.markConditionFalse(BridgeExecutorStatus.SERVICE_AVAILABLE);
-            }
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
-        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
-            status.markConditionTrue(BridgeExecutorStatus.SERVICE_AVAILABLE);
-        }*/
+            statusService.updateStatusForSuccessfulReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.SERVICE_AVAILABLE);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to reconcile Bridge Executor Service Monitor", e);
+            statusService.updateStatusForFailedReconciliation(bridgeExecutor.getStatus(), BridgeExecutorStatus.SERVICE_AVAILABLE, e);
+            throw e;
+        }
     }
 
     private List<Service> createRequiredResources(BridgeExecutor bridgeExecutor) {

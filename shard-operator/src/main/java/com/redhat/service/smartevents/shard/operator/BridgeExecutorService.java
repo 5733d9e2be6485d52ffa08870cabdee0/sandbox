@@ -7,4 +7,6 @@ import java.util.List;
 public interface BridgeExecutorService {
 
     List<BridgeExecutor> fetchAllBridgeExecutor();
+
+    BridgeExecutor fetchBridgeExecutor(String name, String namespace);
 }
