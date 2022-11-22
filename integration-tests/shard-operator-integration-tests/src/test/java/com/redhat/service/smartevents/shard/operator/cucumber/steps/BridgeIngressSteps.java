@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.Context;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
 import com.redhat.service.smartevents.shard.operator.cucumber.utils.Utils;
-import com.redhat.service.smartevents.shard.operator.v1.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.cucumber.java.en.Then;

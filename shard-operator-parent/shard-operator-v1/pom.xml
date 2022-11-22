@@ -167,11 +167,6 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>${project.build.directory}/kubernetes/kubernetes.yml</file>
-                      <type>yml</type>
-                      <classifier>kubernetes</classifier>
-                    </artifact>
-                    <artifact>
                       <file>${project.build.directory}/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml</file>
                       <type>yml</type>
                       <classifier>crd-bridgeexecutors</classifier>

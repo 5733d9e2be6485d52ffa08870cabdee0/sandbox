@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v1.providers;
+package com.redhat.service.smartevents.shard.operator.core.providers;
 
 import java.util.Optional;
 
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.app.Orchestrator;
 import com.redhat.service.smartevents.infra.core.app.OrchestratorConfigProvider;
-import com.redhat.service.smartevents.shard.operator.v1.BridgeIngressServiceImpl;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServicePort;
@@ -24,7 +23,7 @@ import io.quarkus.runtime.StartupEvent;
 @ApplicationScoped
 @UnlessBuildProfile(value = "test") // For tests we provide a mocked bean and this should not start at all.
 public class IstioGatewayProviderImpl implements IstioGatewayProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IstioGatewayProviderImpl.class);
 
     private Service gatewayService;
 

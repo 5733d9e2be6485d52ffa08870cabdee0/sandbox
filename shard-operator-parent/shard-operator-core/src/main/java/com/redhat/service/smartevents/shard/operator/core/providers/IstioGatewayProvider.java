@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v1.providers;
+package com.redhat.service.smartevents.shard.operator.core.providers;
 
 import io.fabric8.kubernetes.api.model.Service;
 

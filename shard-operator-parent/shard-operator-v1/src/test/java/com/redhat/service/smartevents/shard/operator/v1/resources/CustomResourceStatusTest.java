@@ -11,6 +11,7 @@ import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
+import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
