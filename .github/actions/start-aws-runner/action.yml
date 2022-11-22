@@ -1,0 +1,58 @@
+name: "Start AWS runner"
+description: "Start self-hosted AWS EC2 runner"
+inputs:
+  ec2-instance-type:
+    description: "AWS flavor to be used for runner"
+    required: false
+    default: t3.xlarge
+  ec2-image-id:
+    description: "Image id to be used for EC2 instance"
+    required: false
+    default: ami-0c6ffd4209376e995
+  subnet-id:
+    description: "ID of the AWS subnet to use for EC2"
+    required: false
+    default: subnet-30717c3e
+  security-group-id:
+    description: "Security group ID limiting access for EC2 instance"
+    required: false
+    default: sg-0dc576a4c740c8ba9
+  aws-access-key-id:
+    description: "AWS Access Key ID"
+    required: true
+  aws-secret-access-key:
+    description: "AWS Secret Access Key"
+    required: true
+  aws-region:
+    description: "AWS Region"
+    required: true
+  github-token:
+    description: "GitHub personal token with repo rights"
+    required: true
+outputs:
+  label:
+    description: "Name of the label assigned to the runner"
+    value: ${{ steps.start-ec2-runner.outputs.label }}
+  ec2-instance-id:
+    description: "EC2 Instance Id of the created runner"
+    value: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+    - name: Start EC2 runner
+      id: start-ec2-runner
+      uses: machulav/ec2-github-runner@v2
+      with:
+        mode: start
+        github-token: ${{ inputs.github-token }}
+        ec2-image-id: ${{ inputs.ec2-image-id }}
+        ec2-instance-type: ${{ inputs.ec2-instance-type }}
+        subnet-id: ${{ inputs.subnet-id }}
+        security-group-id: ${{ inputs.security-group-id }}

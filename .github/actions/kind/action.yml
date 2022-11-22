@@ -6,16 +6,26 @@ inputs:
     description: "Hostname of the main kind node"
     required: false
     default: kind-control-plane
+  node-image:
+    description: "Node image to be used"
+    required: false
+    default: kindest/node:v1.22.2
+  registry:
+    description: "Configures an insecure registry on kind-registry:5000 to be used with KinD"
+    type: boolean
+    default: false
 
 runs:
   using: "composite"
   steps:
     - name: Set up KinD
-      uses: container-tools/kind-action@v2
-      with:
-        config: .github/kind-config.yaml
-        registry: false                  # Registry not needed
-        node_image: kindest/node:v1.22.2 # Newest image
+      shell: bash
+      run: |
+        kind create cluster --image=${{ inputs.node-image }} --config .github/kind-config.yaml
+        # Copy config file to root home folder, to store it permanently for the job
+        mkdir -p /root/.kube
+        cp $GITHUB_WORKSPACE/.kube/config /root/.kube
+        echo "KUBECONFIG=/root/.kube/config" >> $GITHUB_ENV
     - name: Check cluster status
       shell: bash
       run: |
@@ -25,10 +35,20 @@ runs:
       shell: bash
       run: |
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
+        # waiting for resources to be created
+        kubectl rollout status deployment ingress-nginx-controller --namespace ingress-nginx
         kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
     - name: Add ${{ inputs.kind-node-hostname }} host to machine hosts
       shell: bash
       run: echo "127.0.0.1 ${{ inputs.kind-node-hostname }}" | sudo tee -a /etc/hosts
+    - name: Install Docker registry
+      if: inputs.registry == 'true'
+      shell: bash
+      run: |
+          # create registry container
+          docker run -d --restart=always -p "5000:5000" --name "kind-registry" registry:2
+          # connect the registry to the cluster network
+          docker network connect "kind" "kind-registry"
     - name: Install Helm
       shell: bash
       run: |
