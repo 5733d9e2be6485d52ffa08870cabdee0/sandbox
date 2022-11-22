@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v1.utils.StringUtils;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -188,13 +188,14 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         }
 
         private void validate() {
-            requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
-            requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
-            requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
-            requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
-            requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
-            requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
             requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
         }
     }
+
 }

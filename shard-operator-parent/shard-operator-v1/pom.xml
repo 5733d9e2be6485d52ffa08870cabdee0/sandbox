@@ -19,10 +19,6 @@
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>io.quarkiverse.operatorsdk</groupId>

@@ -3,10 +3,10 @@ package com.redhat.service.smartevents.shard.operator.v1.resources;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.google.common.base.Strings;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v1.utils.StringUtils;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -140,11 +140,12 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         }
 
         private void validate() {
-            requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
-            requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
-            requireNonNull(Strings.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
-            requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
-            requireNonNull(Strings.emptyToNull(this.host), "[BridgeIngress] Host can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.host), "[BridgeIngress] Host can't be null");
         }
     }
+
 }
