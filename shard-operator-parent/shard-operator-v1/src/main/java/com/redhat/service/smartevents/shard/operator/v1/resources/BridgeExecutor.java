@@ -1,5 +1,5 @@
 package com.redhat.service.smartevents.shard.operator.v1.resources;
-import com.redhat.service.smartevents.shard.operator.v1.utils.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +9,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v1.utils.StringUtils;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
