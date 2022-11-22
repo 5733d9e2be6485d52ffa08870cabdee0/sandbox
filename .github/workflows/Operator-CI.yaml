@@ -7,7 +7,35 @@ on:
       - 'shard-operator/**'
       - 'integration-tests/shard-operator-integration-tests/**'
 jobs:
+  start-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.KSUTA_AWS_REGION }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          ec2-image-id: ami-00d8c164663b5a374
+          ec2-instance-type: t3.xlarge
+          subnet-id: subnet-30717c3e
+          security-group-id: sg-0dc576a4c740c8ba9
+#      - name: Start AWS runner
+#        id: start-aws-runner
+#        uses: ./.github/actions/start-aws-runner
   event-bridge-build:
+    needs: start-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     env:
       NAMESPACE: mynamespace
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
@@ -16,7 +44,6 @@ jobs:
       group: event-bridge-operator-pr-${{ github.head_ref }}
       cancel-in-progress: true
     timeout-minutes: 45
-    runs-on: ubuntu-latest
     name: Build and Test Operator
     steps:
       - name: Checkout
@@ -92,7 +119,7 @@ jobs:
           IT_SHARD_KAFKA_TOPIC_NAME: ${{ secrets.IT_SHARD_KAFKA_TOPIC_NAME }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Dparallel -Dit.shard.kafka.bootstrap.servers=$IT_SHARD_KAFKA_BOOTSTRAP_SERVERS -Dit.shard.kafka.user=$IT_SHARD_KAFKA_USER -Dit.shard.kafka.password=$IT_SHARD_KAFKA_PASSWORD -Dit.shard.kafka.topic.name=$IT_SHARD_KAFKA_TOPIC_NAME -Dit.shard.kafka.protocol=SASL_SSL -Dit.shard.kafka.sasl.mechanism=PLAIN
+          maven-command: clean verify -Pcucumber -Dparallel -Dit.shard.kafka.bootstrap.servers=$IT_SHARD_KAFKA_BOOTSTRAP_SERVERS -Dit.shard.kafka.user=$IT_SHARD_KAFKA_USER -Dit.shard.kafka.password=$IT_SHARD_KAFKA_PASSWORD -Dit.shard.kafka.topic.name=$IT_SHARD_KAFKA_TOPIC_NAME -Dit.shard.kafka.protocol=SASL_SSL -Dit.shard.kafka.sasl.mechanism=PLAIN -Dkubeconfig=$GITHUB_WORKSPACE/.kube/config
           working-directory: integration-tests/shard-operator-integration-tests
       - name: Archive test logs
         if: always()
@@ -104,3 +131,24 @@ jobs:
         if: always()
         run: |
           kubectl logs deployment/shard-operator -n $NAMESPACE
+  stop-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-runner # required to get output from the start-runner job
+      - event-bridge-build # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.KSUTA_AWS_REGION }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}

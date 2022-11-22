@@ -6,16 +6,18 @@ inputs:
     description: "Hostname of the main kind node"
     required: false
     default: kind-control-plane
+  node-image:
+    description: "Node image to be used"
+    required: false
+    default: kindest/node:v1.22.2
 
 runs:
   using: "composite"
   steps:
     - name: Set up KinD
-      uses: container-tools/kind-action@v2
-      with:
-        config: .github/kind-config.yaml
-        registry: false                  # Registry not needed
-        node_image: kindest/node:v1.22.2 # Newest image
+      shell: bash
+      run: |
+        kind create cluster --image=${{ inputs.node-image }} --config .github/kind-config.yaml
     - name: Check cluster status
       shell: bash
       run: |
@@ -25,6 +27,8 @@ runs:
       shell: bash
       run: |
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
+        # waiting for resources to be created
+        kubectl rollout status deployment ingress-nginx-controller --namespace ingress-nginx
         kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
     - name: Add ${{ inputs.kind-node-hostname }} host to machine hosts
       shell: bash
