@@ -1,9 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
 import java.util.Objects;
-import java.util.Set;
-
-import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 
 public class ManagedProcessorSpec {
     private String id;
@@ -15,8 +12,6 @@ public class ManagedProcessorSpec {
     private String shardId;
 
     private String flows;
-
-    private Set<Condition> conditions;
 
     public String getId() {
         return id;
@@ -58,14 +53,6 @@ public class ManagedProcessorSpec {
         this.flows = flows;
     }
 
-    public Set<Condition> getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(Set<Condition> conditions) {
-        this.conditions = conditions;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -76,11 +63,11 @@ public class ManagedProcessorSpec {
         }
         ManagedProcessorSpec that = (ManagedProcessorSpec) o;
         return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(bridgeId, that.bridgeId) && Objects.equals(shardId, that.shardId)
-                && Objects.equals(flows, that.flows) && Objects.equals(conditions, that.conditions);
+                && Objects.equals(flows, that.flows);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, bridgeId, shardId, flows, conditions);
+        return Objects.hash(id, name, bridgeId, shardId, flows);
     }
 }

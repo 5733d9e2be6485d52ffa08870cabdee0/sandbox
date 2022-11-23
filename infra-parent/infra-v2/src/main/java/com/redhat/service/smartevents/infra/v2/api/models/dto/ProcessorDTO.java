@@ -31,6 +31,19 @@ public class ProcessorDTO {
     @JsonProperty("operation")
     private Operation operation;
 
+    public ProcessorDTO() {
+    }
+
+    public ProcessorDTO(String id, String name, JsonNode flows, String bridgeId, String customerId, String owner, Operation operation) {
+        this.id = id;
+        this.name = name;
+        this.flows = flows;
+        this.bridgeId = bridgeId;
+        this.customerId = customerId;
+        this.owner = owner;
+        this.operation = operation;
+    }
+
     public String getId() {
         return id;
     }

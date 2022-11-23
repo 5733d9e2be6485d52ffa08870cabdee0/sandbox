@@ -39,14 +39,7 @@ public class BridgeDTO {
     public BridgeDTO() {
     }
 
-    public BridgeDTO(String id,
-            String name,
-            String endpoint,
-            String tlsCertificate,
-            String tlsKey,
-            String customerId,
-            String owner,
-            KafkaConnectionDTO kafkaConnection) {
+    public BridgeDTO(String id, String name, String endpoint, String tlsCertificate, String tlsKey, String customerId, String owner, KafkaConnectionDTO kafkaConnection, Operation operation) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
@@ -55,6 +48,7 @@ public class BridgeDTO {
         this.customerId = customerId;
         this.owner = owner;
         this.kafkaConnection = kafkaConnection;
+        this.operation = operation;
     }
 
     public void setCustomerId(String customerId) {
