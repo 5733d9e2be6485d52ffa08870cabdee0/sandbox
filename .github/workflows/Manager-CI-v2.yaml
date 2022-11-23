@@ -1,4 +1,4 @@
-name: Manager - CI
+name: Manager - CI - v2
 on:
   pull_request_target:
     types: [ opened, labeled, unlabeled, synchronize ]
@@ -173,7 +173,7 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
-          working-directory: integration-tests/manager-integration-tests
+          working-directory: integration-tests/manager-integration-tests/manager-integration-tests-v2
       - name: Print operator log
         if: always()
         run: |
@@ -187,7 +187,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: log
-          path: ./integration-tests/manager-integration-tests/target/cucumber-logs/
+          path: ./integration-tests/manager-integration-tests/manager-integration-tests-v2/target/cucumber-logs/
   stop-runner:
     name: Stop self-hosted EC2 runner
     needs:

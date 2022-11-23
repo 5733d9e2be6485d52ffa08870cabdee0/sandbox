@@ -80,17 +80,17 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pperformance -Dgroups=${{ github.event.inputs.groups || 'send-cloud-events-single-bridge'}} -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable || 'false'}} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable || 'false'}} -Dperformance.hyperfoil.url=$PERFORMANCE_HYPERFOIL_URL -Dperformance.webhook.url=$PERFORMANCE_WEBHOOK_URL
-          working-directory: integration-tests/manager-integration-tests
+          working-directory: integration-tests/manager-integration-tests/manager-integration-tests-v1
       - name: Upload test logs
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: log
-          path: ./integration-tests/manager-integration-tests/target/cucumber-logs/
+          path: ./integration-tests/manager-integration-tests/manager-integration-tests-v1/target/cucumber-logs/
       - name: Upload Hyperfoil runs logs
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: hyperfoil-runs
-          path: ./integration-tests/manager-integration-tests/target/hyperfoil-runs/
+          path: ./integration-tests/manager-integration-tests/manager-integration-tests-v1/target/hyperfoil-runs/
 
