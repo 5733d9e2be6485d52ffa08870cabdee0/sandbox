@@ -80,14 +80,14 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups || ''}} -Devent-bridge.manager.url=$STAGE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STAGE_SSO_CLIENT_ID -Dbridge.client.secret=$STAGE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable || 'false'}} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable || 'false'}}
-          working-directory: integration-tests/manager-integration-tests
+          working-directory: integration-tests/manager-integration-tests/manager-integration-tests-v1
       - name: Archive junit test results
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: junit-test-results
           path: |
-            integration-tests/manager-integration-tests/target/failsafe-reports/TEST-*.xml
+            integration-tests/manager-integration-tests/manager-integration-tests-v1/target/failsafe-reports/TEST-*.xml
           retention-days: 7
       - name: Get Sheriff Name
         if: failure()
@@ -111,4 +111,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: log
-          path: ./integration-tests/manager-integration-tests/target/cucumber-logs/
+          path: ./integration-tests/manager-integration-tests/manager-integration-tests-v1/target/cucumber-logs/
