@@ -59,7 +59,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
                 .withProcessorId(processorDTO.getId())
                 .withBridgeId(processorDTO.getBridgeId())
                 .withCustomerId(processorDTO.getCustomerId())
-                .withDefinition(processorDTO.getDefinition())
+                .withDefinition(processorDTO.getFlows())
                 .withProcessorName(processorDTO.getName())
                 .build();
     }
@@ -129,7 +129,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
             ManagedProcessorSpec.setName(processorName);
 
             try {
-                ManagedProcessorSpec.setProcessorDefinition(MAPPER.writeValueAsString(processorDefinition));
+                ManagedProcessorSpec.setFlows(MAPPER.writeValueAsString(processorDefinition));
             } catch (JsonProcessingException e) {
                 throw new IllegalStateException(String.format("Invalid Processor Definition for processorId: '%s'", processorId), e);
             }

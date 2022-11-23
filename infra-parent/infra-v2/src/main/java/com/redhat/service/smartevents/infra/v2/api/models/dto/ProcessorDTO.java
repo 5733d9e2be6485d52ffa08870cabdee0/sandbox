@@ -16,8 +16,8 @@ public class ProcessorDTO {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("definition")
-    private JsonNode definition;
+    @JsonProperty("flows")
+    private JsonNode flows;
 
     @JsonProperty("bridgeId")
     private String bridgeId;
@@ -47,12 +47,12 @@ public class ProcessorDTO {
         this.name = name;
     }
 
-    public JsonNode getDefinition() {
-        return definition;
+    public JsonNode getFlows() {
+        return flows;
     }
 
-    public void setDefinition(JsonNode definition) {
-        this.definition = definition;
+    public void setFlows(JsonNode flows) {
+        this.flows = flows;
     }
 
     public String getBridgeId() {

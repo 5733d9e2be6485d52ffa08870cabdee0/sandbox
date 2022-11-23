@@ -14,7 +14,7 @@ public class ManagedProcessorSpec {
 
     private String shardId;
 
-    private String processorDefinition;
+    private String flows;
 
     private Set<Condition> conditions;
 
@@ -50,12 +50,12 @@ public class ManagedProcessorSpec {
         this.name = name;
     }
 
-    public String getProcessorDefinition() {
-        return processorDefinition;
+    public String getFlows() {
+        return flows;
     }
 
-    public void setProcessorDefinition(String processorDefinition) {
-        this.processorDefinition = processorDefinition;
+    public void setFlows(String flows) {
+        this.flows = flows;
     }
 
     public Set<Condition> getConditions() {
@@ -76,11 +76,11 @@ public class ManagedProcessorSpec {
         }
         ManagedProcessorSpec that = (ManagedProcessorSpec) o;
         return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(bridgeId, that.bridgeId) && Objects.equals(shardId, that.shardId)
-                && Objects.equals(processorDefinition, that.processorDefinition) && Objects.equals(conditions, that.conditions);
+                && Objects.equals(flows, that.flows) && Objects.equals(conditions, that.conditions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, bridgeId, shardId, processorDefinition, conditions);
+        return Objects.hash(id, name, bridgeId, shardId, flows, conditions);
     }
 }
