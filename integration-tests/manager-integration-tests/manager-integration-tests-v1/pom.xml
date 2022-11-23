@@ -1,0 +1,315 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <parent>
+    <groupId>com.redhat.service.smartevents</groupId>
+    <artifactId>manager-integration-tests</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>manager-integration-tests-v1</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>SmartEvents :: Manager Integration Tests v1</name>
+
+  <properties>
+    <parallel>false</parallel>
+    <parallel.concurrency.number>5</parallel.concurrency.number>
+    <!-- Performance related properties and config -->
+    <performance.webhook.url></performance.webhook.url>
+    <performance.hyperfoil.url></performance.hyperfoil.url>
+    <performance.horreum.team.name>rhose-team</performance.horreum.team.name>
+    <performance.horreum.test.schema>http://hyperfoil.io/run-schema/v3.0</performance.horreum.test.schema>
+    <performance.manager.metrics.test.schema>urn:rhose-manager-metrics:0.1</performance.manager.metrics.test.schema>
+    <performance.horreum.results.upload>false</performance.horreum.results.upload>
+  </properties>
+
+  <!-- Using custom version of okhttp due to dependency misalignment between RHOSE and TNB. -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>4.9.2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>manager</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.redhat.cloud</groupId>
+      <artifactId>kafka-instance-sdk</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit-platform-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-picocontainer</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-suite</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>agent-java-cucumber6</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-slack</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-hyperfoil</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-horreum</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-aws-sqs</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-webhook</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/test/filtered-resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
+    <plugins>
+      <!-- Skip Surefire plugin as this module contains only integration tests. -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <trimStackTrace>false</trimStackTrace>
+          <systemProperties>
+            <!--
+                Make use of JUnit 5 tags instead
+                See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
+            -->
+            <!--cucumber.filter.tags>${tags}</cucumber.filter.tags-->
+
+            <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
+            <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
+            <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
+            <cucumber.execution.parallel.config.strategy>fixed</cucumber.execution.parallel.config.strategy>
+            <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
+
+            <sonar.exclusions>**/RunCucumberTest.java, **/RunPerformanceCucumberTest.java</sonar.exclusions>
+
+            <!-- Token authorization configuration, usable for local execution, values are taken from https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/blob/main/kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -->
+            <bridge.client.id>kermit</bridge.client.id>
+            <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
+
+            <!-- Additional configuration  -->
+            <fail.cleanup.disable>false</fail.cleanup.disable> <!-- Disable the test cleanup in case of test failure -->
+            <cleanup.disable>false</cleanup.disable> <!-- Disable the whole test cleanup -->
+            <undefined.placeholder.check.enabled>true</undefined.placeholder.check.enabled> <!-- Check that all placeholders are specified in scenario -->
+
+            <!--Manager and key-cloak url-->
+            <event-bridge.manager.url></event-bridge.manager.url>
+            <keycloak.realm.url></keycloak.realm.url>
+
+            <!-- Managed Kafka properties -->
+            <managed.kafka.sso.auth-server-url>${keycloak.realm.url}</managed.kafka.sso.auth-server-url>
+            <kafka.bootstrap.servers>${env.MANAGED_KAFKA_BOOTSTRAP_SERVER}</kafka.bootstrap.servers>
+            <kafka.admin.client-id>${env.MANAGED_KAFKA_ADMIN_CLIENT_ID}</kafka.admin.client-id>
+            <kafka.admin.client-secret>${env.MANAGED_KAFKA_ADMIN_CLIENT_SECRET}</kafka.admin.client-secret>
+            <kafka.ops.client.id>${env.MANAGED_KAFKA_OPS_CLIENT_ID}</kafka.ops.client.id>
+            <kafka.ops.client.secret>${env.MANAGED_KAFKA_OPS_CLIENT_SECRET}</kafka.ops.client.secret>
+
+            <!-- Ansible Tower properties -->
+            <ansible.endpoint>${env.ANSIBLE_ENDPOINT}</ansible.endpoint>
+            <ansible.username>${env.ANSIBLE_USERNAME}</ansible.username>
+            <ansible.password>${env.ANSIBLE_PASSWORD}</ansible.password>
+            <ansible.ssl.verification.disabled>true</ansible.ssl.verification.disabled>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>cucumber</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>**/RunCucumberTest.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>periodical-slack-check</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>**/RunPeriodicalSlackActionSuite.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>performance</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>**/RunPerformanceCucumberTest.java</include>
+              </includes>
+              <systemProperties>
+                <undefined.placeholder.check.enabled>false</undefined.placeholder.check.enabled> <!-- Disable the check as Hyperfoil placeholders use same format -->
+                <performance.webhook.url>${performance.webhook.url}</performance.webhook.url>
+                <performance.hyperfoil.url>${performance.hyperfoil.url}</performance.hyperfoil.url>
+                <performance.horreum.team.name>${performance.horreum.team.name}</performance.horreum.team.name>
+                <performance.horreum.test.schema>${performance.horreum.test.schema}</performance.horreum.test.schema>
+                <performance.manager.metrics.test.schema>${performance.manager.metrics.test.schema}</performance.manager.metrics.test.schema>
+                <performance.horreum.results.upload>${performance.horreum.results.upload}</performance.horreum.results.upload>
+              </systemProperties>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>upgrade-test</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>**/RunUpgradeTest.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
