@@ -16,7 +16,7 @@ import org.hibernate.annotations.Filters;
 import org.hibernate.annotations.ParamDef;
 
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
-import com.redhat.service.smartevents.manager.core.models.ManagedDefinedResource;
+import com.redhat.service.smartevents.manager.v1.models.ManagedDefinedResourceV1;
 
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByShardIdToDeployOrDelete",
@@ -49,7 +49,7 @@ import com.redhat.service.smartevents.manager.core.models.ManagedDefinedResource
         @Filter(name = "byStatus", condition = "status in (:status)")
 })
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
-public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
+public class Bridge extends ManagedDefinedResourceV1<BridgeDefinition> {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
 

@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.core.metrics;
+package com.redhat.service.smartevents.manager.v1.metrics;
 
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
@@ -9,8 +9,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.manager.core.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
-import com.redhat.service.smartevents.manager.core.models.ManagedResource;
+import com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
+import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +22,7 @@ public class ManagedResourceOperationMapperTest {
             boolean isManagedResourceModified,
             ManagedResourceStatus updateStatus,
             ManagedResourceOperation operation) {
-        ManagedResource managedResource = new ManagedResource();
+        ManagedResourceV1 managedResource = new ManagedResourceV1();
         managedResource.setStatus(managedResourceStatus);
         managedResource.setModifiedAt(isManagedResourceModified ? ZonedDateTime.now() : null);
 

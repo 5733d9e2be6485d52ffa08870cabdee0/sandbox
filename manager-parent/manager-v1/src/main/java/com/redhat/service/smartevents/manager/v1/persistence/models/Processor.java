@@ -24,7 +24,7 @@ import org.hibernate.annotations.TypeDef;
 
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
-import com.redhat.service.smartevents.manager.core.models.ManagedDefinedResource;
+import com.redhat.service.smartevents.manager.v1.models.ManagedDefinedResourceV1;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
@@ -86,7 +86,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
         @Filter(name = "byType", condition = "type in (:ptype)")
 })
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
+public class Processor extends ManagedDefinedResourceV1<ProcessorDefinition> {
 
     public static final String BRIDGE_ID_PARAM = "bridgeId";
 

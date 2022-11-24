@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.core.metrics;
+package com.redhat.service.smartevents.manager.v1.metrics;
 
 import java.util.Objects;
 
@@ -6,6 +6,7 @@ import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUp
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
+import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
 public final class ManagedResourceOperationMapper {
 
@@ -51,7 +52,7 @@ public final class ManagedResourceOperationMapper {
      * @param updateDTO
      * @return
      */
-    public static ManagedResourceOperation inferOperation(ManagedResource managedResource, ManagedResourceStatusUpdateDTO updateDTO) {
+    public static ManagedResourceOperation inferOperation(ManagedResourceV1 managedResource, ManagedResourceStatusUpdateDTO updateDTO) {
         ManagedResourceStatus updateStatus = updateDTO.getStatus();
         ManagedResourceStatus resourceStatus = managedResource.getStatus();
         if (resourceStatus.equals(ManagedResourceStatus.DEPROVISION)

@@ -4,14 +4,11 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
 import com.redhat.service.smartevents.infra.core.exceptions.HasErrorInformation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 
 @MappedSuperclass
 public class ManagedResource implements HasErrorInformation {
@@ -29,14 +26,6 @@ public class ManagedResource implements HasErrorInformation {
 
     @Column(name = "generation")
     protected long generation;
-
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    protected ManagedResourceStatus status;
-
-    @Column(name = "dependency_status")
-    @Enumerated(EnumType.STRING)
-    protected ManagedResourceStatus dependencyStatus;
 
     @Column(nullable = false, name = "name")
     protected String name;
@@ -65,22 +54,6 @@ public class ManagedResource implements HasErrorInformation {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public ManagedResourceStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ManagedResourceStatus status) {
-        this.status = status;
-    }
-
-    public ManagedResourceStatus getDependencyStatus() {
-        return dependencyStatus;
-    }
-
-    public void setDependencyStatus(ManagedResourceStatus dependencyStatus) {
-        this.dependencyStatus = dependencyStatus;
     }
 
     public String getName() {
@@ -147,11 +120,6 @@ public class ManagedResource implements HasErrorInformation {
 
     public void setErrorUUID(String errorUUID) {
         this.errorUUID = errorUUID;
-    }
-
-    public boolean isActionable() {
-        // A ManagedResource can only be modified or deleted if it's in READY or FAILED state
-        return getStatus() == ManagedResourceStatus.READY || getStatus() == ManagedResourceStatus.FAILED;
     }
 
 }

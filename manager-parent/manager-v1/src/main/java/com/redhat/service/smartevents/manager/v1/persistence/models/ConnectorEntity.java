@@ -17,7 +17,7 @@ import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
-import com.redhat.service.smartevents.manager.core.models.ManagedDefinedResource;
+import com.redhat.service.smartevents.manager.v1.models.ManagedDefinedResourceV1;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
@@ -31,7 +31,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Entity
 @Table(name = "CONNECTOR")
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class ConnectorEntity extends ManagedDefinedResource<JsonNode> { // called -Entity to avoid clash with Connector REST API
+public class ConnectorEntity extends ManagedDefinedResourceV1<JsonNode> { // called -Entity to avoid clash with Connector REST API
 
     public static final String PROCESSOR_ID_PARAM = "processorId";
 
