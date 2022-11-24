@@ -5,6 +5,10 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.v2.api.models.Operation;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.v2.Fixtures;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
@@ -28,19 +32,14 @@ public class NamespaceProviderImplTest {
     NamespaceProviderImpl namespaceProvider;
 
     private ManagedBridge createManagedBridge() {
+        BridgeDTO bridgeDTO = Fixtures.createBridge(Operation.CREATE);
+        String expectedNamespace = namespaceProvider.getNamespaceName(bridgeDTO.getId());
+        return Fixtures.createManagedBridge(bridgeDTO, expectedNamespace);
+    }
 
-        String id = UUID.randomUUID().toString();
-        String expectedNamespace = namespaceProvider.getNamespaceName(id);
-        ManagedBridge mb = ManagedBridge.fromBuilder()
-                .withBridgeId(id)
-                .withNamespace(expectedNamespace)
-                .withCustomerId(UUID.randomUUID().toString())
-                .withBridgeName(UUID.randomUUID().toString())
-                .withHost(UUID.randomUUID().toString())
-                .withOwner(UUID.randomUUID().toString())
-                .build();
-
-        return mb;
+    @BeforeEach
+    public void before() {
+        kubernetesClient.namespaces().delete();
     }
 
     @Test

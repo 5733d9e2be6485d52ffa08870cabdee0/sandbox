@@ -1,10 +1,10 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
-import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 
 public interface ManagedBridgeService {
 
-    void createManagedBridgeResources(ManagedBridge managedBridge);
+    void createManagedBridge(BridgeDTO bridgeDTO);
 
-    void deleteManagedBridgeResources(ManagedBridge managedBridge);
+    void deleteManagedBridge(BridgeDTO bridgeDTO);
 }
