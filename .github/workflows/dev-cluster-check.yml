@@ -67,7 +67,7 @@ jobs:
           SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
           WEBHOOK_SITE_TOKEN: ${{ secrets.WEBHOOK_SITE_TOKEN }}
           WEBHOOK_SITE_TOKEN_SECOND: ${{ secrets.WEBHOOK_SITE_TOKEN_SECOND }}
-      - name: Run integration tests
+      - name: Run integration tests for v1
         env:
           DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
           DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
@@ -81,13 +81,35 @@ jobs:
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups || ''}} -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable || 'false'}} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable || 'false'}}
           working-directory: integration-tests/manager-integration-tests/manager-integration-tests-v1
-      - name: Archive junit test results
+      - name: Archive junit test results for v1
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: junit-test-results
+          name: junit-test-results-v1
           path: |
             integration-tests/manager-integration-tests/manager-integration-tests-v1/target/failsafe-reports/TEST-*.xml
+          retention-days: 7
+      - name: Run integration tests for v2
+        env:
+          DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
+          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
+          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups || ''}} -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable || 'false'}} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable || 'false'}}
+          working-directory: integration-tests/manager-integration-tests/manager-integration-tests-v2
+      - name: Archive junit test results for v2
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: junit-test-results-v2
+          path: |
+            integration-tests/manager-integration-tests/manager-integration-tests-v2/target/failsafe-reports/TEST-*.xml
           retention-days: 7
       - name: Get Sheriff Name
         if: failure()
@@ -106,9 +128,15 @@ jobs:
           to: openbridge-dev@redhat.com
           from: Dev cluster CI
           html_body: Dev cluster CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
-      - name: Upload test logs
+      - name: Upload test logs for v1
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: log
+          name: log-v1
           path: ./integration-tests/manager-integration-tests/manager-integration-tests-v1/target/cucumber-logs/
+      - name: Upload test logs for v2
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: log-v2
+          path: ./integration-tests/manager-integration-tests/manager-integration-tests-v2/target/cucumber-logs/
