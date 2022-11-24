@@ -161,8 +161,6 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
         return persist(managedResource);
     }
 
-    ;
-
     public abstract PanacheRepositoryBase<T, String> getDao();
 
     protected abstract T createDependencies(Work work, T managedResource);
@@ -178,4 +176,5 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
     public abstract boolean isProvisioningComplete(T managedResource);
 
     public abstract boolean isDeprovisioningComplete(T managedResource);
+
 }
