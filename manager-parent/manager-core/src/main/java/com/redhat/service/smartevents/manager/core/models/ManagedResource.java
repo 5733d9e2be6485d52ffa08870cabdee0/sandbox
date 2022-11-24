@@ -36,12 +36,6 @@ public class ManagedResource implements HasErrorInformation {
     @Column(name = "published_at", columnDefinition = "TIMESTAMP")
     protected ZonedDateTime publishedAt;
 
-    @Column(name = "modified_at", columnDefinition = "TIMESTAMP")
-    private ZonedDateTime modifiedAt;
-
-    @Column(name = "deletion_requested_at", columnDefinition = "TIMESTAMP")
-    private ZonedDateTime deletionRequestedAt;
-
     @Column(name = "error_id")
     private Integer errorId;
 
@@ -78,22 +72,6 @@ public class ManagedResource implements HasErrorInformation {
 
     public void setPublishedAt(ZonedDateTime publishedAt) {
         this.publishedAt = publishedAt;
-    }
-
-    public ZonedDateTime getModifiedAt() {
-        return modifiedAt;
-    }
-
-    public void setModifiedAt(ZonedDateTime modifiedAt) {
-        this.modifiedAt = modifiedAt;
-    }
-
-    public ZonedDateTime getDeletionRequestedAt() {
-        return deletionRequestedAt;
-    }
-
-    public void setDeletionRequestedAt(ZonedDateTime deletedAt) {
-        this.deletionRequestedAt = deletedAt;
     }
 
     public long getGeneration() {

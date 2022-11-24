@@ -1,10 +1,10 @@
-package com.redhat.service.smartevents.manager.core.workers.quartz;
+package com.redhat.service.smartevents.manager.v1.workers.quartz;
 
 import java.time.ZonedDateTime;
 
 import org.quartz.JobDataMap;
 
-import com.redhat.service.smartevents.manager.core.workers.Work;
+import com.redhat.service.smartevents.manager.v1.workers.Work;
 
 public class QuartzWorkConvertor {
 
@@ -40,5 +40,4 @@ public class QuartzWorkConvertor {
         work.setType(jobData.getString(STATE_FIELD_TYPE));
         return work;
     }
-
 }

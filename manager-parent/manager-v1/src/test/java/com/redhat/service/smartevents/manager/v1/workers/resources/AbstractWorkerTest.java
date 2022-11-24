@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
-import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
+import com.redhat.service.smartevents.manager.v1.workers.Work;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;

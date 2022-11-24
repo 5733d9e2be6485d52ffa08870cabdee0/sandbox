@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.core.workers.quartz;
+package com.redhat.service.smartevents.manager.v1.workers.quartz;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -6,9 +6,9 @@ import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
 
-import com.redhat.service.smartevents.manager.core.mocks.ManagedResourceForTests;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
-import com.redhat.service.smartevents.manager.core.workers.Work;
+import com.redhat.service.smartevents.manager.v1.mocks.ManagedResourceForTests;
+import com.redhat.service.smartevents.manager.v1.workers.Work;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,5 +51,4 @@ public class QuartzWorkConvertorTest {
         assertThat(work.getSubmittedAt().toString()).isEqualTo(jobDataMap.getString(QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT));
         assertThat(work.getAttempts()).isEqualTo(Long.valueOf(jobDataMap.getString(QuartzWorkConvertor.STATE_FIELD_ATTEMPTS)));
     }
-
 }

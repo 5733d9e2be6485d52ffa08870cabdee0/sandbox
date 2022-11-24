@@ -40,7 +40,6 @@ import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
-import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
@@ -48,6 +47,7 @@ import com.redhat.service.smartevents.manager.v1.metrics.ManagerMetricsServiceV1
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 
 import dev.bf2.ffm.ams.core.AccountManagementService;
 import dev.bf2.ffm.ams.core.exceptions.TermsRequiredException;
