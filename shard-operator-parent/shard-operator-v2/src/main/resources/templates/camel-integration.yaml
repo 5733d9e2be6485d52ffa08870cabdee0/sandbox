@@ -1,0 +1,16 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: ""
+  labels:
+    app.kubernetes.io/managed-by: bridge-fleet-shard-operator # used for filtering of Deployments created by the controller
+    app.kubernetes.io/created-by: bridge-fleet-shard-operator # Specify the operator
+    app.kubernetes.io/component: managed-processor # used to specify the component
+  namespace: ""
+  ownerReferences: # used for finding which ManagedProcessor does this Integration belongs to
+    - apiVersion: ""
+      kind: ""
+      name: ""
+      uid: ""
+spec:
+  flows: []

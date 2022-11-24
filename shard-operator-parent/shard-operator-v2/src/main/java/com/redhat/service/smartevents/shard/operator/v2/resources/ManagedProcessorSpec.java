@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.shard.operator.v2.resources;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class ManagedProcessorSpec {
     private String id;
 
@@ -9,9 +11,7 @@ public class ManagedProcessorSpec {
 
     private String bridgeId;
 
-    private String shardId;
-
-    private String flows;
+    private JsonNode[] flows;
 
     public String getId() {
         return id;
@@ -29,14 +29,6 @@ public class ManagedProcessorSpec {
         this.bridgeId = bridgeId;
     }
 
-    public String getShardId() {
-        return shardId;
-    }
-
-    public void setShardId(String shardId) {
-        this.shardId = shardId;
-    }
-
     public String getName() {
         return name;
     }
@@ -45,11 +37,11 @@ public class ManagedProcessorSpec {
         this.name = name;
     }
 
-    public String getFlows() {
+    public JsonNode[] getFlows() {
         return flows;
     }
 
-    public void setFlows(String flows) {
+    public void setFlows(JsonNode[] flows) {
         this.flows = flows;
     }
 
@@ -62,12 +54,12 @@ public class ManagedProcessorSpec {
             return false;
         }
         ManagedProcessorSpec that = (ManagedProcessorSpec) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(bridgeId, that.bridgeId) && Objects.equals(shardId, that.shardId)
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(bridgeId, that.bridgeId)
                 && Objects.equals(flows, that.flows);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, bridgeId, shardId, flows);
+        return Objects.hash(id, name, bridgeId, flows);
     }
 }

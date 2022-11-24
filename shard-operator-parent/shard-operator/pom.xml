@@ -23,6 +23,10 @@
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator-v1</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>shard-operator-v2</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

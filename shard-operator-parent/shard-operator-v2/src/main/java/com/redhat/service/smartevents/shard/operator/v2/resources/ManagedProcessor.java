@@ -3,9 +3,9 @@ package com.redhat.service.smartevents.shard.operator.v2.resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 
@@ -63,7 +63,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
         private String bridgeId;
         private String customerId;
         private String processorName;
-        private JsonNode processorDefinition;
+        private ObjectNode processorDefinition;
 
         public Builder() {
 
@@ -94,7 +94,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
             return this;
         }
 
-        public Builder withDefinition(final JsonNode processorDefinition) {
+        public Builder withDefinition(final ObjectNode processorDefinition) {
             this.processorDefinition = processorDefinition;
             return this;
         }
@@ -110,20 +110,15 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
                             .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
-            ManagedProcessorSpec ManagedProcessorSpec = new ManagedProcessorSpec();
-            ManagedProcessorSpec.setId(processorId);
-            ManagedProcessorSpec.setBridgeId(bridgeId);
-            ManagedProcessorSpec.setShardId(customerId);
-            ManagedProcessorSpec.setName(processorName);
+            ManagedProcessorSpec managedProcessorSpec = new ManagedProcessorSpec();
+            managedProcessorSpec.setId(processorId);
+            managedProcessorSpec.setBridgeId(bridgeId);
+            managedProcessorSpec.setName(processorName);
 
-            try {
-                ManagedProcessorSpec.setFlows(MAPPER.writeValueAsString(processorDefinition));
-            } catch (JsonProcessingException e) {
-                throw new IllegalStateException(String.format("Invalid Processor Definition for processorId: '%s'", processorId), e);
-            }
+            managedProcessorSpec.setFlows(new JsonNode[] { processorDefinition });
 
             ManagedProcessor managedProcessor = new ManagedProcessor();
-            managedProcessor.setSpec(ManagedProcessorSpec);
+            managedProcessor.setSpec(managedProcessorSpec);
             managedProcessor.setStatus(new ManagedProcessorStatus());
             managedProcessor.setMetadata(meta);
 
@@ -139,5 +134,4 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
             requireNonNull(this.processorDefinition, "[ManagedProcessor] Definition can't be null");
         }
     }
-
 }

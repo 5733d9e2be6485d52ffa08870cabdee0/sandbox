@@ -27,6 +27,18 @@ import static java.util.Collections.EMPTY_SET;
 
 public class EventSourceFactory {
 
+    // Can we use the generic method instead for all the other methods? And having the first three parameters as fields since they're identical
+    public static <T extends HasMetadata> EventSource buildResourceInformer(KubernetesClient kubernetesClient, String operatorName, String componentName, Class<T> resourceType) {
+        SharedIndexInformer<T> resourceInformer =
+                kubernetesClient
+                        .resources(resourceType)
+                        .inAnyNamespace()
+                        .withLabels(buildLabels(componentName, operatorName))
+                        .runnableInformer(0);
+
+        return new InformerEventSource<>(resourceInformer, Mappers.fromOwnerReference());
+    }
+
     public static EventSource buildSecretsInformer(KubernetesClient kubernetesClient, String operatorName, String componentName) {
         SharedIndexInformer<Secret> secretsInformer =
                 kubernetesClient

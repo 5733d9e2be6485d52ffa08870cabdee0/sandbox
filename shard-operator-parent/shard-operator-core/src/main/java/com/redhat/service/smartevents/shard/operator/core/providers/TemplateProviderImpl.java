@@ -141,7 +141,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         }
     }
 
-    private void updateMetadata(HasMetadata resource, ObjectMeta meta, TemplateImportConfig config) {
+    protected void updateMetadata(HasMetadata resource, ObjectMeta meta, TemplateImportConfig config) {
 
         // Set the owning operatorName
         Map<String, String> labels = new LabelsBuilder().buildWithDefaults(config.getOperatorName());

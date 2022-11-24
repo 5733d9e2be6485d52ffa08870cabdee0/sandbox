@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -17,7 +17,7 @@ public class ProcessorDTO {
     private String name;
 
     @JsonProperty("flows")
-    private JsonNode flows;
+    private ObjectNode flows;
 
     @JsonProperty("bridgeId")
     private String bridgeId;
@@ -37,7 +37,7 @@ public class ProcessorDTO {
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, JsonNode flows, String bridgeId, String customerId, String owner, OperationType operationType) {
+    public ProcessorDTO(String id, String name, ObjectNode flows, String bridgeId, String customerId, String owner, OperationType operationType) {
         this.id = id;
         this.name = name;
         this.flows = flows;
@@ -63,11 +63,11 @@ public class ProcessorDTO {
         this.name = name;
     }
 
-    public JsonNode getFlows() {
+    public ObjectNode getFlows() {
         return flows;
     }
 
-    public void setFlows(JsonNode flows) {
+    public void setFlows(ObjectNode flows) {
         this.flows = flows;
     }
 
