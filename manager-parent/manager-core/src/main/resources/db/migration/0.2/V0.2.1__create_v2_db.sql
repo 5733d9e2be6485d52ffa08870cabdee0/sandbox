@@ -16,9 +16,6 @@ CREATE TABLE BRIDGE_V2 (
     submitted_at       timestamp    NOT NULL,
     published_at       timestamp,
 
-    error_id           integer,
-    error_uuid         varchar(255),
-
     version            integer      NOT NULL default 0,
     generation         integer      NOT NULL default 0,
 
