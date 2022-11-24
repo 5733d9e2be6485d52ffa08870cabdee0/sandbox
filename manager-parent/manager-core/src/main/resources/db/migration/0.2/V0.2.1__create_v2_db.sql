@@ -13,14 +13,14 @@ CREATE TABLE BRIDGE_V2 (
     endpoint           varchar(255),
     shard_id           varchar(255) NOT NULL,
 
-    submitted_at       timestamp NOT NULL,
+    submitted_at       timestamp    NOT NULL,
     published_at       timestamp,
 
     error_id           integer,
     error_uuid         varchar(255),
 
-    version            integer NOT NULL default 0,
-    generation         integer NOT NULL default 0,
+    version            integer      NOT NULL default 0,
+    generation         integer      NOT NULL default 0,
 
     unique (customer_id, name)
 );
@@ -30,15 +30,15 @@ CREATE TABLE PROCESSOR_V2 (
     id                 varchar(255) NOT NULL PRIMARY KEY,
 
     name               varchar(255) NOT NULL,
-    flows              jsonb NOT NULL,
+    flows              jsonb        NOT NULL,
 
     owner              varchar(255) NOT NULL,
 
-    submitted_at       timestamp NOT NULL,
+    submitted_at       timestamp    NOT NULL,
     published_at       timestamp,
 
-    version            integer NOT NULL default 0,
-    generation         integer NOT NULL default 0,
+    version            integer      NOT NULL default 0,
+    generation         integer      NOT NULL default 0,
 
     error_id           integer,
     error_uuid         varchar(255),
@@ -50,9 +50,9 @@ CREATE TABLE PROCESSOR_V2 (
 );
 
 CREATE TABLE OPERATION (
-    id                   varchar(255) NOT NULL PRIMARY KEY,
-    type                 varchar(255) NOT NULL,
-    requested_at         timestamp NOT NULL,
+    id                   varchar(255)   NOT NULL PRIMARY KEY,
+    type                 varchar(255)   NOT NULL,
+    requested_at         timestamp      NOT NULL,
 
     managed_resource_id  varchar(255)
 );
@@ -63,7 +63,7 @@ CREATE TABLE CONDITION (
     id                     varchar(255) NOT NULL PRIMARY KEY,
     type                   varchar(255) NOT NULL,
     status                 varchar(255) NOT NULL,
-    last_transition_time   timestamp NOT NULL,
+    last_transition_time   timestamp    NOT NULL,
     reason                 varchar(255),
     message                varchar(255),
     errorCode              varchar(255),
