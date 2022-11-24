@@ -15,7 +15,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -65,9 +65,9 @@ public class NamespaceProviderImplTest {
         assertThat(namespace).isNotNull();
 
         Map<String, String> labels = namespace.getMetadata().getLabels();
-        assertThat(labels.get(LabelsBuilder.BRIDGE_ID_LABEL)).isEqualTo(mb.getSpec().getId());
-        assertThat(labels.get(LabelsBuilder.BRIDGE_NAME_LABEL)).isEqualTo(mb.getSpec().getName());
-        assertThat(labels.get(LabelsBuilder.CUSTOMER_ID_LABEL)).isEqualTo(mb.getSpec().getCustomerId());
+        assertThat(labels).containsEntry(LabelsBuilder.BRIDGE_ID_LABEL, mb.getSpec().getId());
+        assertThat(labels).containsEntry(LabelsBuilder.BRIDGE_NAME_LABEL, mb.getSpec().getName());
+        assertThat(labels).containsEntry(LabelsBuilder.CUSTOMER_ID_LABEL, mb.getSpec().getCustomerId());
     }
 
     @Test
@@ -85,9 +85,9 @@ public class NamespaceProviderImplTest {
         assertThat(namespace).isNotNull();
 
         Map<String, String> labels = namespace.getMetadata().getLabels();
-        assertThat(labels.get(LabelsBuilder.BRIDGE_ID_LABEL)).isEqualTo(mb.getSpec().getId());
-        assertThat(labels.get(LabelsBuilder.BRIDGE_NAME_LABEL)).isEqualTo(mb.getSpec().getName());
-        assertThat(labels.get(LabelsBuilder.CUSTOMER_ID_LABEL)).isEqualTo(mb.getSpec().getCustomerId());
+        assertThat(labels).containsEntry(LabelsBuilder.BRIDGE_ID_LABEL, mb.getSpec().getId());
+        assertThat(labels).containsEntry(LabelsBuilder.BRIDGE_NAME_LABEL, mb.getSpec().getName());
+        assertThat(labels).containsEntry(LabelsBuilder.CUSTOMER_ID_LABEL, mb.getSpec().getCustomerId());
 
         String newName = "my-new-name";
         mb.getSpec().setName(newName);
@@ -97,9 +97,10 @@ public class NamespaceProviderImplTest {
         assertThat(namespace).isNotNull();
 
         labels = namespace.getMetadata().getLabels();
-        assertThat(labels.get(LabelsBuilder.BRIDGE_ID_LABEL)).isEqualTo(mb.getSpec().getId());
-        assertThat(labels.get(LabelsBuilder.BRIDGE_NAME_LABEL)).isEqualTo(mb.getSpec().getName());
-        assertThat(labels.get(LabelsBuilder.CUSTOMER_ID_LABEL)).isEqualTo(mb.getSpec().getCustomerId());
+        assertThat(labels).containsEntry(LabelsBuilder.BRIDGE_ID_LABEL, mb.getSpec().getId());
+        assertThat(labels).containsEntry(LabelsBuilder.BRIDGE_NAME_LABEL, mb.getSpec().getName());
+        assertThat(labels).containsEntry(LabelsBuilder.CUSTOMER_ID_LABEL, mb.getSpec().getCustomerId());
+
     }
 
     @Test

@@ -5,8 +5,8 @@ import java.net.URL;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
+import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
