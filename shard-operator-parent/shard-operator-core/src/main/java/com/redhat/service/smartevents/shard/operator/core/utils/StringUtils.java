@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v1.utils;
+package com.redhat.service.smartevents.shard.operator.core.utils;
 
 public class StringUtils {
 

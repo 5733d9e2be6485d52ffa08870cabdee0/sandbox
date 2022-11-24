@@ -1,10 +1,10 @@
-package com.redhat.service.smartevents.shard.operator.v1.resources;
+package com.redhat.service.smartevents.shard.operator.v2.resources;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
-import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 
@@ -22,13 +22,13 @@ import static java.util.Objects.requireNonNull;
 /**
  * OpenBridge Ingress Custom Resource
  */
-@Group("com.redhat.service.bridge")
-@Version("v1alpha1")
-@ShortNames("bi")
-public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced {
+@Group("com.redhat.service.smartevents")
+@Version("v2alpha1")
+@ShortNames("mbi")
+public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced {
 
-    public static final String COMPONENT_NAME = "ingress";
-    public static final String OB_RESOURCE_NAME_PREFIX = "ob-";
+    public static final String COMPONENT_NAME = "managed-bridge";
+    public static final String OB_RESOURCE_NAME_PREFIX = "brdg-";
 
     /**
      * Don't use this default constructor!
@@ -36,12 +36,12 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
      * <p/>
      * Use {@link #fromBuilder()} to create new instances.
      */
-    public BridgeIngress() {
-        this.setStatus(new BridgeIngressStatus());
+    public ManagedBridge() {
+        this.setStatus(new ManagedBridgeStatus());
     }
 
     /**
-     * Standard way of creating a new {@link BridgeIngress}.
+     * Standard way of creating a new {@link ManagedBridge}.
      * This class has a public constructor for integration with Kubernetes libraries only.
      * Please don't use the public constructor to create references of this CR.
      *
@@ -51,7 +51,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         return new Builder();
     }
 
-    public static BridgeIngress fromDTO(BridgeDTO bridgeDTO, String namespace) {
+    public static ManagedBridge fromDTO(BridgeDTO bridgeDTO, String namespace) {
         try {
             return new Builder()
                     .withNamespace(namespace)
@@ -113,7 +113,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
             return this;
         }
 
-        public BridgeIngress build() {
+        public ManagedBridge build() {
             this.validate();
             ObjectMeta meta = new ObjectMetaBuilder()
                     .withName(resolveResourceName(this.bridgeId))
@@ -124,27 +124,26 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
                             .buildWithDefaults())
                     .build();
 
-            BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
-            bridgeIngressSpec.setBridgeName(bridgeName);
-            bridgeIngressSpec.setCustomerId(customerId);
-            bridgeIngressSpec.setOwner(owner);
-            bridgeIngressSpec.setId(bridgeId);
-            bridgeIngressSpec.setHost(host);
+            ManagedBridgeSpec managedBridgeSpec = new ManagedBridgeSpec();
+            managedBridgeSpec.setCustomerId(customerId);
+            managedBridgeSpec.setOwner(owner);
+            managedBridgeSpec.setId(bridgeId);
+            managedBridgeSpec.getDnsConfiguration().setHost(host);
 
-            BridgeIngress bridgeIngress = new BridgeIngress();
-            bridgeIngress.setSpec(bridgeIngressSpec);
-            bridgeIngress.setStatus(new BridgeIngressStatus());
-            bridgeIngress.setMetadata(meta);
+            ManagedBridge managedBridge = new ManagedBridge();
+            managedBridge.setSpec(managedBridgeSpec);
+            managedBridge.setStatus(new ManagedBridgeStatus());
+            managedBridge.setMetadata(meta);
 
-            return bridgeIngress;
+            return managedBridge;
         }
 
         private void validate() {
-            requireNonNull(StringUtils.emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
-            requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
-            requireNonNull(StringUtils.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
-            requireNonNull(StringUtils.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
-            requireNonNull(StringUtils.emptyToNull(this.host), "[BridgeIngress] Host can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.customerId), "[ManagedBridge] CustomerId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[ManagedBridge] Id can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.bridgeName), "[ManagedBridge] Name can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.namespace), "[ManagedBridge] Namespace can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.host), "[ManagedBridge] Host can't be null");
         }
     }
 
