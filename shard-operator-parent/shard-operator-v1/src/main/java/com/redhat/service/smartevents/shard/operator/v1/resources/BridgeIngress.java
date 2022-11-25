@@ -3,8 +3,10 @@ package com.redhat.service.smartevents.shard.operator.v1.resources;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 
@@ -25,7 +27,8 @@ import static java.util.Objects.requireNonNull;
 @Group("com.redhat.service.bridge")
 @Version("v1alpha1")
 @ShortNames("bi")
-public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced {
+public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced,
+                                                                                                     BridgeAddressable {
 
     public static final String COMPONENT_NAME = "ingress";
     public static final String OB_RESOURCE_NAME_PREFIX = "ob-";
@@ -68,6 +71,12 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
 
     public static String resolveResourceName(String id) {
         return OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
+    }
+
+    @JsonIgnore
+    @Override
+    public String getIngressHost() {
+        return getSpec().getHost();
     }
 
     public static final class Builder {

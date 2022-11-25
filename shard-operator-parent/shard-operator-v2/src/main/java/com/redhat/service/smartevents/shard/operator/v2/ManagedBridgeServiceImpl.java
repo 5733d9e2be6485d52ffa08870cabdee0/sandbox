@@ -7,9 +7,10 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
@@ -60,7 +61,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     }
 
     private void createOrUpdateBridgeSecret(ManagedBridge managedBridge) {
-        Secret expected = templateProvider.loadManagedBridgeSecretTemplate(managedBridge, TemplateImportConfig.withDefaults());
+        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(managedBridge, TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME));
 
         KafkaConfigurationSpec kafkaConfiguration = managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration();
 

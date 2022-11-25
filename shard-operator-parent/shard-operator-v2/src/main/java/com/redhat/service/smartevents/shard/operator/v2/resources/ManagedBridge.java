@@ -3,9 +3,11 @@ package com.redhat.service.smartevents.shard.operator.v2.resources;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 
@@ -26,7 +28,8 @@ import static java.util.Objects.requireNonNull;
 @Group("com.redhat.service.smartevents")
 @Version("v2alpha1")
 @ShortNames("mbi")
-public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced {
+public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced,
+                                                                                                     BridgeAddressable {
 
     public static final String COMPONENT_NAME = "ingress";
 
@@ -87,6 +90,12 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
         return KubernetesResourceUtil.sanitizeName(id);
     }
 
+    @JsonIgnore
+    @Override
+    public String getIngressHost() {
+        return getSpec().getDnsConfiguration().getHost();
+    }
+
     public static final class Builder {
 
         private String bridgeId;
@@ -142,9 +151,9 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
                     .withName(resolveResourceName(this.bridgeId))
                     .withNamespace(namespace)
                     .withLabels(new LabelsBuilder()
-                            .withCustomerId(customerId)
-                            .withComponent(COMPONENT_NAME)
-                            .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
+                                        .withCustomerId(customerId)
+                                        .withComponent(COMPONENT_NAME)
+                                        .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
             ManagedBridgeSpec managedBridgeSpec = new ManagedBridgeSpec();

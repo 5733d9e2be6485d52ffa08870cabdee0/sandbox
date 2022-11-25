@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.core.networking;
 
+import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata bridgeIngress, Secret secret, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeAddressable bridgeIngress, Secret secret, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
 

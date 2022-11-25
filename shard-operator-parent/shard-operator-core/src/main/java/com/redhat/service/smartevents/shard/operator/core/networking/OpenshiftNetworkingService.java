@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator.core.networking;
 
 import java.util.Base64;
 
+import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +12,6 @@ import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImpo
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 
-import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -45,7 +45,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
 
     @Override
     // TODO: refactor as we don't need anymore NetworkResource
-    public NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata bridgeIngress, Secret secret, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeAddressable bridgeIngress, Secret secret, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Route expected = buildRoute(bridgeIngress, secret, service);
 
@@ -74,7 +74,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
         }
     }
 
-    private Route buildRoute(HasMetadata bridgeIngress, Secret secret, Service service) {
+    private Route buildRoute(BridgeAddressable bridgeIngress, Secret secret, Service service) {
         /**
          * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
          */
@@ -86,7 +86,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
         route.getMetadata().setNamespace(service.getMetadata().getNamespace());
 
         // We have to provide the host manually in order not to exceed the 63 char limit in the dns label https://issues.redhat.com/browse/MGDOBR-271
-        //TODO //route.getSpec().setHost(bridgeIngress.getSpec().getHost());
+        route.getSpec().setHost(bridgeIngress.getIngressHost());
 
         route.getSpec().getTls()
                 .setCertificate(new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET))));

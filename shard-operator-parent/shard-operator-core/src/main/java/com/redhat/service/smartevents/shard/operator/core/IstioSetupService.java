@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v1;
+package com.redhat.service.smartevents.shard.operator.core;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -114,7 +114,7 @@ public class IstioSetupService {
                         .create(expected);
             } catch (RuntimeException e) {
                 LOGGER.error(
-                        "Failed to create JWT Request Authentication resource. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/MGDOBR-940 but the functionalitis are compromised.");
+                        "Failed to create JWT Request Authentication resource. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/MGDOBR-940 but the functionalities are compromised.");
             }
         }
     }
