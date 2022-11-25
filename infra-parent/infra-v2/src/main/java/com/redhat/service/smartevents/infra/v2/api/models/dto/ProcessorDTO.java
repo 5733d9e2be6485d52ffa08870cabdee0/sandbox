@@ -92,11 +92,11 @@ public class ProcessorDTO {
         this.owner = owner;
     }
 
-    public OperationType getOperation() {
+    public OperationType getOperationType() {
         return operationType;
     }
 
-    public void setOperation(OperationType operationType) {
+    public void setOperationType(OperationType operationType) {
         this.operationType = operationType;
     }
 

@@ -115,11 +115,11 @@ public class BridgeDTO {
         return kafkaConnection;
     }
 
-    public OperationType getOperation() {
+    public OperationType getOperationType() {
         return operationType;
     }
 
-    public void setOperation(OperationType operationType) {
+    public void setOperationType(OperationType operationType) {
         this.operationType = operationType;
     }
 
