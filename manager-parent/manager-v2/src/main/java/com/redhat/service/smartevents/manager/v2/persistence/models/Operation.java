@@ -6,8 +6,12 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @Entity
 @Table(name = "OPERATION")
@@ -17,7 +21,8 @@ public class Operation {
     private String id = UUID.randomUUID().toString();
 
     @Column(name = "type", nullable = false)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private OperationType type;
 
     @Column(name = "requested_at", columnDefinition = "TIMESTAMP", nullable = false)
     private ZonedDateTime requestedAt;
@@ -29,11 +34,11 @@ public class Operation {
         return id;
     }
 
-    public String getType() {
+    public OperationType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(OperationType type) {
         this.type = type;
     }
 

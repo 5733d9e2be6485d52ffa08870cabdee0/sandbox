@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.infra.v2.api.models.Operation;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProcessorDTO {
@@ -29,19 +29,19 @@ public class ProcessorDTO {
     private String owner;
 
     @JsonProperty("operation")
-    private Operation operation;
+    private OperationType operationType;
 
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, JsonNode flows, String bridgeId, String customerId, String owner, Operation operation) {
+    public ProcessorDTO(String id, String name, JsonNode flows, String bridgeId, String customerId, String owner, OperationType operationType) {
         this.id = id;
         this.name = name;
         this.flows = flows;
         this.bridgeId = bridgeId;
         this.customerId = customerId;
         this.owner = owner;
-        this.operation = operation;
+        this.operationType = operationType;
     }
 
     public String getId() {
@@ -92,12 +92,12 @@ public class ProcessorDTO {
         this.owner = owner;
     }
 
-    public Operation getOperation() {
-        return operation;
+    public OperationType getOperation() {
+        return operationType;
     }
 
-    public void setOperation(Operation operation) {
-        this.operation = operation;
+    public void setOperation(OperationType operationType) {
+        this.operationType = operationType;
     }
 
     @Override

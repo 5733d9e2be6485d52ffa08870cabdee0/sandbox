@@ -6,11 +6,15 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 
 @Entity
 @Table(name = "CONDITION")
@@ -35,7 +39,8 @@ public class Condition {
     private String errorCode;
 
     @Column(name = "component", nullable = false)
-    private String component;
+    @Enumerated(EnumType.STRING)
+    private ComponentType component;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "operation_id")
@@ -88,11 +93,11 @@ public class Condition {
         this.errorCode = errorCode;
     }
 
-    public String getComponent() {
+    public ComponentType getComponent() {
         return component;
     }
 
-    public void setComponent(String component) {
+    public void setComponent(ComponentType component) {
         this.component = component;
     }
 
