@@ -37,9 +37,6 @@ CREATE TABLE PROCESSOR_V2 (
     version            integer      NOT NULL default 0,
     generation         integer      NOT NULL default 0,
 
-    error_id           integer,
-    error_uuid         varchar(255),
-
     bridge_id          varchar(255) NOT NULL,
 
     unique (bridge_id, name),
