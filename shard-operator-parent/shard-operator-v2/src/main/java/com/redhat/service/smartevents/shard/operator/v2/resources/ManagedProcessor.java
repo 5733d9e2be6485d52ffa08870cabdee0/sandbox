@@ -1,15 +1,11 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
-import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
-
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -18,6 +14,8 @@ import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.kubernetes.model.annotation.Group;
 import io.fabric8.kubernetes.model.annotation.ShortNames;
 import io.fabric8.kubernetes.model.annotation.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
 
@@ -119,7 +117,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
                     .withLabels(new LabelsBuilder()
                             .withCustomerId(customerId)
                             .withComponent(COMPONENT_NAME)
-                            .buildWithDefaults())
+                            .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
             ManagedProcessorSpec ManagedProcessorSpec = new ManagedProcessorSpec();

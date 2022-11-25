@@ -6,7 +6,7 @@ import java.util.Map;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 
 /**
- * Helper to build labels for a given Kubernetes resource. Managed and Created By labels are always added with {@link #OPERATOR_NAME} value.
+ * Helper to build labels for a given Kubernetes resource. Managed and Created By labels are always added with {@link #V1_OPERATOR_NAME} value.
  *
  * @see <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/">Kubernetes Common Labels</a>
  */
@@ -14,7 +14,8 @@ public final class LabelsBuilder {
 
     private final Map<String, String> labels = new HashMap<>();
 
-    public static final String OPERATOR_NAME = "bridge-fleet-shard-operator";
+    public static final String V1_OPERATOR_NAME = "bridge-fleet-shard-operator";
+    public static final String V2_OPERATOR_NAME = "smartevents-fleet-shard-operator";
 
     /**
      * The tool being used to manage the operation of an application
@@ -27,7 +28,11 @@ public final class LabelsBuilder {
     public static final String VERSION_LABEL = "app.kubernetes.io/version";
     public static final String INSTANCE_LABEL = "app.kubernetes.io/instance";
     public static final String CUSTOMER_ID_LABEL = "bridge.services.redhat.com/customerId";
-    public static final String RECONCILER_LABEL_SELECTOR = LabelsBuilder.MANAGED_BY_LABEL + "=" + LabelsBuilder.OPERATOR_NAME;
+    public static final String V2_CUSTOMER_ID_LABEL = "smartevents.services.redhat.com/customer-id";
+    public static final String BRIDGE_ID_LABEL = "smartevents.service.redhat.com/bridge-id";
+    public static final String BRIDGE_NAME_LABEL = "smartevents.service.redhat.com/bridge-name";
+    public static final String V1_RECONCILER_LABEL_SELECTOR = LabelsBuilder.MANAGED_BY_LABEL + "=" + LabelsBuilder.V1_OPERATOR_NAME;
+    public static final String V2_RECONCILER_LABEL_SELECTOR = LabelsBuilder.MANAGED_BY_LABEL + "=" + LabelsBuilder.V2_OPERATOR_NAME;
 
     public static final String PRIMARY_RESOURCE_NAME_LABEL = "operator-sdk/primary-resource-name";
     public static final String PRIMARY_RESOURCE_NAMESPACE_LABEL = "operator-sdk/primary-resource-namespace";
@@ -38,6 +43,17 @@ public final class LabelsBuilder {
      */
     public LabelsBuilder withCustomerId(String customerId) {
         this.labels.put(CUSTOMER_ID_LABEL, sanitizeAndCheckLabelValue(customerId));
+        this.labels.put(V2_CUSTOMER_ID_LABEL, sanitizeAndCheckLabelValue(customerId));
+        return this;
+    }
+
+    public LabelsBuilder withBridgeId(String bridgeId) {
+        this.labels.put(BRIDGE_ID_LABEL, sanitizeAndCheckLabelValue(bridgeId));
+        return this;
+    }
+
+    public LabelsBuilder withBridgeName(String bridgeName) {
+        this.labels.put(BRIDGE_NAME_LABEL, sanitizeAndCheckLabelValue(bridgeName));
         return this;
     }
 
@@ -86,8 +102,8 @@ public final class LabelsBuilder {
     /**
      * A unique name identifying the instance of an application. Example "mysql-abcxyz".
      */
-    public LabelsBuilder withManagedByOperator() {
-        this.labels.put(MANAGED_BY_LABEL, OPERATOR_NAME);
+    public LabelsBuilder withManagedByOperator(String operatorName) {
+        this.labels.put(MANAGED_BY_LABEL, operatorName);
         return this;
     }
 
@@ -115,9 +131,9 @@ public final class LabelsBuilder {
         return this;
     }
 
-    public Map<String, String> buildWithDefaults() {
-        labels.put(MANAGED_BY_LABEL, OPERATOR_NAME);
-        labels.putIfAbsent(CREATED_BY_LABEL, OPERATOR_NAME);
+    public Map<String, String> buildWithDefaults(String operatorName) {
+        labels.put(MANAGED_BY_LABEL, operatorName);
+        labels.putIfAbsent(CREATED_BY_LABEL, operatorName);
         return build();
     }
 
@@ -134,6 +150,6 @@ public final class LabelsBuilder {
             return sanitized;
         }
         throw new IllegalArgumentException(String
-                .format("The label value %s is invalid. Label values must be 63 characters or less, begin with [a-z0-9A-Z] and contain only dashes (-), dots (.), or underscores (_)", labelValue));
+                                                   .format("The label value %s is invalid. Label values must be 63 characters or less, begin with [a-z0-9A-Z] and contain only dashes (-), dots (.), or underscores (_)", labelValue));
     }
 }

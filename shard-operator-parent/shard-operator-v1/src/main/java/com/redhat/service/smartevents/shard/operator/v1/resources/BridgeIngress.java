@@ -121,7 +121,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
                     .withLabels(new LabelsBuilder()
                             .withCustomerId(customerId)
                             .withComponent(COMPONENT_NAME)
-                            .buildWithDefaults())
+                            .buildWithDefaults(LabelsBuilder.V1_OPERATOR_NAME))
                     .build();
 
             BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();

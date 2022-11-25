@@ -7,7 +7,7 @@ import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
-import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
 @ShortNames("mbi")
 public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced {
 
-    public static final String COMPONENT_NAME = "bridge";
+    public static final String COMPONENT_NAME = "ingress";
 
     /**
      * Don't use this default constructor!
@@ -144,7 +144,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
                     .withLabels(new LabelsBuilder()
                                         .withCustomerId(customerId)
                                         .withComponent(COMPONENT_NAME)
-                                        .buildWithDefaults())
+                                        .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
             ManagedBridgeSpec managedBridgeSpec = new ManagedBridgeSpec();

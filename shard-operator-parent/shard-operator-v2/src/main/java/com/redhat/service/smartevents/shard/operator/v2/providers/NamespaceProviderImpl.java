@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
-import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
@@ -64,7 +64,7 @@ public class NamespaceProviderImpl implements NamespaceProvider {
                 .withCustomerId(managedBridge.getSpec().getCustomerId())
                 .withBridgeId(managedBridge.getSpec().getId())
                 .withBridgeName(managedBridge.getSpec().getName())
-                .buildWithDefaults();
+                .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME);
     }
 
     @Override

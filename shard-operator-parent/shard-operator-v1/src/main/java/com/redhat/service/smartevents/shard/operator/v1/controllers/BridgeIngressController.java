@@ -35,8 +35,8 @@ import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFacto
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
-import com.redhat.service.smartevents.shard.operator.v1.networking.NetworkResource;
-import com.redhat.service.smartevents.shard.operator.v1.networking.NetworkingService;
+import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
+import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressStatus;
 
@@ -57,9 +57,10 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
-        EventSourceInitializer<BridgeIngress>, ErrorStatusHandler<BridgeIngress> {
+                                                EventSourceInitializer<BridgeIngress>,
+                                                ErrorStatusHandler<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -94,11 +95,11 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
 
         List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(networkingService.buildInformerEventSource(BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(networkingService.buildInformerEventSource(LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
 
         return eventSources;
     }
@@ -106,16 +107,16 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @Override
     public UpdateControl<BridgeIngress> reconcile(BridgeIngress bridgeIngress, Context context) {
         LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'",
-                bridgeIngress.getMetadata().getName(),
-                bridgeIngress.getMetadata().getNamespace());
+                    bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
 
         BridgeIngressStatus status = bridgeIngress.getStatus();
 
         if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeIngress,
-                    new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
-                            bridgeIngress.getClass().getSimpleName(),
-                            bridgeIngress.getSpec().getId())));
+                                   new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
+                                                                                  bridgeIngress.getClass().getSimpleName(),
+                                                                                  bridgeIngress.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
@@ -124,7 +125,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (secret == null) {
             LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.",
-                    bridgeIngress.getMetadata().getName());
+                        bridgeIngress.getMetadata().getName());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -147,8 +148,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (path == null) {
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready",
-                    bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
+                        bridgeIngress.getMetadata().getName(),
+                        bridgeIngress.getMetadata().getNamespace());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -170,8 +171,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready",
-                    bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
+                        bridgeIngress.getMetadata().getName(),
+                        bridgeIngress.getMetadata().getNamespace());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -245,9 +246,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             status.markConditionFalse(ConditionTypeConstants.READY);
 
             LOGGER.warn("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                    bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace(),
-                    e.getMessage());
+                        bridgeIngress.getMetadata().getName(),
+                        bridgeIngress.getMetadata().getNamespace(),
+                        e.getMessage());
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeIngress.getStatus().setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeIngress, bei);
@@ -271,18 +272,18 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     private void notifyManagerOfFailure(BridgeIngress bridgeIngress, BridgeErrorInstance bei) {
         LOGGER.error("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                bridgeIngress.getMetadata().getName(),
-                bridgeIngress.getMetadata().getNamespace(),
-                bei.getReason());
+                     bridgeIngress.getMetadata().getName(),
+                     bridgeIngress.getMetadata().getNamespace(),
+                     bei.getReason());
 
         metricsService.onOperationFailed(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
 
         String id = bridgeIngress.getSpec().getId();
         String customerId = bridgeIngress.getSpec().getCustomerId();
         ManagedResourceStatusUpdateDTO dto = new ManagedResourceStatusUpdateDTO(id,
-                customerId,
-                FAILED,
-                bei);
+                                                                                customerId,
+                                                                                FAILED,
+                                                                                bei);
 
         managerClient.notifyBridgeStatusChange(dto)
                 .subscribe().with(

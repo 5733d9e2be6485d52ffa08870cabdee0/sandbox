@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.runtime.StartupEvent;

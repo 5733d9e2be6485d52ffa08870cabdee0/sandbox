@@ -1,11 +1,11 @@
 package com.redhat.service.smartevents.shard.operator.v2.providers;
 
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.Fixtures;
 import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KNativeBrokerConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
-import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
@@ -58,8 +58,8 @@ public class TemplateProviderImplTest {
 
     private void assertLabels(ObjectMeta meta, String component) {
         assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(component);
-        assertThat(meta.getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
-        assertThat(meta.getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
+        assertThat(meta.getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.V2_OPERATOR_NAME);
+        assertThat(meta.getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.V2_OPERATOR_NAME);
     }
 
     private void assertOwnerReference(CustomResource resource, ObjectMeta meta) {
