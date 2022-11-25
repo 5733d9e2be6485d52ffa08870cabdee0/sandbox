@@ -6,11 +6,13 @@ public class ManagedBridgeSpec {
 
     private String id;
 
+    private String name;
+
     private String customerId;
 
-    private KNativeBrokerConfigurationSpec kNativeBrokerConfiguration;
+    private KNativeBrokerConfigurationSpec kNativeBrokerConfiguration = new KNativeBrokerConfigurationSpec();
 
-    private DNSConfigurationSpec dnsConfiguration;
+    private DNSConfigurationSpec dnsConfiguration = new DNSConfigurationSpec();
 
     private String owner;
 
@@ -36,6 +38,14 @@ public class ManagedBridgeSpec {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public KNativeBrokerConfigurationSpec getkNativeBrokerConfiguration() {

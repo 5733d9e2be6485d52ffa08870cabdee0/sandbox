@@ -4,7 +4,7 @@ public class DNSConfigurationSpec {
 
     String host;
 
-    TLSSpec tls;
+    TLSSpec tls = new TLSSpec();
 
     public String getHost() {
         return host;

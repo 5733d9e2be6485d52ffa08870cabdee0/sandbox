@@ -5,8 +5,8 @@ import java.net.URL;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
+import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
 public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced {
 
     public static final String COMPONENT_NAME = "managed-bridge";
-    public static final String OB_RESOURCE_NAME_PREFIX = "brdg-";
+    public static final String SME_RESOURCE_NAME_PREFIX = "brdg-";
 
     /**
      * Don't use this default constructor!
@@ -67,7 +67,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
     }
 
     public static String resolveResourceName(String id) {
-        return OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
+        return SME_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
     }
 
     public static final class Builder {
@@ -128,6 +128,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             managedBridgeSpec.setCustomerId(customerId);
             managedBridgeSpec.setOwner(owner);
             managedBridgeSpec.setId(bridgeId);
+            managedBridgeSpec.setName(bridgeName);
             managedBridgeSpec.getDnsConfiguration().setHost(host);
 
             ManagedBridge managedBridge = new ManagedBridge();
@@ -140,11 +141,11 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
 
         private void validate() {
             requireNonNull(StringUtils.emptyToNull(this.customerId), "[ManagedBridge] CustomerId can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.namespace), "[ManagedBridge] Namespace can't be null");
+            requireNonNull(StringUtils.emptyToNull(this.owner), "[ManagedBridge] Owner can't be null");
             requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[ManagedBridge] Id can't be null");
             requireNonNull(StringUtils.emptyToNull(this.bridgeName), "[ManagedBridge] Name can't be null");
-            requireNonNull(StringUtils.emptyToNull(this.namespace), "[ManagedBridge] Namespace can't be null");
             requireNonNull(StringUtils.emptyToNull(this.host), "[ManagedBridge] Host can't be null");
         }
     }
-
 }
