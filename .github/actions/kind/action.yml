@@ -19,13 +19,11 @@ runs:
   using: "composite"
   steps:
     - name: Set up KinD
-      shell: bash
-      run: |
-        kind create cluster --image=${{ inputs.node-image }} --config .github/kind-config.yaml
-        # Copy config file to root home folder, to store it permanently for the job
-        mkdir -p /root/.kube
-        cp $GITHUB_WORKSPACE/.kube/config /root/.kube
-        echo "KUBECONFIG=/root/.kube/config" >> $GITHUB_ENV
+      uses: container-tools/kind-action@v2
+      with:
+        config: .github/kind-config.yaml
+        registry: true                  # Registry not needed
+        node_image: kindest/node:v1.22.2 # Newest image
     - name: Check cluster status
       shell: bash
       run: |
