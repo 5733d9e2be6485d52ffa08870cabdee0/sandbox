@@ -1,4 +1,4 @@
-# E2E Integration tests for API v1
+# E2E Integration tests for API v2
 
 Module contains integration tests verifying end to end functionality in real cluster.
 

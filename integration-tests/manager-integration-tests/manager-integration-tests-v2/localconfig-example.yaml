@@ -1,0 +1,36 @@
+services:
+  slack-tnb:
+    credentials:
+      token: xoxb-some-slack-token-value
+      channels:
+        mc:
+          name: mc
+          webhook_url: some-webhook-url
+          channel_id: some-channel-id
+        general:
+          name: general
+          webhook_url: some-webhook-url
+          channel_id: some-channel-id
+  webhook-site:
+    credentials:
+      tokens:
+        first:
+          token: some-token
+        second:
+          token: some-token
+  aws:
+    credentials:
+      access_key: some-access-key
+      secret_key: some-secret-key
+      region: some-region
+      account_id: some-account-id
+  # Performance specific section, can be skipped for non performance tests
+  horreum:
+    credentials:
+      tests:
+        send-cloud-events-1-users:
+          token: some-token
+        send-cloud-events-4-users:
+          token: some-token
+        send-cloud-events-8-users:
+          token: some-token

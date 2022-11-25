@@ -45,6 +45,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>manager-integration-tests-common</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.redhat.cloud</groupId>
       <artifactId>kafka-instance-sdk</artifactId>
       <scope>test</scope>
