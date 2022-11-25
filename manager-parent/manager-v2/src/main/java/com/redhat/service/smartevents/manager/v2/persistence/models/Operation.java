@@ -2,13 +2,16 @@ package com.redhat.service.smartevents.manager.v2.persistence.models;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
@@ -29,6 +32,9 @@ public class Operation {
 
     @Column(name = "managed_resource_id", nullable = false)
     private String managedResourceId;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "operation")
+    private Set<Condition> conditions;
 
     public String getId() {
         return id;
@@ -56,6 +62,14 @@ public class Operation {
 
     public void setManagedResourceId(String managedResourceId) {
         this.managedResourceId = managedResourceId;
+    }
+
+    public Set<Condition> getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(Set<Condition> conditions) {
+        this.conditions = conditions;
     }
 
     /*
