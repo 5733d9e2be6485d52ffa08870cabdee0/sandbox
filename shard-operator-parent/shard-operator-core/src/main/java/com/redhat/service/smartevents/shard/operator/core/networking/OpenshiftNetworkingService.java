@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.shard.operator.core.networking;
 
 import java.util.Base64;
 
-import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,7 @@ import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfig
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.IntOrString;

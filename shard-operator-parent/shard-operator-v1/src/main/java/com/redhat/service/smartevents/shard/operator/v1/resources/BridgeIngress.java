@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
 @Version("v1alpha1")
 @ShortNames("bi")
 public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced,
-                                                                                                     BridgeAddressable {
+        BridgeAddressable {
 
     public static final String COMPONENT_NAME = "ingress";
     public static final String OB_RESOURCE_NAME_PREFIX = "ob-";

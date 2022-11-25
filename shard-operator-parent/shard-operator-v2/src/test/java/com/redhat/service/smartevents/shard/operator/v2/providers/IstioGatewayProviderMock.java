@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2.providers;
 
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProviderImpl;
+
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;

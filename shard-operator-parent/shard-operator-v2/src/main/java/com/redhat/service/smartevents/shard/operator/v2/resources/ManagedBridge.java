@@ -29,7 +29,7 @@ import static java.util.Objects.requireNonNull;
 @Version("v2alpha1")
 @ShortNames("mbi")
 public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced,
-                                                                                                     BridgeAddressable {
+        BridgeAddressable {
 
     public static final String COMPONENT_NAME = "ingress";
 
@@ -151,9 +151,9 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
                     .withName(resolveResourceName(this.bridgeId))
                     .withNamespace(namespace)
                     .withLabels(new LabelsBuilder()
-                                        .withCustomerId(customerId)
-                                        .withComponent(COMPONENT_NAME)
-                                        .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
+                            .withCustomerId(customerId)
+                            .withComponent(COMPONENT_NAME)
+                            .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
             ManagedBridgeSpec managedBridgeSpec = new ManagedBridgeSpec();
