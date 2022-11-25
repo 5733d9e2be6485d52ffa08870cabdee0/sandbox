@@ -4,17 +4,19 @@ import java.time.Duration;
 
 import javax.inject.Inject;
 
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.Test;
+
 import com.redhat.service.smartevents.infra.v2.api.models.Operation;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 

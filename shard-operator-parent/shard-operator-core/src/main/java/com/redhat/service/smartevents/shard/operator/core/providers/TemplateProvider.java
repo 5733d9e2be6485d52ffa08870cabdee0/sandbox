@@ -5,6 +5,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.istio.gatewa
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Secret;

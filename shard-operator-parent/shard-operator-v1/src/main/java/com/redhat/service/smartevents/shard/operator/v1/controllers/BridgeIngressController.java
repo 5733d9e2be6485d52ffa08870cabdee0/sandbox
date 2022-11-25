@@ -26,6 +26,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
+import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
+import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
@@ -35,8 +37,6 @@ import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFacto
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
-import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
-import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressStatus;
 
@@ -59,8 +59,8 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
-                                                EventSourceInitializer<BridgeIngress>,
-                                                ErrorStatusHandler<BridgeIngress> {
+        EventSourceInitializer<BridgeIngress>,
+        ErrorStatusHandler<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -107,16 +107,16 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @Override
     public UpdateControl<BridgeIngress> reconcile(BridgeIngress bridgeIngress, Context context) {
         LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'",
-                    bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
+                bridgeIngress.getMetadata().getName(),
+                bridgeIngress.getMetadata().getNamespace());
 
         BridgeIngressStatus status = bridgeIngress.getStatus();
 
         if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeIngress,
-                                   new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
-                                                                                  bridgeIngress.getClass().getSimpleName(),
-                                                                                  bridgeIngress.getSpec().getId())));
+                    new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
+                            bridgeIngress.getClass().getSimpleName(),
+                            bridgeIngress.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
@@ -125,7 +125,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (secret == null) {
             LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.",
-                        bridgeIngress.getMetadata().getName());
+                    bridgeIngress.getMetadata().getName());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -148,8 +148,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (path == null) {
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready",
-                        bridgeIngress.getMetadata().getName(),
-                        bridgeIngress.getMetadata().getNamespace());
+                    bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -171,8 +171,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready",
-                        bridgeIngress.getMetadata().getName(),
-                        bridgeIngress.getMetadata().getNamespace());
+                    bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -246,9 +246,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             status.markConditionFalse(ConditionTypeConstants.READY);
 
             LOGGER.warn("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                        bridgeIngress.getMetadata().getName(),
-                        bridgeIngress.getMetadata().getNamespace(),
-                        e.getMessage());
+                    bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace(),
+                    e.getMessage());
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeIngress.getStatus().setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeIngress, bei);
@@ -272,18 +272,18 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     private void notifyManagerOfFailure(BridgeIngress bridgeIngress, BridgeErrorInstance bei) {
         LOGGER.error("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                     bridgeIngress.getMetadata().getName(),
-                     bridgeIngress.getMetadata().getNamespace(),
-                     bei.getReason());
+                bridgeIngress.getMetadata().getName(),
+                bridgeIngress.getMetadata().getNamespace(),
+                bei.getReason());
 
         metricsService.onOperationFailed(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
 
         String id = bridgeIngress.getSpec().getId();
         String customerId = bridgeIngress.getSpec().getCustomerId();
         ManagedResourceStatusUpdateDTO dto = new ManagedResourceStatusUpdateDTO(id,
-                                                                                customerId,
-                                                                                FAILED,
-                                                                                bei);
+                customerId,
+                FAILED,
+                bei);
 
         managerClient.notifyBridgeStatusChange(dto)
                 .subscribe().with(

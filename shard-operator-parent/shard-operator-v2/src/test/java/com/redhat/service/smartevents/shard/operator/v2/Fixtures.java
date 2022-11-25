@@ -5,7 +5,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.Operation;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
-
 public class Fixtures {
 
     public static final String CUSTOMER_ID = "my-customer";

@@ -150,6 +150,6 @@ public final class LabelsBuilder {
             return sanitized;
         }
         throw new IllegalArgumentException(String
-                                                   .format("The label value %s is invalid. Label values must be 63 characters or less, begin with [a-z0-9A-Z] and contain only dashes (-), dots (.), or underscores (_)", labelValue));
+                .format("The label value %s is invalid. Label values must be 63 characters or less, begin with [a-z0-9A-Z] and contain only dashes (-), dots (.), or underscores (_)", labelValue));
     }
 }

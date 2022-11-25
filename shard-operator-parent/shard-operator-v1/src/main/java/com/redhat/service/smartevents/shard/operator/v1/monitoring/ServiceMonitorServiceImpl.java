@@ -9,9 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.shard.operator.core.monitoring.ServiceMonitorClient;
-import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.Service;

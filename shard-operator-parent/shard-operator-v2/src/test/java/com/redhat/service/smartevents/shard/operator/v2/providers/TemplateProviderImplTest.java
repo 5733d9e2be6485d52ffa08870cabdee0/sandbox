@@ -1,17 +1,19 @@
 package com.redhat.service.smartevents.shard.operator.v2.providers;
 
+import org.junit.jupiter.api.Test;
+
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.Fixtures;
 import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KNativeBrokerConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
-import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
+
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.CustomResource;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -71,6 +73,5 @@ public class TemplateProviderImplTest {
         assertThat(ownerReference.getKind()).isEqualTo(resource.getKind());
         assertThat(ownerReference.getUid()).isEqualTo(resource.getMetadata().getUid());
     }
-
 
 }

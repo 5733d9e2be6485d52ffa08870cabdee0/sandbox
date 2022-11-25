@@ -1,14 +1,14 @@
 package com.redhat.service.smartevents.shard.operator.core.networking;
 
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
-import io.fabric8.kubernetes.api.model.HasMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPath;

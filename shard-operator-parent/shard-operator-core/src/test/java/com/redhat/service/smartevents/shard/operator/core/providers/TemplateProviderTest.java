@@ -2,10 +2,16 @@ package com.redhat.service.smartevents.shard.operator.core.providers;
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -15,10 +21,6 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.openshift.api.model.Route;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -137,10 +139,10 @@ public class TemplateProviderTest {
         mockResourceForNoOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         AuthorizationPolicy authorizationPolicy = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(hasMetadata,
-                                                                                                                new TemplateImportConfig()
-                                                                                                                        .withNameFromParent()
-                                                                                                                        .withPrimaryResourceFromParent()
-                                                                                                                        .withOperatorName(LabelsBuilder.V1_OPERATOR_NAME));
+                new TemplateImportConfig()
+                        .withNameFromParent()
+                        .withPrimaryResourceFromParent()
+                        .withOperatorName(LabelsBuilder.V1_OPERATOR_NAME));
 
         assertThat(authorizationPolicy.getMetadata().getOwnerReferences()).isNull();
         assertThat(authorizationPolicy.getMetadata().getAnnotations().get("operator-sdk/primary-resource-name")).isEqualTo(hasMetadata.getMetadata().getName());

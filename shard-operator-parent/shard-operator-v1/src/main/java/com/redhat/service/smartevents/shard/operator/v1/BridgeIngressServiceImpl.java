@@ -16,12 +16,12 @@ import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;

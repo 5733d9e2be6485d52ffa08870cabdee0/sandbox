@@ -12,6 +12,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.istio.reques
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;

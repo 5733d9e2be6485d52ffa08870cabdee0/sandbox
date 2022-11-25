@@ -6,6 +6,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.istio.reques
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.client.CustomResource;

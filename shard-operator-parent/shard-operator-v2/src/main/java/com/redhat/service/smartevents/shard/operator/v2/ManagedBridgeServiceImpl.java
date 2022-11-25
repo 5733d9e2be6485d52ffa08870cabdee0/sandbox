@@ -12,8 +12,8 @@ import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateImport
 import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
-
 import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
@@ -54,9 +54,8 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
         }
 
         /*
-            Send callback to Control Plane for initial creation with initial conditions
+         * Send callback to Control Plane for initial creation with initial conditions
          */
-
 
     }
 
@@ -66,7 +65,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
         KafkaConfigurationSpec kafkaConfiguration = managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration();
 
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET,
-                               Base64.getEncoder().encodeToString(managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration().getBootstrapServers().getBytes()));
+                Base64.getEncoder().encodeToString(managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration().getBootstrapServers().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getUser().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getPassword().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getSecurityProtocol().getBytes()));
@@ -92,7 +91,6 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                     .createOrReplace(expected);
         }
     }
-
 
     @Override
     public void deleteManagedBridge(BridgeDTO bridgeDTO) {

@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtua
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -23,7 +24,7 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 
 @ApplicationScoped
-public class TemplateProviderImpl implements TemplateProvider{
+public class TemplateProviderImpl implements TemplateProvider {
 
     private static final String TEMPLATES_DIR = "/templates";
 
@@ -72,7 +73,6 @@ public class TemplateProviderImpl implements TemplateProvider{
             throw new IllegalStateException("Cannot find yaml on classpath: " + yaml);
         }
     }
-
 
     @Override
     public Route loadManagedBridgeOpenshiftRouteTemplate(ManagedBridge bridgeIngress, TemplateImportConfig config) {

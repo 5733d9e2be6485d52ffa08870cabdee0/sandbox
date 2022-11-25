@@ -8,6 +8,7 @@ import com.redhat.service.smartevents.infra.core.app.Orchestrator;
 import com.redhat.service.smartevents.infra.core.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+
 import io.fabric8.openshift.client.OpenShiftClient;
 
 @Singleton

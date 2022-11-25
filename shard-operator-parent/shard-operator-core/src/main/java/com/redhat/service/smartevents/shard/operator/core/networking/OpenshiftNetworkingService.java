@@ -2,16 +2,16 @@ package com.redhat.service.smartevents.shard.operator.core.networking;
 
 import java.util.Base64;
 
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
-import io.fabric8.kubernetes.api.model.HasMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -79,9 +79,9 @@ public class OpenshiftNetworkingService implements NetworkingService {
          * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
          */
         Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress,
-                                                                               new TemplateImportConfig()
-                                                                                       .withNameFromParent()
-                                                                                       .withPrimaryResourceFromParent());
+                new TemplateImportConfig()
+                        .withNameFromParent()
+                        .withPrimaryResourceFromParent());
         // Inherit namespace from service and not from bridgeIngress
         route.getMetadata().setNamespace(service.getMetadata().getNamespace());
 
@@ -94,9 +94,9 @@ public class OpenshiftNetworkingService implements NetworkingService {
                 .setKey(new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.TLS_KEY_SECRET))));
 
         route.getSpec().setTo(new RouteTargetReferenceBuilder()
-                                      .withKind("Service")
-                                      .withName(service.getMetadata().getName())
-                                      .build());
+                .withKind("Service")
+                .withName(service.getMetadata().getName())
+                .build());
         route.getSpec().setPort(new RoutePortBuilder().withTargetPort(new IntOrString("http2")).build());
         return route;
     }

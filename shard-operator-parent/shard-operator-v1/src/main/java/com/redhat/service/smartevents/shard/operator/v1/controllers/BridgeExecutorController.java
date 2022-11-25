@@ -95,7 +95,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient,LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
 
         return eventSources;
     }

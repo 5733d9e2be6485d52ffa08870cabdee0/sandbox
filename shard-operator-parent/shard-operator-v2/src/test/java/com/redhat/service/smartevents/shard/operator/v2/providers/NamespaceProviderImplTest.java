@@ -1,17 +1,16 @@
 package com.redhat.service.smartevents.shard.operator.v2.providers;
 
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.v2.api.models.Operation;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.Fixtures;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
 import io.fabric8.kubernetes.api.model.Namespace;

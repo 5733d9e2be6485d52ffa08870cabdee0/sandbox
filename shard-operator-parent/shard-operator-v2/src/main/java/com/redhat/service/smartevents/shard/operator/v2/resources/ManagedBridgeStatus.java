@@ -1,8 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
 import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;

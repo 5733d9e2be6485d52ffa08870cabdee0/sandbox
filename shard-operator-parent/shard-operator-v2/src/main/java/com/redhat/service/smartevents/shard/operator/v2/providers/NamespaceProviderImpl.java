@@ -5,10 +5,10 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
 import io.fabric8.kubernetes.api.model.Namespace;

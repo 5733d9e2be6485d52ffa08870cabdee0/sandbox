@@ -6,8 +6,8 @@ import java.net.URL;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -142,9 +142,9 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
                     .withName(resolveResourceName(this.bridgeId))
                     .withNamespace(namespace)
                     .withLabels(new LabelsBuilder()
-                                        .withCustomerId(customerId)
-                                        .withComponent(COMPONENT_NAME)
-                                        .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
+                            .withCustomerId(customerId)
+                            .withComponent(COMPONENT_NAME)
+                            .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
             ManagedBridgeSpec managedBridgeSpec = new ManagedBridgeSpec();

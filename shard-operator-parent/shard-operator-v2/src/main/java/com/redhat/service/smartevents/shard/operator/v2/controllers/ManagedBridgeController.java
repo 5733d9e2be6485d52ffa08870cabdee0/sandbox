@@ -11,6 +11,7 @@ import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingS
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
@@ -24,8 +25,8 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
 public class ManagedBridgeController implements Reconciler<ManagedBridge>,
-                                                EventSourceInitializer<ManagedBridge>,
-                                                ErrorStatusHandler<ManagedBridge> {
+        EventSourceInitializer<ManagedBridge>,
+        ErrorStatusHandler<ManagedBridge> {
 
     @Inject
     KubernetesClient kubernetesClient;

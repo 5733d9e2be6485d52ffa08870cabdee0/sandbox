@@ -18,9 +18,9 @@ import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceS
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;

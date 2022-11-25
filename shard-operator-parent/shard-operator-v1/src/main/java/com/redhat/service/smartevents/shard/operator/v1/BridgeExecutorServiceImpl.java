@@ -19,11 +19,11 @@ import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentSpecUtils;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.utils.Constants;
 

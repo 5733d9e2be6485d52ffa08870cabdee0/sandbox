@@ -99,8 +99,6 @@ public class KafkaConfigurationSpec {
         this.numberOfReplicas = numberOfReplicas;
     }
 
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
