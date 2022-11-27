@@ -139,12 +139,12 @@ public class KafkaResource {
         properties.put("security.protocol", "SASL_SSL");
         properties.put("sasl.mechanism", "PLAIN");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        Consumer<String, String> consumer = new KafkaConsumer<>(properties);
-        consumer.subscribe(Collections.singleton(topicName));
+        try (Consumer<String, String> consumer = new KafkaConsumer<>(properties)) {
+            consumer.subscribe(Collections.singleton(topicName));
 
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(15));
-
-        return StreamSupport.stream(records.spliterator(), false).map(s -> s.value()).collect(Collectors.toList());
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(15));
+            return StreamSupport.stream(records.spliterator(), false).map(s -> s.value()).collect(Collectors.toList());
+        }
     }
 
     private static ApiClient createApiClient() {

@@ -50,7 +50,9 @@ public class TestCaseFileLogger implements EventListener {
         String testCaseFileName = event.getTestCase().getName().replaceAll(" ", "_").concat(".log");
         try {
             File file = new File(LOG_FOLDER, testCaseFileName);
-            file.createNewFile();
+            if (!file.createNewFile()) {
+                throw new IOException("Log file already exists for " + testCaseFileName);
+            }
             testCaseWriters.put(event.getTestCase().getId(), new SafeOutputStreamWriter(new FileOutputStream(file)));
         } catch (IOException e) {
             throw new RuntimeException("error preparing log file", e);
