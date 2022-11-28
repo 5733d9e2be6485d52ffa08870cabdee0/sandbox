@@ -76,4 +76,41 @@ public class ProcessorDAOTest {
         assertThat(retrieved.getBridge().getId()).isEqualTo(bridge.getId());
         assertThat(retrieved.getConditions()).hasSize(1);
     }
+
+    @Test
+    public void testRemovalOfCondition() {
+        Processor processor = createProcessorWithConditions();
+        removeConditionFromProcessor(processor);
+
+        List<Condition> conditions = conditionDAO.findAll().list();
+
+        assertThat(conditions.size()).isEqualTo(2);
+    }
+
+    @Transactional
+    protected Processor createProcessorWithConditions() {
+        Bridge bridge = createBridge();
+        bridgeDAO.persist(bridge);
+
+        Processor processor = createProcessor(bridge);
+
+        Condition condition1 = createCondition();
+        Condition condition2 = createCondition();
+        Condition condition3 = createCondition();
+
+        processor.setConditions(List.of(condition1, condition2, condition3));
+        processorDAO.persist(processor);
+
+        return processor;
+    }
+
+    @Transactional
+    protected void removeConditionFromProcessor(Processor processor) {
+        Processor retrieved = processorDAO.findById(processor.getId());
+        assertThat(retrieved.getConditions()).hasSize(3);
+
+        Condition condition3 = retrieved.getConditions().get(2);
+        retrieved.getConditions().remove(condition3);
+        processorDAO.persist(retrieved);
+    }
 }

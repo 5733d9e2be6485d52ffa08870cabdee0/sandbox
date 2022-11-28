@@ -34,7 +34,7 @@ public class Processor extends ManagedResourceV2 {
     @Column(name = "flows", columnDefinition = JsonTypes.JSON_BIN, nullable = false)
     private JsonNode flows;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "processor_id")
     private List<Condition> conditions;
 

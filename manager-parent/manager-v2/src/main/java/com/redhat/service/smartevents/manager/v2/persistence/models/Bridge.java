@@ -36,7 +36,7 @@ public class Bridge extends ManagedResourceV2 {
     @Column(name = "subscription_id", nullable = false, updatable = false)
     private String subscriptionId;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "bridge_id")
     private List<Condition> conditions;
 
