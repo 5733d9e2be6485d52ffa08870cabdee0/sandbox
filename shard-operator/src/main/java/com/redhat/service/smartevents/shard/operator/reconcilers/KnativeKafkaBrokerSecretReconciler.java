@@ -30,7 +30,7 @@ public class KnativeKafkaBrokerSecretReconciler {
     @Inject
     StatusService statusService;
 
-    public void reconcile(BridgeIngress bridgeIngress){
+    public void reconcile(BridgeIngress bridgeIngress) {
 
         try {
             List<Secret> requestResource = createRequiredResources(bridgeIngress);
@@ -38,6 +38,8 @@ public class KnativeKafkaBrokerSecretReconciler {
             List<Secret> deployedResources = fetchDeployedResources(bridgeIngress);
 
             processDelta(requestResource, deployedResources);
+
+            validateSecretIsReady();
 
             statusService.updateStatusForSuccessfulReconciliation(bridgeIngress.getStatus(), BridgeIngressStatus.SECRET_AVAILABLE);
         } catch (RuntimeException e) {

@@ -81,7 +81,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             managerClient.notifyProcessorStatusChange(bridgeExecutor.getSpec().getId(), bridgeExecutor.getStatus().getConditions());
         }
         finally {
-            //managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
+            managerClient.notifyBridgeStatusChange(bridgeExecutor.getSpec().getId(), bridgeExecutor.getStatus().getConditions());
         }
         return reconciliationResultService.getReconciliationResult(bridgeExecutor);
     }

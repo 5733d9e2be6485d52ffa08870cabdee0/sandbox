@@ -106,7 +106,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return reconciliationResultService.getReconciliationResultFor(bridgeIngress, e);
         }
         finally {
-            //managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
+            managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
         }
         return reconciliationResultService.getReconciliationResult(bridgeIngress);
     }
@@ -129,7 +129,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
         metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
-        //managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
+        managerClient.notifyBridgeStatusChange(bridgeIngress.getSpec().getId(), bridgeIngress.getStatus().getConditions());
 
         return DeleteControl.defaultDelete();
     }
