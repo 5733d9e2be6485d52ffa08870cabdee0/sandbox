@@ -39,5 +39,8 @@ public class BridgeDAOTest {
 
         Bridge retrieved = bridgeDAO.findById(bridge.getId());
         assertThat(retrieved.getId()).isEqualTo(bridge.getId());
+        assertThat(retrieved.getOperation()).isNotNull();
+        assertThat(retrieved.getOperation().getType()).isNotNull();
+        assertThat(retrieved.getOperation().getRequestedAt()).isNotNull();
     }
 }

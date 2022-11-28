@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.manager.v2.persistence.models;
 import java.util.Objects;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -14,7 +15,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
@@ -22,18 +22,18 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Entity(name = "Processor_V2")
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
 @Table(name = "PROCESSOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id" }) })
-public class Processor extends ManagedResource {
+public class Processor extends ManagedResourceV2 {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bridge_id")
     private Bridge bridge;
 
-    @Column(name = "owner", nullable = false)
-    private String owner;
-
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "flows", columnDefinition = JsonTypes.JSON_BIN, nullable = false)
-    protected JsonNode flows;
+    private JsonNode flows;
+
+    @Embedded
+    private Operation operation;
 
     public Bridge getBridge() {
         return bridge;
@@ -41,14 +41,6 @@ public class Processor extends ManagedResource {
 
     public void setBridge(Bridge bridge) {
         this.bridge = bridge;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
     }
 
     public JsonNode getFlows() {
@@ -89,7 +81,6 @@ public class Processor extends ManagedResource {
                 ", submittedAt=" + submittedAt +
                 ", publishedAt=" + publishedAt +
                 ", bridge=" + bridge +
-                ", owner='" + owner + '\'' +
                 '}';
     }
 }

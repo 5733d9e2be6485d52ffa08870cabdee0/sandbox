@@ -9,7 +9,6 @@ import com.redhat.service.smartevents.manager.core.persistence.models.Shard;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConditionDAO;
-import com.redhat.service.smartevents.manager.v2.persistence.dao.OperationDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 
 /**
@@ -27,9 +26,6 @@ public class DatabaseManagerUtils {
 
     @Inject
     ProcessorDAO processorDAO;
-
-    @Inject
-    OperationDAO operationDAO;
 
     @Inject
     ConditionDAO conditionDAO;
@@ -62,7 +58,6 @@ public class DatabaseManagerUtils {
     public void cleanUp() {
         // Clean up
         deleteAllConditions();
-        deleteAllOperations();
         deleteAllProcessors();
         deleteAllBridges();
         deleteAllShards();
@@ -78,10 +73,6 @@ public class DatabaseManagerUtils {
 
     private void deleteAllConditions() {
         bridgeDAO.getEntityManager().createQuery("DELETE FROM Condition").executeUpdate();
-    }
-
-    private void deleteAllOperations() {
-        bridgeDAO.getEntityManager().createQuery("DELETE FROM Operation").executeUpdate();
     }
 
     private void deleteAllShards() {

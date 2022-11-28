@@ -7,11 +7,9 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.redhat.service.smartevents.manager.core.models.ManagedResource;
-
 @Entity(name = "Bridge_V2")
 @Table(name = "BRIDGE_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
-public class Bridge extends ManagedResource {
+public class Bridge extends ManagedResourceV2 {
 
     @Column(name = "endpoint")
     private String endpoint;
@@ -24,9 +22,6 @@ public class Bridge extends ManagedResource {
 
     @Column(name = "organisation_id", nullable = false, updatable = false)
     private String organisationId;
-
-    @Column(name = "owner", nullable = false, updatable = false)
-    private String owner;
 
     @Column(name = "cloud_provider", nullable = false, updatable = false)
     private String cloudProvider;
@@ -60,10 +55,6 @@ public class Bridge extends ManagedResource {
         return organisationId;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
@@ -78,10 +69,6 @@ public class Bridge extends ManagedResource {
 
     public void setOrganisationId(String organisationId) {
         this.organisationId = organisationId;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
     }
 
     public String getCloudProvider() {

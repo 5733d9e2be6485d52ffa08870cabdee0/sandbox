@@ -10,13 +10,19 @@ import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
+import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
 public class Fixtures {
 
     public static Processor createProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
         Processor p = new Processor();
+        p.setOperation(operation);
         p.setName(TestConstants.DEFAULT_PROCESSOR_NAME);
         p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         p.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -27,7 +33,12 @@ public class Fixtures {
     }
 
     public static Bridge createBridge() {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
         Bridge b = new Bridge();
+        b.setOperation(operation);
         b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
@@ -42,21 +53,12 @@ public class Fixtures {
         return b;
     }
 
-    public static Operation createOperation(String managedResourceId) {
-        Operation operation = new Operation();
-        operation.setConditions(null);
-        operation.setType(OperationType.CREATE);
-        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        operation.setManagedResourceId(managedResourceId);
-        return operation;
-    }
-
-    public static Condition createCondition(Operation operation) {
+    public static Condition createCondition(ManagedResourceV2 managedResourceV2) {
         Condition condition = new Condition();
         condition.setComponent(ComponentType.MANAGER);
         condition.setStatus("True");
         condition.setType("DNSReady");
-        condition.setOperation(operation);
+        condition.setManagedResourceId(managedResourceV2.getId());
         condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
         return condition;
     }
