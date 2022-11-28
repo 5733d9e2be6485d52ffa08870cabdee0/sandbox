@@ -102,3 +102,4 @@ public class CloudProviderAPITest {
         assertThat(fourOhFour).isEqualTo(404);
     }
 }
+

@@ -4,3 +4,4 @@ public enum ComponentType {
     MANAGER,
     SHARD
 }
+

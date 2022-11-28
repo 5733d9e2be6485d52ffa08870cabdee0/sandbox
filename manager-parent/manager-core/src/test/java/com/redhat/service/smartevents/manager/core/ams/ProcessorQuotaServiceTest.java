@@ -22,3 +22,4 @@ public class ProcessorQuotaServiceTest {
         assertThat(processorsQuotaService.getProcessorsQuota("")).isEqualTo(0);
     }
 }
+

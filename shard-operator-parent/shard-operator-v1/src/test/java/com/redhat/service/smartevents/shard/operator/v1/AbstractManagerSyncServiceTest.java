@@ -47,3 +47,4 @@ abstract class AbstractManagerSyncServiceTest extends AbstractShardWireMockTest 
     }
 
 }
+

@@ -130,3 +130,4 @@ public class NamespaceProviderImplTest {
         namespaceProvider.deleteNamespace(mb);
     }
 }
+

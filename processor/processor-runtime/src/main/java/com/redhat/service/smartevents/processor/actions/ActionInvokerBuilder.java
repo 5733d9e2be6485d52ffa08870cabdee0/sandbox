@@ -8,3 +8,4 @@ public interface ActionInvokerBuilder extends GatewayBean {
 
     ActionInvoker build(ProcessorDTO processor, Action action);
 }
+

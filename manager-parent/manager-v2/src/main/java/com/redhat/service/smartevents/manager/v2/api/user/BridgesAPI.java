@@ -135,3 +135,4 @@ public class BridgesAPI {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
     }
 }
+

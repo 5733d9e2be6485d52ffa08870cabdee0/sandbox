@@ -84,3 +84,4 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
         return actionResolvers.stream().collect(Collectors.toList());
     }
 }
+

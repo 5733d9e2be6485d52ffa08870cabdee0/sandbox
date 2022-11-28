@@ -10,3 +10,4 @@ public class DeserializationException extends RuntimeException {
         super(message, cause);
     }
 }
+

@@ -64,3 +64,4 @@ public class MetricsServiceImplTest {
         assertThat(actualTags).size().isEqualTo(3);
     }
 }
+

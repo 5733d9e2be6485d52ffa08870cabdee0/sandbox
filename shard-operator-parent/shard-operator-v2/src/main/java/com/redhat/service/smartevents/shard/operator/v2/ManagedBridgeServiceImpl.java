@@ -33,3 +33,4 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
         namespaceProvider.deleteNamespace(managedBridge);
     }
 }
+
