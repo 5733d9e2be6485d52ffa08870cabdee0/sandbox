@@ -13,7 +13,7 @@ inputs:
   registry:
     description: "Configures an insecure registry on kind-registry:5000 to be used with KinD"
     type: boolean
-    default: false
+    default: true
 
 runs:
   using: "composite"
