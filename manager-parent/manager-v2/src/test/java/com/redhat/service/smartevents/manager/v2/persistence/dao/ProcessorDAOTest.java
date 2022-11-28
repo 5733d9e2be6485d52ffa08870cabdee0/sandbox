@@ -67,9 +67,7 @@ public class ProcessorDAOTest {
 
         Processor processor = createProcessor(bridge);
 
-        Condition condition = createCondition(null, processor);
-        conditionDAO.persist(condition);
-
+        Condition condition = createCondition();
         processor.setConditions(List.of(condition));
         processorDAO.persist(processor);
 

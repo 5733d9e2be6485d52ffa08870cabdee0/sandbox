@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.manager.v2.persistence.models;
 import java.util.List;
 import java.util.Objects;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -33,7 +34,8 @@ public class Processor extends ManagedResourceV2 {
     @Column(name = "flows", columnDefinition = JsonTypes.JSON_BIN, nullable = false)
     private JsonNode flows;
 
-    @OneToMany(mappedBy = "processor")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "processor_id")
     private List<Condition> conditions;
 
     public Bridge getBridge() {

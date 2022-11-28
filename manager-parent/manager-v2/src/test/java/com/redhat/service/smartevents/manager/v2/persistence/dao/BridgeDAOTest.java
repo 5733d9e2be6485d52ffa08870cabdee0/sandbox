@@ -57,10 +57,9 @@ public class BridgeDAOTest {
     public void testStoreBridgeWithConditions() {
         Bridge bridge = createBridge();
 
-        Condition condition = createCondition(bridge, null);
-        conditionDAO.persist(condition);
-
+        Condition condition = createCondition();
         bridge.setConditions(List.of(condition));
+
         bridgeDAO.persist(bridge);
 
         Bridge retrieved = bridgeDAO.findById(bridge.getId());

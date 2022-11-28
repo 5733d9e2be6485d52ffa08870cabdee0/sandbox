@@ -52,13 +52,11 @@ public class Fixtures {
         return b;
     }
 
-    public static Condition createCondition(Bridge bridge, Processor processor) {
+    public static Condition createCondition() {
         Condition condition = new Condition();
         condition.setComponent(ComponentType.MANAGER);
         condition.setStatus("True");
         condition.setType("DNSReady");
-        condition.setBridge(bridge);
-        condition.setProcessor(processor);
         condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
         return condition;
     }

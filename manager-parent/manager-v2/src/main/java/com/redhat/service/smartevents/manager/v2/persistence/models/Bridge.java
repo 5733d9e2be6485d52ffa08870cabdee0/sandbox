@@ -3,8 +3,10 @@ package com.redhat.service.smartevents.manager.v2.persistence.models;
 import java.util.List;
 import java.util.Objects;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -34,7 +36,8 @@ public class Bridge extends ManagedResourceV2 {
     @Column(name = "subscription_id", nullable = false, updatable = false)
     private String subscriptionId;
 
-    @OneToMany(mappedBy = "bridge")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "bridge_id")
     private List<Condition> conditions;
 
     public Bridge() {

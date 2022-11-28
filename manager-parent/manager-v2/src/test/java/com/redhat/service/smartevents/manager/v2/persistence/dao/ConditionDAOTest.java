@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.persistence.dao;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -40,13 +42,12 @@ public class ConditionDAOTest {
     @Transactional
     public void testStoreCondition() {
         Bridge bridge = createBridge();
-        Condition condition = createCondition(bridge, null);
 
+        Condition condition = createCondition();
+        bridge.setConditions(List.of(condition));
         bridgeDAO.persist(bridge);
-        conditionDAO.persist(condition);
 
         Condition retrieved = conditionDAO.findById(condition.getId());
         assertThat(retrieved.getId()).isEqualTo(condition.getId());
-        assertThat(retrieved.getBridge().getId()).isEqualTo(bridge.getId());
     }
 }
