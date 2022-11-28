@@ -10,11 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.auth.AbstractOidcClient;
-import com.redhat.service.smartevents.infra.core.auth.OidcClientConfigUtils;
 
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
-import io.quarkus.oidc.common.runtime.OidcConstants;
 
 @ApplicationScoped
 public class ConnectorsOidcClient extends AbstractOidcClient {
@@ -26,11 +24,11 @@ public class ConnectorsOidcClient extends AbstractOidcClient {
     @ConfigProperty(name = "managed-connectors.auth.server-url")
     String authServerUrl;
 
-    @ConfigProperty(name = "managed-connectors.auth.client-id")
+    @ConfigProperty(name = "managed-connectors.auth.credentials.client-id")
     String clientId;
 
-    @ConfigProperty(name = "managed-connectors.auth.offline-token")
-    String offlineToken;
+    @ConfigProperty(name = "managed-connectors.auth.credentials.secret")
+    String secret;
 
     @Inject
     public ConnectorsOidcClient(OidcClients oidcClients, ScheduledExecutorService executorService) {
@@ -39,21 +37,13 @@ public class ConnectorsOidcClient extends AbstractOidcClient {
 
     @Override
     protected OidcClientConfig getOidcClientConfig() {
-
         OidcClientConfig oidcClientConfig = new OidcClientConfig();
         oidcClientConfig.setId(NAME);
         oidcClientConfig.setAuthServerUrl(authServerUrl);
         oidcClientConfig.setClientId(clientId);
-        oidcClientConfig.grant.setType(OidcClientConfigUtils.getGrantType(OidcConstants.REFRESH_TOKEN_GRANT));
-        oidcClientConfig.getCredentials().setSecret("secret");
+        oidcClientConfig.getCredentials().setSecret(secret);
         oidcClientConfig.setRefreshTokenTimeSkew(AbstractOidcClient.REFRESH_TOKEN_TIME_SKEW);
 
         return oidcClientConfig;
-    }
-
-    @Override
-    protected void retrieveTokens() {
-        currentTokens = client.refreshTokens(offlineToken).await().atMost(timeout);
-        LOGGER.info("New token for OIDC client '{}' has been set", name);
     }
 }

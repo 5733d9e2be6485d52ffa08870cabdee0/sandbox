@@ -199,16 +199,16 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET
-                - name: MANAGED_CONNECTORS_AUTH_CLIENT_ID
+                - name: MANAGED_CONNECTORS_AUTH_CREDENTIALS_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MANAGED_CONNECTORS_AUTH_CLIENT_ID
-                - name: MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN
+                      key: MANAGED_CONNECTORS_AUTH_CREDENTIALS_CLIENT_ID
+                - name: MANAGED_CONNECTORS_AUTH_CREDENTIALS_SECRET
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN
+                      key: MANAGED_CONNECTORS_AUTH_CREDENTIALS_SECRET
                 - name: MANAGED_CONNECTORS_AUTH_SERVER_URL
                   valueFrom:
                     secretKeyRef:
