@@ -43,10 +43,10 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.manager.core.ams.ProcessorsQuotaService;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
+import com.redhat.service.smartevents.manager.v1.ams.QuotaConfigurationProvider;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.v1.connectors.ConnectorsService;
@@ -95,7 +95,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     BridgeErrorHelper bridgeErrorHelper;
 
     @Inject
-    ProcessorsQuotaService processorsQuotaService;
+    QuotaConfigurationProvider quotaConfigurationProvider;
 
     @Transactional
     @Override
@@ -127,7 +127,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Check processors limits
         long totalProcessors = processorDAO.findUserVisibleByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo()).getTotal();
-        if (totalProcessors + 1 > processorsQuotaService.getProcessorsQuota(organisationId)) {
+        if (totalProcessors + 1 > quotaConfigurationProvider.getOrganisationQuotas(organisationId).getProcessorsQuota()) {
             throw new NoQuotaAvailable(
                     String.format("There are already '%d' processors attached to the bridge '%s': you reached the limit for your organisation settings.", totalProcessors, bridgeId));
         }

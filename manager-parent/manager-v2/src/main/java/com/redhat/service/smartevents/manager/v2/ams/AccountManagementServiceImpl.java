@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.ams;
+package com.redhat.service.smartevents.manager.v2.ams;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 
 import io.smallrye.mutiny.Uni;
 
@@ -37,7 +37,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
             // TODO: Change with specific exception
             return Uni.createFrom().failure(
                     new NoQuotaAvailable(
-                            String.format("The organisation '%s' has already reached the quota limit for v1 instances.", createResourceRequest.getAccountInfo().getOrganizationId())));
+                            String.format("The organisation '%s' has already reached the quota limit for v2 instances.", createResourceRequest.getAccountInfo().getOrganizationId())));
         }
 
         return Uni.createFrom().item(new ResourceCreated.Builder().withSubscriptionId(UUID.randomUUID().toString()).build());
@@ -61,7 +61,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     private boolean organisationHasBridgesQuota(String organisationId) {
         long organisationQuota = quotaConfigurationProvider.getOrganisationQuotas(organisationId).getBridgesQuota();
         long organisationConsumption = bridgeDAO.countByOrganisationId(organisationId);
-        LOGGER.debug("Organization id '{}' has '{}' bridge instances where the limit is '{}' for v1 instances.", organisationId, organisationConsumption, organisationQuota);
+        LOGGER.debug("Organization id '{}' has '{}' bridge instances where the limit is '{}' for v2 instances", organisationId, organisationConsumption, organisationQuota);
         return organisationConsumption + 1 > organisationQuota;
     }
 }
