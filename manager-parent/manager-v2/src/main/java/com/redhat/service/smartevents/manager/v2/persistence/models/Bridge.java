@@ -1,9 +1,11 @@
 package com.redhat.service.smartevents.manager.v2.persistence.models;
 
+import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -31,6 +33,9 @@ public class Bridge extends ManagedResourceV2 {
 
     @Column(name = "subscription_id", nullable = false, updatable = false)
     private String subscriptionId;
+
+    @OneToMany(mappedBy = "bridge")
+    private List<Condition> conditions;
 
     public Bridge() {
     }
@@ -93,6 +98,14 @@ public class Bridge extends ManagedResourceV2 {
 
     public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
+    }
+
+    public List<Condition> getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(List<Condition> conditions) {
+        this.conditions = conditions;
     }
 
     /*

@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.v2.persistence.models;
 
+import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -7,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -31,6 +33,9 @@ public class Processor extends ManagedResourceV2 {
     @Column(name = "flows", columnDefinition = JsonTypes.JSON_BIN, nullable = false)
     private JsonNode flows;
 
+    @OneToMany(mappedBy = "processor")
+    private List<Condition> conditions;
+
     public Bridge getBridge() {
         return bridge;
     }
@@ -45,6 +50,14 @@ public class Processor extends ManagedResourceV2 {
 
     public void setFlows(JsonNode flows) {
         this.flows = flows;
+    }
+
+    public List<Condition> getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(List<Condition> conditions) {
+        this.conditions = conditions;
     }
 
     /*

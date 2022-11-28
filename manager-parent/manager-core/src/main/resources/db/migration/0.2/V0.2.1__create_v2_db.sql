@@ -59,7 +59,9 @@ CREATE TABLE CONDITION (
     errorCode              varchar(255),
     component              varchar(255) NOT NULL,
 
-    managed_resource_id    varchar(255) NOT NULL
-);
+    bridge_id              varchar(255),
+    processor_id           varchar(255),
 
-CREATE INDEX managed_resource_id_index ON CONDITION (managed_resource_id);
+    constraint fk_bridge foreign key (bridge_id) references BRIDGE_V2 (id),
+    constraint fk_processor foreign key (processor_id) references PROCESSOR_V2 (id)
+);

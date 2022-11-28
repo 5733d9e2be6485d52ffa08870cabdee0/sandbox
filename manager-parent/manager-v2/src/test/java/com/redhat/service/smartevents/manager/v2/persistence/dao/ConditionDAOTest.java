@@ -23,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ConditionDAOTest {
 
     @Inject
+    BridgeDAO bridgeDAO;
+
+    @Inject
     ConditionDAO conditionDAO;
 
     @Inject
@@ -35,15 +38,15 @@ public class ConditionDAOTest {
 
     @Test
     @Transactional
-    public void testStoreOperation() {
-
+    public void testStoreCondition() {
         Bridge bridge = createBridge();
-        Condition condition = createCondition(bridge);
+        Condition condition = createCondition(bridge, null);
 
+        bridgeDAO.persist(bridge);
         conditionDAO.persist(condition);
 
         Condition retrieved = conditionDAO.findById(condition.getId());
         assertThat(retrieved.getId()).isEqualTo(condition.getId());
-        assertThat(retrieved.getManagedResourceId()).isEqualTo(bridge.getId());
+        assertThat(retrieved.getBridge().getId()).isEqualTo(bridge.getId());
     }
 }

@@ -8,7 +8,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
@@ -39,8 +42,15 @@ public class Condition {
     @Enumerated(EnumType.STRING)
     private ComponentType component;
 
-    @Column(name = "managed_resource_Id")
-    private String managedResourceId;
+    // The bridge is not null if the Condition refers to a Bridge
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bridge_id")
+    private Bridge bridge;
+
+    // The processor is not null if the Condition refers to a Processor
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "processor_id")
+    private Processor processor;
 
     @Column(name = "last_transition_time", columnDefinition = "TIMESTAMP", nullable = false)
     private ZonedDateTime lastTransitionTime;
@@ -97,20 +107,28 @@ public class Condition {
         this.component = component;
     }
 
-    public String getManagedResourceId() {
-        return managedResourceId;
-    }
-
-    public void setManagedResourceId(String managedResourceId) {
-        this.managedResourceId = managedResourceId;
-    }
-
     public ZonedDateTime getLastTransitionTime() {
         return lastTransitionTime;
     }
 
     public void setLastTransitionTime(ZonedDateTime lastTransitionTime) {
         this.lastTransitionTime = lastTransitionTime;
+    }
+
+    public Bridge getBridge() {
+        return bridge;
+    }
+
+    public void setBridge(Bridge bridge) {
+        this.bridge = bridge;
+    }
+
+    public Processor getProcessor() {
+        return processor;
+    }
+
+    public void setProcessor(Processor processor) {
+        this.processor = processor;
     }
 
     /*

@@ -10,7 +10,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
-import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
@@ -53,12 +52,13 @@ public class Fixtures {
         return b;
     }
 
-    public static Condition createCondition(ManagedResourceV2 managedResourceV2) {
+    public static Condition createCondition(Bridge bridge, Processor processor) {
         Condition condition = new Condition();
         condition.setComponent(ComponentType.MANAGER);
         condition.setStatus("True");
         condition.setType("DNSReady");
-        condition.setManagedResourceId(managedResourceV2.getId());
+        condition.setBridge(bridge);
+        condition.setProcessor(processor);
         condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
         return condition;
     }
