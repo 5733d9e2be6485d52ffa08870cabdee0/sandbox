@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.manager.v2.persistence.models;
 import java.util.Objects;
 
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -31,9 +30,6 @@ public class Processor extends ManagedResourceV2 {
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "flows", columnDefinition = JsonTypes.JSON_BIN, nullable = false)
     private JsonNode flows;
-
-    @Embedded
-    private Operation operation;
 
     public Bridge getBridge() {
         return bridge;
