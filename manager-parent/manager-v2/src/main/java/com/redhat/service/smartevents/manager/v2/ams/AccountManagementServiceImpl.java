@@ -5,6 +5,7 @@ import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.ResourceCreated;
 
 // TODO: Remove this class and replace with https://github.com/bf2fc6cc711aee1a0c2a/ffm-fleet-manager-java-sdk/blob/b0a109f5f4704abc14aa44cdd6ee2c20425e649a/ams/ams-core/src/main/java/dev/bf2/ffm/ams/core/AccountManagementService.java#L13 when https://issues.redhat.com/browse/MGDOBR-1166 is started
-// TODO {manstis} This probably needs all Bridges across all versions?
+@V2
 @ApplicationScoped
 public class AccountManagementServiceImpl implements AccountManagementService {
 
