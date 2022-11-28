@@ -32,6 +32,7 @@ import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
@@ -40,7 +41,6 @@ import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
-import com.redhat.service.smartevents.manager.v1.ams.AccountManagementServiceImpl;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
@@ -50,6 +50,7 @@ import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 
+import dev.bf2.ffm.ams.core.AccountManagementService;
 import dev.bf2.ffm.ams.core.exceptions.TermsRequiredException;
 import dev.bf2.ffm.ams.core.models.AccountInfo;
 import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
@@ -104,9 +105,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
-    // Inject v1 specific implementation
+    @V1
     @Inject
-    AccountManagementServiceImpl accountManagementService;
+    AccountManagementService accountManagementService;
 
     @PostConstruct
     void init() {

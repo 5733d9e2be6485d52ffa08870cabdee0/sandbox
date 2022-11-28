@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 
 import io.smallrye.mutiny.Uni;
@@ -19,7 +20,7 @@ import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.ResourceCreated;
 
 // TODO: Remove this class and replace with https://github.com/bf2fc6cc711aee1a0c2a/ffm-fleet-manager-java-sdk/blob/b0a109f5f4704abc14aa44cdd6ee2c20425e649a/ams/ams-core/src/main/java/dev/bf2/ffm/ams/core/AccountManagementService.java#L13 when https://issues.redhat.com/browse/MGDOBR-1166 is started
-// TODO {manstis} This probably needs all Bridges across all versions?
+@V1
 @ApplicationScoped
 public class AccountManagementServiceImpl implements AccountManagementService {
 
