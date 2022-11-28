@@ -133,6 +133,10 @@ jobs:
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
+      - name: Install Camel K
+        run: |
+          chmod +x dev/bin/camel-k-installer.sh
+          ./dev/bin/camel-k-installer.sh --registry kind-registry:5000
       - name: Install all resources
         run: kustomize build overlays/ci | kubectl apply -f -
         working-directory: kustomize

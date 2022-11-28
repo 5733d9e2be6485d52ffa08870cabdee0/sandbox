@@ -34,9 +34,5 @@ chmod +x "$cli_file_name"
 
 echo "Using Camel CLI v${camel_k_version} for ${host_os}"
 
-set -x
-
 kubectl create namespace camel-k --dry-run=client -o yaml | kubectl apply -f -
-"./${cli_file_name}" install -n camel-k --global --force -w
-
-set +x
+"./${cli_file_name}" install -n camel-k --global --force -w $@

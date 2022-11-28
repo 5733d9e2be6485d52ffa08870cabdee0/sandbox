@@ -89,6 +89,10 @@ jobs:
 
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
+      - name: Install Camel K
+        run: |
+          chmod +x dev/bin/camel-k-installer.sh
+          ./dev/bin/camel-k-installer.sh --registry kind-registry:5000
       - name: Deploy Shard operator
         env:
           DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
