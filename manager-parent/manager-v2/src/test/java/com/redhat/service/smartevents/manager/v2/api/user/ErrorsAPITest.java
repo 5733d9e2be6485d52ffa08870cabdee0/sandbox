@@ -9,9 +9,7 @@ import com.redhat.service.smartevents.infra.core.models.responses.ErrorListRespo
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.test.exceptions.ExceptionHelper;
-import com.redhat.service.smartevents.test.resource.PostgresResource;
 
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
@@ -19,7 +17,6 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-@QuarkusTestResource(PostgresResource.class) // Needed until there is no test spinning up the PostgresResource in v2 tests.
 class ErrorsAPITest {
 
     private static Collection<Class<?>> exceptionClasses;

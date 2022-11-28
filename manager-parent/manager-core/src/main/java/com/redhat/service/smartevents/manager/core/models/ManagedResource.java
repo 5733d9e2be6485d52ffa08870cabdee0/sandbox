@@ -8,10 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
-import com.redhat.service.smartevents.infra.core.exceptions.HasErrorInformation;
-
 @MappedSuperclass
-public class ManagedResource implements HasErrorInformation {
+public class ManagedResource {
 
     public static final String ID_PARAM = "id";
 
@@ -35,18 +33,6 @@ public class ManagedResource implements HasErrorInformation {
 
     @Column(name = "published_at", columnDefinition = "TIMESTAMP")
     protected ZonedDateTime publishedAt;
-
-    @Column(name = "modified_at", columnDefinition = "TIMESTAMP")
-    private ZonedDateTime modifiedAt;
-
-    @Column(name = "deletion_requested_at", columnDefinition = "TIMESTAMP")
-    private ZonedDateTime deletionRequestedAt;
-
-    @Column(name = "error_id")
-    private Integer errorId;
-
-    @Column(name = "error_uuid")
-    private String errorUUID;
 
     public String getId() {
         return id;
@@ -80,46 +66,12 @@ public class ManagedResource implements HasErrorInformation {
         this.publishedAt = publishedAt;
     }
 
-    public ZonedDateTime getModifiedAt() {
-        return modifiedAt;
-    }
-
-    public void setModifiedAt(ZonedDateTime modifiedAt) {
-        this.modifiedAt = modifiedAt;
-    }
-
-    public ZonedDateTime getDeletionRequestedAt() {
-        return deletionRequestedAt;
-    }
-
-    public void setDeletionRequestedAt(ZonedDateTime deletedAt) {
-        this.deletionRequestedAt = deletedAt;
-    }
-
     public long getGeneration() {
         return generation;
     }
 
     public void setGeneration(long generation) {
         this.generation = generation;
-    }
-
-    @Override
-    public Integer getErrorId() {
-        return errorId;
-    }
-
-    public void setErrorId(Integer errorId) {
-        this.errorId = errorId;
-    }
-
-    @Override
-    public String getErrorUUID() {
-        return errorUUID;
-    }
-
-    public void setErrorUUID(String errorUUID) {
-        this.errorUUID = errorUUID;
     }
 
 }

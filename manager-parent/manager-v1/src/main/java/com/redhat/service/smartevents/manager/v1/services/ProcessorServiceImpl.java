@@ -47,7 +47,6 @@ import com.redhat.service.smartevents.manager.core.ams.ProcessorsQuotaService;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
-import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.v1.connectors.ConnectorsService;
@@ -56,6 +55,7 @@ import com.redhat.service.smartevents.manager.v1.metrics.ManagerMetricsServiceV1
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
 

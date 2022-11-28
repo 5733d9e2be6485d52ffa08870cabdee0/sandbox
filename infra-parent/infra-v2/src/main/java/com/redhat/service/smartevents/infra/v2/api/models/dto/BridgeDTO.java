@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.Operation;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BridgeDTO {
@@ -34,12 +34,12 @@ public class BridgeDTO {
     private KafkaConnectionDTO kafkaConnection;
 
     @JsonProperty("operation")
-    private Operation operation;
+    private OperationType operationType;
 
     public BridgeDTO() {
     }
 
-    public BridgeDTO(String id, String name, String endpoint, String tlsCertificate, String tlsKey, String customerId, String owner, KafkaConnectionDTO kafkaConnection, Operation operation) {
+    public BridgeDTO(String id, String name, String endpoint, String tlsCertificate, String tlsKey, String customerId, String owner, KafkaConnectionDTO kafkaConnection, OperationType operationType) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
@@ -48,7 +48,7 @@ public class BridgeDTO {
         this.customerId = customerId;
         this.owner = owner;
         this.kafkaConnection = kafkaConnection;
-        this.operation = operation;
+        this.operationType = operationType;
     }
 
     public void setCustomerId(String customerId) {
@@ -115,12 +115,12 @@ public class BridgeDTO {
         return kafkaConnection;
     }
 
-    public Operation getOperation() {
-        return operation;
+    public OperationType getOperationType() {
+        return operationType;
     }
 
-    public void setOperation(Operation operation) {
-        this.operation = operation;
+    public void setOperationType(OperationType operationType) {
+        this.operationType = operationType;
     }
 
     @Override

@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
-import com.redhat.service.smartevents.manager.core.workers.Work;
-import com.redhat.service.smartevents.manager.core.workers.WorkManager;
+import com.redhat.service.smartevents.manager.v1.workers.Work;
+import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 
 import io.quarkus.runtime.Quarkus;
 
-import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.convertToJobData;
+import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.convertToJobData;
 
 @ApplicationScoped
 public class QuartzWorkManagerImpl implements WorkManager {
@@ -118,5 +118,4 @@ public class QuartzWorkManagerImpl implements WorkManager {
                 .startAt(jobExecutionTime)
                 .build();
     }
-
 }
