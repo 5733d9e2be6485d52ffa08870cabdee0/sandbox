@@ -7,10 +7,12 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
 
 import io.quarkus.test.junit.QuarkusTest;
 
+import dev.bf2.ffm.ams.core.AccountManagementService;
 import dev.bf2.ffm.ams.core.models.AccountInfo;
 import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.TermsRequest;
@@ -21,8 +23,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @QuarkusTest
 public class AccountManagementServiceImplTest {
 
+    @V1
     @Inject
-    AccountManagementServiceImpl accountManagementService;
+    AccountManagementService accountManagementService;
 
     @Test
     public void testOrganizationWithNoQuota() {
