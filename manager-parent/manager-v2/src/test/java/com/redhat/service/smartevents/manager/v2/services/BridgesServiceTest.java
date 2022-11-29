@@ -1,5 +1,10 @@
 package com.redhat.service.smartevents.manager.v2.services;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -7,12 +12,14 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
@@ -80,13 +87,13 @@ public class BridgesServiceTest {
 
     @Test
     void testToResponse() {
-        Bridge bridge = createBridge();
+        Bridge bridge = createBridgeWithAcceptedConditions();
 
         BridgeResponse response = bridgesService.toResponse(bridge);
 
         assertThat(response.getId()).isEqualTo(bridge.getId());
         assertThat(response.getName()).isEqualTo(bridge.getName());
-        assertThat(response.getEndpoint()).isEqualTo(bridge.getEndpoint());
+        assertThat(response.getEndpoint()).isNull();
         assertThat(response.getSubmittedAt()).isEqualTo(bridge.getSubmittedAt());
         assertThat(response.getPublishedAt()).isEqualTo(bridge.getPublishedAt());
         assertThat(response.getModifiedAt()).isEqualTo(bridge.getOperation().getRequestedAt());
@@ -104,9 +111,17 @@ public class BridgesServiceTest {
         assertThatExceptionOfType(NoQuotaAvailable.class).isThrownBy(() -> bridgesService.createBridge(DEFAULT_CUSTOMER_ID, "organisation_with_no_quota", DEFAULT_USER_NAME, request));
     }
 
-    protected Bridge createBridge() {
+    protected Bridge createBridgeWithAcceptedConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_PERMISSIONS_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+
         Bridge b = Fixtures.createBridge();
+        b.setConditions(conditions);
         bridgeDAO.persist(b);
+
         return b;
     }
 }
