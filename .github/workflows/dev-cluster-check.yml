@@ -89,11 +89,6 @@ jobs:
           path: |
             integration-tests/manager-integration-tests/target/failsafe-reports/TEST-*.xml
           retention-days: 7
-      - name: Get Sheriff Name
-        if: failure()
-        run: |
-         run: echo "{USER_NAME}=$(./.github/scripts/sheriff-queue.sh)" >> $GITHUB_OUTPUT
-        id: findUser
       - name: Send mail with link to failing job
         uses: dawidd6/action-send-mail@v3
         if: failure()
@@ -105,7 +100,7 @@ jobs:
           subject: Dev cluster CI - Check failed
           to: openbridge-dev@redhat.com
           from: Dev cluster CI
-          html_body: Dev cluster CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
+          html_body: Dev cluster CI check failed. On-Call engineer please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
       - name: Upload test logs
         if: always()
         uses: actions/upload-artifact@v3
