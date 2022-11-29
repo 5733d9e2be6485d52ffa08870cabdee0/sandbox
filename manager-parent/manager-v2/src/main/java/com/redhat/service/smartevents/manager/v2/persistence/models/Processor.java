@@ -54,6 +54,7 @@ public class Processor extends ManagedResourceV2 {
         this.flows = flows;
     }
 
+    @Override
     public List<Condition> getConditions() {
         return conditions;
     }
