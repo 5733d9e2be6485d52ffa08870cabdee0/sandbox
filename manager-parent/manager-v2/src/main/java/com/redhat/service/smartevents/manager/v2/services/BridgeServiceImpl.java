@@ -21,12 +21,13 @@ import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
-import com.redhat.service.smartevents.manager.v2.models.ManagerConditionEnum;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
@@ -159,10 +160,10 @@ public class BridgeServiceImpl implements BridgeService {
     private List<Condition> createAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         // TODO: Refactor with enums
-        conditions.add(new Condition(ManagerConditionEnum.KAFKA_TOPIC_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
-        conditions.add(new Condition(ManagerConditionEnum.KAFKA_TOPIC_PERMISSIONS_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
-        conditions.add(new Condition(ManagerConditionEnum.DNS_RECORD_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
-        conditions.add(new Condition(ManagerConditionEnum.DATA_PLANE_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_PERMISSIONS_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;
     }
 }

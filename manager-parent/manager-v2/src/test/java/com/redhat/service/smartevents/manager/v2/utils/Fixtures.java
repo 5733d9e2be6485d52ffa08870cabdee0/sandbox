@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
@@ -55,7 +56,7 @@ public class Fixtures {
     public static Condition createCondition() {
         Condition condition = new Condition();
         condition.setComponent(ComponentType.MANAGER);
-        condition.setStatus("True");
+        condition.setStatus(ConditionStatus.TRUE);
         condition.setType("DNSReady");
         condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
         return condition;

@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -59,7 +61,11 @@ public class BridgesServiceTest {
         assertThat(retrieved.getPublishedAt()).isEqualTo(createdBridge.getPublishedAt());
         assertThat(retrieved.getOperation().getRequestedAt()).isEqualTo(createdBridge.getOperation().getRequestedAt());
         assertThat(retrieved.getConditions()).hasSize(4);
-        assertThat(retrieved.getConditions().stream().allMatch(x -> x.getStatus().equals("Unknown"))).isTrue();
+        assertThat(retrieved.getConditions().stream().allMatch(x -> x.getStatus().equals(ConditionStatus.UNKNOWN))).isTrue();
+        assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME))).isTrue();
+        assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_KAFKA_TOPIC_PERMISSIONS_READY_NAME))).isTrue();
+        assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME))).isTrue();
+        assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_DNS_RECORD_READY_NAME))).isTrue();
         assertThat(retrieved.getOwner()).isEqualTo(createdBridge.getOwner());
         assertThat(retrieved.getCloudProvider()).isEqualTo(createdBridge.getCloudProvider());
         assertThat(retrieved.getRegion()).isEqualTo(createdBridge.getRegion());
