@@ -5,11 +5,11 @@ import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.v2.api.V2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 
 import io.smallrye.mutiny.Uni;
