@@ -9,9 +9,10 @@ import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfig
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
-import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -45,9 +46,9 @@ public class OpenshiftNetworkingService implements NetworkingService {
 
     @Override
     // TODO: refactor as we don't need anymore NetworkResource
-    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeAddressable bridgeIngress, Secret secret, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata bridgeIngress, Secret secret, String host, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
-        Route expected = buildRoute(bridgeIngress, secret, service);
+        Route expected = buildRoute(bridgeIngress, secret, service, host);
 
         Route existing = client.routes()
                 .inNamespace(service.getMetadata().getNamespace())
@@ -74,19 +75,21 @@ public class OpenshiftNetworkingService implements NetworkingService {
         }
     }
 
-    private Route buildRoute(BridgeAddressable bridgeIngress, Secret secret, Service service) {
+    private Route buildRoute(HasMetadata bridgeIngress, Secret secret, Service service, String host) {
         /**
          * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
+         * However we inherit the management of the resource from the BridgeIngress
          */
+        String operatorName = bridgeIngress.getMetadata().getLabels().get(LabelsBuilder.MANAGED_BY_LABEL);
         Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress,
-                new TemplateImportConfig()
+                new TemplateImportConfig(operatorName)
                         .withNameFromParent()
                         .withPrimaryResourceFromParent());
         // Inherit namespace from service and not from bridgeIngress
         route.getMetadata().setNamespace(service.getMetadata().getNamespace());
 
         // We have to provide the host manually in order not to exceed the 63 char limit in the dns label https://issues.redhat.com/browse/MGDOBR-271
-        route.getSpec().setHost(bridgeIngress.getIngressHost());
+        route.getSpec().setHost(host);
 
         route.getSpec().getTls()
                 .setCertificate(new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET))));

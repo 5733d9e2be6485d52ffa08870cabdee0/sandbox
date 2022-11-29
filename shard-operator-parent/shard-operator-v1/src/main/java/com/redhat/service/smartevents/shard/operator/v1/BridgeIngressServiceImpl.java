@@ -216,7 +216,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @Override
     public AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress, String path) {
         AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress,
-                new TemplateImportConfig().withNameFromParent()
+                new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withNameFromParent()
                         .withPrimaryResourceFromParent());
         /**
          * https://github.com/istio/istio/issues/37221

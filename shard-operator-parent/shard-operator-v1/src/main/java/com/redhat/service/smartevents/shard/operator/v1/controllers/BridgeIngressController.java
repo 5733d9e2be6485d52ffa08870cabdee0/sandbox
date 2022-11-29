@@ -167,7 +167,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             status.markConditionTrue(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
         }
 
-        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, secret, path);
+        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, secret, bridgeIngress.getSpec().getHost(), path);
 
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready",

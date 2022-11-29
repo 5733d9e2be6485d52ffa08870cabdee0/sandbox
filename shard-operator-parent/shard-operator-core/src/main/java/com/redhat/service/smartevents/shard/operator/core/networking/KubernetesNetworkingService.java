@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
-import com.redhat.service.smartevents.shard.operator.core.resources.networking.BridgeAddressable;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -46,7 +46,7 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeAddressable bridgeIngress, Secret secret, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata bridgeIngress, Secret secret, String host, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
 
@@ -79,8 +79,10 @@ public class KubernetesNetworkingService implements NetworkingService {
     private Ingress buildIngress(HasMetadata bridgeIngress, Service service, Integer port, String path) {
         /**
          * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
+         * However we inherit the ownership of the resource from the BridgeIngress.
          */
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress, new TemplateImportConfig()
+        String operatorName = bridgeIngress.getMetadata().getLabels().get(LabelsBuilder.MANAGED_BY_LABEL);
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress, new TemplateImportConfig(operatorName)
                 .withNameFromParent()
                 .withPrimaryResourceFromParent());
         // Inherit the namespace from the service

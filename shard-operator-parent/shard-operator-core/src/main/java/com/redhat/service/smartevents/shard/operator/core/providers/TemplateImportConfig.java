@@ -1,21 +1,26 @@
 package com.redhat.service.smartevents.shard.operator.core.providers;
 
+import java.util.Objects;
+
 public class TemplateImportConfig {
+
     private boolean nameToBeSet = false;
     private boolean namespaceToBeSet = false;
     private boolean ownerReferencesToBeSet = false;
     private boolean primaryResourceToBeSet = false;
     private String operatorName;
 
-    public TemplateImportConfig() {
+    public TemplateImportConfig(String operatorName) {
+        Objects.requireNonNull(operatorName, "operatorName cannot be null");
+        this.operatorName = operatorName;
     }
 
     public TemplateImportConfig(boolean nameToBeSet, boolean namespaceToBeSet, boolean ownerReferencesToBeSet, boolean primaryResourceToBeSet, String operatorName) {
+        this(operatorName);
         this.nameToBeSet = nameToBeSet;
         this.namespaceToBeSet = namespaceToBeSet;
         this.ownerReferencesToBeSet = ownerReferencesToBeSet;
         this.primaryResourceToBeSet = primaryResourceToBeSet;
-        this.operatorName = operatorName;
     }
 
     public TemplateImportConfig withNameFromParent() {

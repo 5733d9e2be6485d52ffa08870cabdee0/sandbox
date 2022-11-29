@@ -73,17 +73,17 @@ public class TemplateProviderTest {
         assertThat(deployment.getMetadata().getName()).isEqualTo(hasMetadata.getMetadata().getName());
         assertThat(deployment.getMetadata().getNamespace()).isEqualTo(hasMetadata.getMetadata().getNamespace());
 
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig().withNameFromParent());
+        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withNameFromParent());
         assertThat(deployment.getMetadata().getOwnerReferences()).isNull();
         assertThat(deployment.getMetadata().getName()).isEqualTo(hasMetadata.getMetadata().getName());
         assertThat(deployment.getMetadata().getNamespace()).isNull();
 
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig().withNamespaceFromParent());
+        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withNamespaceFromParent());
         assertThat(deployment.getMetadata().getOwnerReferences()).isNull();
         assertThat(deployment.getMetadata().getName()).isNull();
         assertThat(deployment.getMetadata().getNamespace()).isEqualTo(hasMetadata.getMetadata().getNamespace());
 
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig().withOwnerReferencesFromParent());
+        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withOwnerReferencesFromParent());
         assertOwnerReference(hasMetadata, deployment.getMetadata());
         assertThat(deployment.getMetadata().getName()).isNull();
         assertThat(deployment.getMetadata().getNamespace()).isNull();
@@ -139,10 +139,9 @@ public class TemplateProviderTest {
         mockResourceForNoOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         AuthorizationPolicy authorizationPolicy = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(hasMetadata,
-                new TemplateImportConfig()
+                new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME)
                         .withNameFromParent()
-                        .withPrimaryResourceFromParent()
-                        .withOperatorName(LabelsBuilder.V1_OPERATOR_NAME));
+                        .withPrimaryResourceFromParent());
 
         assertThat(authorizationPolicy.getMetadata().getOwnerReferences()).isNull();
         assertThat(authorizationPolicy.getMetadata().getAnnotations().get("operator-sdk/primary-resource-name")).isEqualTo(hasMetadata.getMetadata().getName());
@@ -206,10 +205,9 @@ public class TemplateProviderTest {
 
         mockResourceForNoOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(hasMetadata, new TemplateImportConfig()
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME)
                 .withNameFromParent()
-                .withPrimaryResourceFromParent()
-                .withOperatorName(LabelsBuilder.V1_OPERATOR_NAME));
+                .withPrimaryResourceFromParent());
 
         assertThat(route.getMetadata().getOwnerReferences()).isNull();
         assertLabels(route.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME, BRIDGE_COMPONENT_NAME);
@@ -222,7 +220,7 @@ public class TemplateProviderTest {
 
         mockResourceForNoOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(hasMetadata, new TemplateImportConfig()
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME)
                 .withNameFromParent()
                 .withPrimaryResourceFromParent()
                 .withOperatorName(LabelsBuilder.V1_OPERATOR_NAME));
