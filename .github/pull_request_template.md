@@ -6,7 +6,7 @@ Please make sure that your PR meets the following requirements:
 
 - [ ] Your code is properly formatted according to [this configuration](https://github.com/kiegroup/kogito-runtimes/tree/main/kogito-build/kogito-ide-config).  
   *Run `mvn clean verify -DskipTests` so that imports are correctly set.*
-- [ ] Your commit messages are clear and reference the JIRA issue e.g: "[MGDOBR-1] - $clear_explanation_of_what_you_did"
+- [ ] Your commit messages are clear and reference the JIRA issue e.g: "[MGDOBR-XXX] - $clear_explanation_of_what_you_did"
 - [ ] The layers in the `kustomize` folder have been updated accordingly.
 - [ ] All new functionality is tested
 - [ ] Pull Request title is properly formatted: `MGDOBR-XYZ Subject`
