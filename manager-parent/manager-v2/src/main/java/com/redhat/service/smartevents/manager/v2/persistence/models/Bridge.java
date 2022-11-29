@@ -19,7 +19,9 @@ import javax.persistence.UniqueConstraint;
         @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
                 query = "select count(*) from Bridge_V2 where organisation_id=:organisationId"),
         @NamedQuery(name = "BRIDGE_V2.findByIdWithConditions",
-                query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id")
+                query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id"),
+        @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
+                query = "select count(*) from Bridge_V2 where organisation_id=:organisationId")
 })
 @Entity(name = "Bridge_V2")
 @Table(name = "BRIDGE_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })

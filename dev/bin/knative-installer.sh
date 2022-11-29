@@ -19,6 +19,13 @@ function header_text {
   echo "$header$*$reset"
 }
 
+header_text "Initializing Knative Serving Core APIs"
+kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.5.0/serving-crds.yaml
+kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.5.0/serving-core.yaml
+
+header_text "Waiting for Knative Serving Core to become ready"
+kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-serving
+
 header_text "Knative Eventing Kafka - Installer"
 header_text "Initializing Knative Eventing Core APIs"
 kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.5.6/eventing-crds.yaml
