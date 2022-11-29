@@ -16,6 +16,7 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createCondition;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -122,5 +123,27 @@ public class BridgeDAOTest {
         Condition condition3 = retrieved.getConditions().get(2);
         retrieved.getConditions().remove(condition3);
         bridgeDAO.persist(retrieved);
+    }
+
+    @Test
+    public void testCountByOrganisationId() {
+        for (int i = 0; i < 10; i++) {
+            String id = String.valueOf(i);
+            Bridge bridge = buildBridge(id, id);
+            bridgeDAO.persist(bridge);
+        }
+
+        long countBridges = bridgeDAO.countByOrganisationId(DEFAULT_ORGANISATION_ID);
+        assertThat(countBridges).isEqualTo(10);
+
+        countBridges = bridgeDAO.countByOrganisationId("random");
+        assertThat(countBridges).isEqualTo(0);
+    }
+
+    private Bridge buildBridge(String id, String name) {
+        Bridge bridge = createBridge();
+        bridge.setId(id);
+        bridge.setName(name);
+        return bridge;
     }
 }

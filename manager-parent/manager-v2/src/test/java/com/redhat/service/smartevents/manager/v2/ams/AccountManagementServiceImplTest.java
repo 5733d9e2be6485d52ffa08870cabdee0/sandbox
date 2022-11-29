@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.ams;
+package com.redhat.service.smartevents.manager.v2.ams;
 
 import java.time.Duration;
 
@@ -7,8 +7,8 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.v1.api.V1;
-import com.redhat.service.smartevents.manager.v1.TestConstants;
+import com.redhat.service.smartevents.infra.v2.api.V2;
+import com.redhat.service.smartevents.manager.v2.TestConstants;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @QuarkusTest
 public class AccountManagementServiceImplTest {
 
-    @V1
+    @V2
     @Inject
     AccountManagementService accountManagementService;
 
@@ -95,5 +95,4 @@ public class AccountManagementServiceImplTest {
 
         assertThat(accountManagementService.organizationHasAvailableQuota(accountInfo, "TODO", "TODO").await().atMost(Duration.ofSeconds(5))).isFalse();
     }
-
 }

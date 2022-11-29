@@ -7,10 +7,16 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+@NamedQueries({
+        @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
+                query = "select count(*) from Bridge_V2 where organisation_id=:organisationId")
+})
 @Entity(name = "Bridge_V2")
 @Table(name = "BRIDGE_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
 public class Bridge extends ManagedResourceV2 {

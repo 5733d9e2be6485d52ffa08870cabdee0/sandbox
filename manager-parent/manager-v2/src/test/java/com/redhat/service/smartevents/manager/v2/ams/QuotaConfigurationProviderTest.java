@@ -1,10 +1,10 @@
-package com.redhat.service.smartevents.manager.core.ams;
+package com.redhat.service.smartevents.manager.v2.ams;
 
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.manager.core.TestConstants;
+import com.redhat.service.smartevents.manager.v2.TestConstants;
 
 import io.quarkus.test.junit.QuarkusTest;
 

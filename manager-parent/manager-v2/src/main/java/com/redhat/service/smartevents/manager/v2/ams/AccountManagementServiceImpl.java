@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.ams;
+package com.redhat.service.smartevents.manager.v2.ams;
 
 import java.util.UUID;
 
@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.v1.api.V1;
-import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
+import com.redhat.service.smartevents.infra.v2.api.V2;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 
 import io.smallrye.mutiny.Uni;
 
@@ -20,7 +20,7 @@ import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.ResourceCreated;
 
 // TODO: Remove this class and replace with https://github.com/bf2fc6cc711aee1a0c2a/ffm-fleet-manager-java-sdk/blob/b0a109f5f4704abc14aa44cdd6ee2c20425e649a/ams/ams-core/src/main/java/dev/bf2/ffm/ams/core/AccountManagementService.java#L13 when https://issues.redhat.com/browse/MGDOBR-1166 is started
-@V1
+@V2
 @ApplicationScoped
 public class AccountManagementServiceImpl implements AccountManagementService {
 
@@ -38,7 +38,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
             // TODO: Change with specific exception
             return Uni.createFrom().failure(
                     new NoQuotaAvailable(
-                            String.format("The organisation '%s' has already reached the quota limit for v1 instances.", createResourceRequest.getAccountInfo().getOrganizationId())));
+                            String.format("The organisation '%s' has already reached the quota limit for v2 instances.", createResourceRequest.getAccountInfo().getOrganizationId())));
         }
 
         return Uni.createFrom().item(new ResourceCreated.Builder().withSubscriptionId(UUID.randomUUID().toString()).build());
@@ -62,7 +62,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     private boolean organisationHasBridgesQuota(String organisationId) {
         long organisationQuota = quotaConfigurationProvider.getOrganisationQuotas(organisationId).getBridgesQuota();
         long organisationConsumption = bridgeDAO.countByOrganisationId(organisationId);
-        LOGGER.debug("Organization id '{}' has '{}' bridge instances where the limit is '{}' for v1 instances.", organisationId, organisationConsumption, organisationQuota);
+        LOGGER.debug("Organization id '{}' has '{}' bridge instances where the limit is '{}' for v2 instances", organisationId, organisationConsumption, organisationQuota);
         return organisationConsumption + 1 > organisationQuota;
     }
 }

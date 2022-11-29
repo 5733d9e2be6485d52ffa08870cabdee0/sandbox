@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.core.ams;
+package com.redhat.service.smartevents.manager.v2.ams;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.smartevents.manager.core.ams.OrganisationQuota;
 
 import io.quarkus.runtime.Quarkus;
 
@@ -22,7 +23,7 @@ public class QuotaConfigurationProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaConfigurationProvider.class);
 
-    @ConfigProperty(name = "event-bridge.account-management-service.quota.config")
+    @ConfigProperty(name = "event-bridge.account-management-service.quota.config.v2")
     String accountManagementServiceQuotaConfig;
 
     Map<String, OrganisationQuota> organisationsQuota;

@@ -32,6 +32,7 @@ import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
@@ -104,6 +105,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
+    @V1
     @Inject
     AccountManagementService accountManagementService;
 
