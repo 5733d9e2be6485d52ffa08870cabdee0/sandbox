@@ -35,6 +35,8 @@ import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.services.BridgeService;
 
 import io.quarkus.security.Authenticated;
 
@@ -51,6 +53,9 @@ import io.quarkus.security.Authenticated;
 @Authenticated
 @RegisterRestClient
 public class BridgesAPI {
+
+    @Inject
+    BridgeService bridgeService;
 
     @Inject
     IdentityResolver identityResolver;
@@ -85,7 +90,11 @@ public class BridgesAPI {
     @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
     public Response createBridge(@Valid BridgeRequest bridgeRequest) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        String organisationId = identityResolver.resolveOrganisationId(jwt);
+        String owner = identityResolver.resolveOwner(jwt);
+        Bridge bridge = bridgeService.createBridge(customerId, organisationId, owner, bridgeRequest);
+        return Response.accepted(bridgeService.toResponse(bridge)).build();
     }
 
     @APIResponses(value = {

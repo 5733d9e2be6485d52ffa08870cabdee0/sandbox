@@ -40,7 +40,7 @@ public class StatusUtilities {
             case CREATE:
             case UPDATE:
                 if (Objects.isNull(conditions) || conditions.isEmpty()) {
-                    return ManagedResourceStatus.ACCEPTED;
+                    throw new IllegalStateException("Conditions can't be null or empty.");
                 }
                 // The ordering of these checks is important!
                 if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_FAILED))) {
@@ -64,7 +64,7 @@ public class StatusUtilities {
                 break;
             case DELETE:
                 if (Objects.isNull(conditions) || conditions.isEmpty()) {
-                    return ManagedResourceStatus.DEPROVISION;
+                    throw new IllegalStateException("Conditions can't be null or empty.");
                 }
                 // Check "any matches" first as these have the widest scope
                 if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_FAILED))) {

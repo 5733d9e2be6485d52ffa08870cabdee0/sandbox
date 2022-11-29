@@ -42,6 +42,19 @@ public class Condition {
     @Column(name = "last_transition_time", columnDefinition = "TIMESTAMP", nullable = false)
     private ZonedDateTime lastTransitionTime;
 
+    public Condition() {
+    }
+
+    public Condition(String type, String status, String reason, String message, String errorCode, ComponentType component, ZonedDateTime lastTransitionTime) {
+        this.type = type;
+        this.status = status;
+        this.reason = reason;
+        this.message = message;
+        this.errorCode = errorCode;
+        this.component = component;
+        this.lastTransitionTime = lastTransitionTime;
+    }
+
     public String getId() {
         return id;
     }

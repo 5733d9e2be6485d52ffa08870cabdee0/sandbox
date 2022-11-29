@@ -3,71 +3,47 @@ package com.redhat.service.smartevents.manager.v2.services;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.AMSFailException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.TermsNotAcceptedYetException;
-import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
-import com.redhat.service.smartevents.infra.v1.api.V1;
-import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
-import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
-import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
-import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
-import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
-import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
-import com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
-import com.redhat.service.smartevents.manager.v1.metrics.ManagerMetricsServiceV1;
-import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.v2.models.ManagerConditionEnum;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
+
 import dev.bf2.ffm.ams.core.AccountManagementService;
 import dev.bf2.ffm.ams.core.exceptions.TermsRequiredException;
 import dev.bf2.ffm.ams.core.models.AccountInfo;
 import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.ResourceCreated;
 import dev.bf2.ffm.ams.core.models.TermsRequest;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.inferOperation;
 
 @ApplicationScoped
-public class BridgesServiceImpl implements BridgesService {
+public class BridgeServiceImpl implements BridgeService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeServiceImpl.class);
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -89,10 +65,17 @@ public class BridgesServiceImpl implements BridgesService {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
 
+        Operation operation = new Operation();
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        operation.setType(OperationType.CREATE);
+
         // Create resource on AMS - raise an exception is the organisation is out of quota
         String subscriptionId = createResourceOnAMS(organisationId);
 
         Bridge bridge = bridgeRequest.toEntity();
+        // TODO: refactor
+        bridge.setConditions(createAcceptedConditions());
+        bridge.setOperation(operation);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setOrganisationId(organisationId);
@@ -133,7 +116,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setOwner(bridge.getOwner());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
-//        response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
+        //        response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
 
         return response;
     }
@@ -171,5 +154,15 @@ public class BridgesServiceImpl implements BridgesService {
             LOGGER.warn("An error occurred with AMS for the organisation '{}'", organisationId, e);
             throw new AMSFailException("Could not check if organization has quota to create the resource.");
         }
+    }
+
+    private List<Condition> createAcceptedConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        // TODO: Refactor with enums
+        conditions.add(new Condition(ManagerConditionEnum.KAFKA_TOPIC_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(ManagerConditionEnum.KAFKA_TOPIC_PERMISSIONS_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(ManagerConditionEnum.DNS_RECORD_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(ManagerConditionEnum.DATA_PLANE_READY.getValue(), "Unknown", null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        return conditions;
     }
 }

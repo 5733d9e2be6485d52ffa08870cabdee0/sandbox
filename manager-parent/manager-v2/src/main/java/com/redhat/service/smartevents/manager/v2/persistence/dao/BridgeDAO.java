@@ -12,6 +12,12 @@ import io.quarkus.panache.common.Parameters;
 @Transactional
 public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
 
+    public Bridge findByIdWithConditions(String id) {
+        Parameters params = Parameters
+                .with("id", id);
+        return find("#BRIDGE_V2.findByIdWithConditions", params).firstResult();
+    }
+
     public Bridge findByNameAndCustomerId(String name, String customerId) {
         Parameters params = Parameters
                 .with("name", name).and("customerId", customerId);
