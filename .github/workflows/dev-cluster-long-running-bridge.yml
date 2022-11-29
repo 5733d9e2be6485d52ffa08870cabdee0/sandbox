@@ -59,11 +59,6 @@ jobs:
         with:
           maven-command: clean verify -Pperiodical-slack-check -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dremote.cluster.bridge.endpoint=$REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests/manager-integration-tests
-      - name: Get Sheriff Name
-        if: failure()
-        run: |
-          run: echo "{USER_NAME}=$(./.github/scripts/sheriff-queue.sh)" >> $GITHUB_OUTPUT
-        id: findUser
       - name: Send mail with link to failing job
         uses: dawidd6/action-send-mail@v3
         if: failure()
@@ -75,4 +70,4 @@ jobs:
           subject: Dev cluster long running Bridge CI - Check failed
           to: openbridge-dev@redhat.com
           from: Dev cluster CI
-          html_body: Dev cluster long running Bridge CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a>  please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-long-running-bridge.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
+          html_body: Dev cluster long running Bridge CI check failed. On-Call engineer please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-long-running-bridge.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
