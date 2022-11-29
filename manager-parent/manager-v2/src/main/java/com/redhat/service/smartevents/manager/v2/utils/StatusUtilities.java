@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
@@ -43,22 +44,22 @@ public class StatusUtilities {
                     throw new IllegalStateException("Conditions can't be null or empty.");
                 }
                 // The ordering of these checks is important!
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_FAILED))) {
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
                     return ManagedResourceStatus.FAILED;
                 }
-                if (conditions.stream().allMatch(c -> c.getStatus().equals(CONDITION_STATUS_TRUE))) {
+                if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatus.READY;
                 }
-                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).allMatch(c -> c.getStatus().equals(CONDITION_STATUS_TRUE))) {
+                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatus.PROVISIONING;
                 }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_TRUE))) {
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatus.PREPARING;
                 }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_FALSE))) {
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FALSE))) {
                     return ManagedResourceStatus.PREPARING;
                 }
-                if (conditions.stream().allMatch(c -> c.getStatus().equals(CONDITION_STATUS_UNKNOWN))) {
+                if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.UNKNOWN))) {
                     return ManagedResourceStatus.ACCEPTED;
                 }
                 break;
@@ -67,16 +68,16 @@ public class StatusUtilities {
                     throw new IllegalStateException("Conditions can't be null or empty.");
                 }
                 // Check "any matches" first as these have the widest scope
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_FAILED))) {
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
                     return ManagedResourceStatus.FAILED;
                 }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_TRUE))) {
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatus.DELETING;
                 }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(CONDITION_STATUS_FALSE))) {
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FALSE))) {
                     return ManagedResourceStatus.DELETING;
                 }
-                if (conditions.stream().allMatch(c -> c.getStatus().equals(CONDITION_STATUS_TRUE))) {
+                if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatus.DELETED;
                 }
                 break;
