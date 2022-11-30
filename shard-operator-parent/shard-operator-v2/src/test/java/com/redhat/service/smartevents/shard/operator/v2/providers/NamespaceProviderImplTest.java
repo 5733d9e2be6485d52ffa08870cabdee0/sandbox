@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
-import com.redhat.service.smartevents.shard.operator.v2.Fixtures;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.client.KubernetesClient;

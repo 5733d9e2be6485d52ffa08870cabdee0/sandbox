@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v2;
+package com.redhat.service.smartevents.shard.operator.v2.utils;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;

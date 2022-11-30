@@ -46,7 +46,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedBridgeController.class);
 
-    @ConfigProperty(name = "event-bridge.ingress.poll-interval.milliseconds")
+    @ConfigProperty(name = "event-bridge.managed-bridge.poll-interval.milliseconds")
     int reconcileIntervalSeconds;
 
     @Inject
@@ -83,8 +83,8 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         Secret secret = managedBridgeService.fetchOrCreateBridgeSecret(managedBridge);
 
         if (secret == null) {
-            LOGGER.info("Secrets for the ManagedBridge '{}' have been not created yet.",
-                    managedBridge.getMetadata().getName());
+            LOGGER.info("The Secret for the ManagedBridge with id '{}' has been not created yet.",
+                    managedBridge.getSpec().getId());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -93,6 +93,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
             }
             return UpdateControl.updateStatus(managedBridge).rescheduleAfter(reconcileIntervalSeconds);
         } else if (!status.isConditionTypeTrue(ManagedBridgeStatus.SECRET_AVAILABLE)) {
+            LOGGER.info("Secret for ManagedBridge with id '{}' has been created.", managedBridge.getSpec().getId());
             status.markConditionTrue(ManagedBridgeStatus.SECRET_AVAILABLE);
         }
 
@@ -106,7 +107,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         String path = extractBrokerPath(knativeBroker);
 
         if (path == null) {
-            LOGGER.info("Knative Broker Resource for ManagedBridge BridgeIngress: '{}' in namespace '{}' is NOT ready",
+            LOGGER.info("The Knative Broker Resource for ManagedBridge '{}' in namespace '{}' is not ready",
                     managedBridge.getMetadata().getName(),
                     managedBridge.getMetadata().getNamespace());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
@@ -118,6 +119,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
             return UpdateControl.updateStatus(managedBridge).rescheduleAfter(reconcileIntervalSeconds);
         } else if (!status.isConditionTypeTrue(ManagedBridgeStatus.KNATIVE_BROKER_AVAILABLE)) {
             status.markConditionTrue(ManagedBridgeStatus.KNATIVE_BROKER_AVAILABLE);
+            LOGGER.info("The Knative Broker Resource for ManagedBridge '{}' in namespace '{}' is ready", managedBridge.getMetadata().getName(), managedBridge.getMetadata().getNamespace());
         }
 
         if (!status.isReady()) {

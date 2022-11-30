@@ -5,20 +5,27 @@ import java.time.Duration;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
+import com.redhat.service.smartevents.shard.operator.v2.utils.V2KubernetesResourcePatcher;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -32,6 +39,14 @@ public class ManagedBridgeServiceImplTest {
 
     @Inject
     NamespaceProvider namespaceProvider;
+
+    @Inject
+    V2KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @BeforeEach
+    public void beforeEach() {
+        kubernetesResourcePatcher.cleanUp();
+    }
 
     @Test
     public void createManagedBridge() {
@@ -56,6 +71,66 @@ public class ManagedBridgeServiceImplTest {
         assertThat(secret.getData().get(GlobalConfigurationsConstants.TLS_KEY_SECRET).length()).isGreaterThan(0);
     }
 
+    @Test
+    public void managedBridgeCreationTriggersController() {
+        // Given
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+
+        // When
+        managedBridgeService.createManagedBridge(bridgeDTO);
+
+        // Then
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .until(() -> {
+                    Secret secret = fetchBridgeSecret(bridgeDTO);
+                    assertThat(secret).isNotNull();
+
+                    ConfigMap configMap = fetchBridgeConfigMap(bridgeDTO);
+                    assertThat(configMap).isNotNull();
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_BOOTSTRAP_SERVERS_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP).length()).isGreaterThan(0);
+                    assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP).length()).isGreaterThan(0);
+
+                    KnativeBroker knativeBroker = fetchBridgeKnativeBroker(bridgeDTO);
+                    assertThat(knativeBroker).isNotNull();
+                    assertThat(knativeBroker.getSpec().getConfig().getName().length()).isGreaterThan(0);
+                    assertThat(knativeBroker.getSpec().getConfig().getKind().length()).isGreaterThan(0);
+                    assertThat(knativeBroker.getSpec().getConfig().getNamespace().length()).isGreaterThan(0);
+                    assertThat(knativeBroker.getSpec().getConfig().getApiVersion().length()).isGreaterThan(0);
+                    kubernetesResourcePatcher.patchReadyKnativeBroker(knativeBroker.getMetadata().getName(), knativeBroker.getMetadata().getNamespace());
+                    return true;
+                    //TODO -readd this as part of Ingress logic migration
+                    //                    AuthorizationPolicy authorizationPolicy = fetchBridgeIngressAuthorizationPolicy(dto);
+                    //                    assertThat(authorizationPolicy).isNotNull();
+                    //                    assertThat(authorizationPolicy.getSpec().getAction().length()).isGreaterThan(0);
+                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().size()).isGreaterThan(0);
+                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().get(0).length()).isGreaterThan(0);
+                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getMethods().get(0).length()).isGreaterThan(0);
+                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().size()).isGreaterThan(0);
+                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getKey().length()).isGreaterThan(0);
+                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().size()).isGreaterThan(0);
+                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0).length()).isGreaterThan(0);
+                });
+    }
+
+    private <T extends HasMetadata> T assertV2Labels(T hasMetaData) {
+        assertThat(hasMetaData.getMetadata().getLabels()).containsEntry(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.V2_OPERATOR_NAME);
+        assertThat(hasMetaData.getMetadata().getLabels()).containsEntry(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.V2_OPERATOR_NAME);
+        return hasMetaData;
+    }
+
+    private Secret fetchBridgeSecret(BridgeDTO dto) {
+        return assertV2Labels(kubernetesClient
+                .secrets()
+                .inNamespace(namespaceProvider.getNamespaceName(dto.getId()))
+                .withName(dto.getId())
+                .get());
+    }
+
     private void waitUntilManagedBridgeExists(BridgeDTO dto) {
         Awaitility.await()
                 .atMost(Duration.ofSeconds(30))
@@ -66,19 +141,35 @@ public class ManagedBridgeServiceImplTest {
                 });
     }
 
+    private ConfigMap fetchBridgeConfigMap(BridgeDTO dto) {
+        return assertV2Labels(kubernetesClient
+                .configMaps()
+                .inNamespace(namespaceProvider.getNamespaceName(dto.getId()))
+                .withName(dto.getId())
+                .get());
+    }
+
+    private KnativeBroker fetchBridgeKnativeBroker(BridgeDTO dto) {
+        return assertV2Labels(kubernetesClient
+                .resources(KnativeBroker.class)
+                .inNamespace(namespaceProvider.getNamespaceName(dto.getId()))
+                .withName(dto.getId())
+                .get());
+    }
+
     private Secret fetchManagedBridgeSecret(BridgeDTO dto) {
-        return kubernetesClient
+        return assertV2Labels(kubernetesClient
                 .resources(Secret.class)
                 .inNamespace(namespaceProvider.getNamespaceName(dto.getId()))
                 .withName(dto.getId())
-                .get();
+                .get());
     }
 
     private ManagedBridge fetchManagedBridge(BridgeDTO dto) {
-        return kubernetesClient
+        return assertV2Labels(kubernetesClient
                 .resources(ManagedBridge.class)
                 .inNamespace(namespaceProvider.getNamespaceName(dto.getId()))
                 .withName(dto.getId())
-                .get();
+                .get());
     }
 }

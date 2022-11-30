@@ -95,7 +95,7 @@ public class BridgeIngressSteps {
                         new ObjectMetaBuilder()
                                 .withLabels(
                                         new LabelsBuilder()
-                                                .withManagedByOperator()
+                                                .withManagedByOperator(LabelsBuilder.V1_OPERATOR_NAME)
                                                 .withComponent(BridgeIngress.COMPONENT_NAME)
                                                 .build())
                                 .withNamespace(bridgeIngress.getMetadata().getNamespace())
