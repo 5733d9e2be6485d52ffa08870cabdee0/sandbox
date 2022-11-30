@@ -15,11 +15,6 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 
 public class StatusUtilities {
 
-    public final static String CONDITION_STATUS_TRUE = "True";
-    public final static String CONDITION_STATUS_FALSE = "False";
-    public final static String CONDITION_STATUS_UNKNOWN = "Unknown";
-    public final static String CONDITION_STATUS_FAILED = "Failed";
-
     private StatusUtilities() {
         //Static utility functions class
     }
@@ -37,12 +32,16 @@ public class StatusUtilities {
 
     public static ManagedResourceStatus getManagedResourceStatus(ManagedResourceV2 resource) {
         List<Condition> conditions = resource.getConditions();
+        if (Objects.isNull(conditions) || conditions.isEmpty()) {
+            throw new IllegalStateException("Conditions can't be null or empty.");
+        }
+        if (conditions.stream().noneMatch(c -> c.getComponent() == ComponentType.MANAGER) || conditions.stream().noneMatch(c -> c.getComponent() == ComponentType.SHARD)) {
+            throw new IllegalStateException("Conditions must contain at least one condition for the manager and one for the shard.");
+        }
+
         switch (resource.getOperation().getType()) {
             case CREATE:
             case UPDATE:
-                if (Objects.isNull(conditions) || conditions.isEmpty()) {
-                    throw new IllegalStateException("Conditions can't be null or empty.");
-                }
                 // The ordering of these checks is important!
                 if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
                     return ManagedResourceStatus.FAILED;
@@ -64,10 +63,9 @@ public class StatusUtilities {
                 }
                 break;
             case DELETE:
-                if (Objects.isNull(conditions) || conditions.isEmpty()) {
-                    throw new IllegalStateException("Conditions can't be null or empty.");
+                if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
+                    return ManagedResourceStatus.DELETED;
                 }
-                // Check "any matches" first as these have the widest scope
                 if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
                     return ManagedResourceStatus.FAILED;
                 }
@@ -76,9 +74,6 @@ public class StatusUtilities {
                 }
                 if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FALSE))) {
                     return ManagedResourceStatus.DELETING;
-                }
-                if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
-                    return ManagedResourceStatus.DELETED;
                 }
                 break;
         }
