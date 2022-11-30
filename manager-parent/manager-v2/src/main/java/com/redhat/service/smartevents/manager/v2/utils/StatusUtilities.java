@@ -63,6 +63,10 @@ public class StatusUtilities {
                 }
                 break;
             case DELETE:
+                // The ordering of these checks is important!
+                if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.UNKNOWN))) {
+                    return ManagedResourceStatus.DEPROVISION;
+                }
                 if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatus.DELETED;
                 }
@@ -81,6 +85,9 @@ public class StatusUtilities {
     }
 
     public static String getStatusMessage(ManagedResourceV2 resource) {
+        if (resource.getConditions() == null) {
+            return null;
+        }
         return resource.getConditions()
                 .stream()
                 .map(c -> "[" + c.getErrorCode() + "] " + c.getMessage())
