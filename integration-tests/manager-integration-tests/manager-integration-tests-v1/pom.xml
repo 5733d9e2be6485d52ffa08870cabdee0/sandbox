@@ -46,7 +46,7 @@
 
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>manager-integration-tests-common</artifactId>
+      <artifactId>integration-tests-common</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
