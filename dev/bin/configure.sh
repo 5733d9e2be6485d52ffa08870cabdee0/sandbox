@@ -97,8 +97,9 @@ function configure_kafka {
 }
 
 function configure_managed_connectors {
-  check_required_variable "MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN"
   check_required_variable "MANAGED_CONNECTORS_NAMESPACE_ID"
+  check_required_variable "MANAGED_CONNECTORS_AUTH_CREDENTIALS_CLIENT_ID"
+  check_required_variable "MANAGED_CONNECTORS_AUTH_CREDENTIALS_SECRET"
   MANAGED_CONNECTORS_NAMESPACE_ID="${MANAGED_CONNECTORS_NAMESPACE_ID:-empty}"
 }
 

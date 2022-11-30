@@ -6,7 +6,8 @@
 # The following keys are needed to create Managed Connector source and sinks
 MANAGED_CONNECTORS_NAMESPACE_ID=mc-namespace-id
 MANAGED_CONNECTORS_CONTROL_PLANE_URL=https://managedconnector-controlplane.com
-MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=my-offline-token
+MANAGED_CONNECTORS_AUTH_CREDENTIALS_CLIENT_ID=id
+MANAGED_CONNECTORS_AUTH_CREDENTIALS_SECRET=secret
 
 # RHOAS_USERNAME=
 
@@ -18,4 +19,3 @@ export EVENT_BRIDGE_RESOURCE_PREFIX=my_username
 # MANAGED_KAFKA_REGION=
 # MINIKUBE_DRIVER=podman
 # MINIKUBE_CONTAINER_RUNTIME=cri-o
-

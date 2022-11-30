@@ -6,7 +6,8 @@
 # Env vars:
 # - MANAGED_CONNECTORS_NAMESPACE_ID: namespace where managed connectors will be deployed (required only if MC actions are used, default="empty")
 # - MANAGED_CONNECTORS_CONTROL_PLANE_URL: endpoint of the MC Control plane. (required only if MC actions are used, default="empty")
-# - MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: Red Hat account offline token used by the fleet manager to authenticate to managed connectors (required)
+# - MANAGED_CONNECTORS_AUTH_CREDENTIALS_CLIENT_ID: Service account id used by the fleet manager to authenticate to managed connectors (required)
+# - MANAGED_CONNECTORS_AUTH_CREDENTIALS_SECRET: Service account secret used by the fleet manager to authenticate to managed connectors (required)
 ########
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
@@ -54,8 +55,8 @@ mvn \
   -Dmanaged-connectors.services.url=${MANAGED_CONNECTORS_CONTROL_PLANE_URL} \
   -Dmanaged-connectors.auth.server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Dmanaged-connectors.auth.token-path=protocol/openid-connect/token \
-  -Dmanaged-connectors.auth.client-id=cloud-services \
-  -Dmanaged-connectors.auth.offline-token=${MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN} \
+  -Dmanaged-connectors.auth.credentials.client-id=${MANAGED_CONNECTORS_AUTH_CREDENTIALS_CLIENT_ID} \
+  -Dmanaged-connectors.auth.credentials.secret=${MANAGED_CONNECTORS_AUTH_CREDENTIALS_SECRET} \
   \
   -Dquarkus.devservices.enabled=false \
   \
