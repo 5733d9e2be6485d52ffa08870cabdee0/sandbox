@@ -15,7 +15,6 @@
   <name>SmartEvents :: Manager Integration Tests</name>
   <packaging>pom</packaging>
   <modules>
-    <module>manager-integration-tests-common</module>
     <module>manager-integration-tests-v1</module>
     <module>manager-integration-tests-v2</module>
   </modules>

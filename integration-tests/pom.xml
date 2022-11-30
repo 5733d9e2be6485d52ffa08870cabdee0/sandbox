@@ -13,6 +13,7 @@
   <artifactId>integration-tests</artifactId>
   <packaging>pom</packaging>
   <modules>
+    <module>integration-tests-common</module>
     <module>manager-integration-tests</module>
     <module>shard-operator-integration-tests</module>
     <module>webhook-perf-test</module>
