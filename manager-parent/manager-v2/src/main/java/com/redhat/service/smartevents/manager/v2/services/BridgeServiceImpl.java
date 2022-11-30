@@ -74,7 +74,6 @@ public class BridgeServiceImpl implements BridgeService {
         String subscriptionId = createResourceOnAMS(organisationId);
 
         Bridge bridge = bridgeRequest.toEntity();
-        // TODO: refactor
         bridge.setConditions(createAcceptedConditions());
         bridge.setOperation(operation);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -117,7 +116,8 @@ public class BridgeServiceImpl implements BridgeService {
         response.setOwner(bridge.getOwner());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
-        //        response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
+        // TODO: add support for errors in v2 https://issues.redhat.com/browse/MGDOBR-1284
+        // response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
 
         return response;
     }
