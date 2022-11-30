@@ -85,7 +85,7 @@ public class StatusUtilities {
     }
 
     public static String getStatusMessage(ManagedResourceV2 resource) {
-        if (resource.getConditions() == null) {
+        if (Objects.isNull(resource)) {
             return null;
         }
         return resource.getConditions()
