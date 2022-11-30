@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.v2.api.models.Operation;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
@@ -35,7 +35,7 @@ public class ManagedBridgeServiceImplTest {
 
     @Test
     public void createManagedBridge() {
-        BridgeDTO bridgeDTO = Fixtures.createBridge(Operation.CREATE);
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
         managedBridgeService.createManagedBridge(bridgeDTO);
 
         waitUntilManagedBridgeExists(bridgeDTO);
