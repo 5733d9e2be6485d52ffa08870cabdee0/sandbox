@@ -4,13 +4,13 @@
 
   <parent>
     <groupId>com.redhat.service.smartevents</groupId>
-    <artifactId>manager-integration-tests</artifactId>
+    <artifactId>integration-tests</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>manager-integration-tests-common</artifactId>
+  <artifactId>integration-tests-common</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>SmartEvents :: Manager Integration Tests Common</name>
   <description>The module containing classes shared by integration tests of all API versions.</description>
@@ -27,12 +27,6 @@
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>manager</artifactId>
-      <scope>compile</scope>
-    </dependency>
-
     <dependency>
       <groupId>com.redhat.cloud</groupId>
       <artifactId>kafka-instance-sdk</artifactId>
@@ -118,6 +112,11 @@
     <dependency>
       <groupId>software.tnb</groupId>
       <artifactId>system-x-webhook</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
       <scope>compile</scope>
     </dependency>
   </dependencies>
