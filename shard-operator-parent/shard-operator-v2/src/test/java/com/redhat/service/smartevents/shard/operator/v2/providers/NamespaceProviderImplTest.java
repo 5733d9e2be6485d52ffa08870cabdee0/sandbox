@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.v2.api.models.Operation;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.Fixtures;
@@ -31,7 +31,7 @@ public class NamespaceProviderImplTest {
     NamespaceProviderImpl namespaceProvider;
 
     private ManagedBridge createManagedBridge() {
-        BridgeDTO bridgeDTO = Fixtures.createBridge(Operation.CREATE);
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
         String expectedNamespace = namespaceProvider.getNamespaceName(bridgeDTO.getId());
         return Fixtures.createManagedBridge(bridgeDTO, expectedNamespace);
     }

@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.Operation;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
@@ -32,7 +32,7 @@ public class Fixtures {
             KAFKA_TOPIC,
             KAFKA_ERROR_TOPIC);
 
-    public static BridgeDTO createBridge(Operation operation) {
+    public static BridgeDTO createBridge(OperationType operation) {
         return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, BRIDGE_TLS_CERTIFICATE, BRIDGE_TLS_KEY, CUSTOMER_ID, USER_NAME, KAFKA_CONNECTION_DTO, operation);
     }
 
