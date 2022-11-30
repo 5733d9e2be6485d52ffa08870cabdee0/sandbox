@@ -198,12 +198,6 @@
             <kafka.admin.client-secret>${env.MANAGED_KAFKA_ADMIN_CLIENT_SECRET}</kafka.admin.client-secret>
             <kafka.ops.client.id>${env.MANAGED_KAFKA_OPS_CLIENT_ID}</kafka.ops.client.id>
             <kafka.ops.client.secret>${env.MANAGED_KAFKA_OPS_CLIENT_SECRET}</kafka.ops.client.secret>
-
-            <!-- Ansible Tower properties -->
-            <ansible.endpoint>${env.ANSIBLE_ENDPOINT}</ansible.endpoint>
-            <ansible.username>${env.ANSIBLE_USERNAME}</ansible.username>
-            <ansible.password>${env.ANSIBLE_PASSWORD}</ansible.password>
-            <ansible.ssl.verification.disabled>true</ansible.ssl.verification.disabled>
           </systemProperties>
         </configuration>
       </plugin>
