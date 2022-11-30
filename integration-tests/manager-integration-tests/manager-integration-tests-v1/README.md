@@ -26,13 +26,13 @@ Rest of scenarios are kept in two different feature folders:
 
 ### Test steps implementation
 
-Main tests are executed as [JUnit 5 test suite](src/test/java/com/redhat/service/smartevents/integration/tests/RunCucumberTest.java).
+Main tests are executed as [JUnit 5 test suite](src/test/java/com/redhat/service/smartevents/integration/tests/v1/RunCucumberTest.java).
 
-Test steps are stored in [steps folder](src/test/java/com/redhat/service/smartevents/integration/tests/steps). This folder contains also [hooks](src/test/java/com/redhat/service/smartevents/integration/tests/steps/Hooks.java) taking care of environment initialization and cleanup.
+Test steps are stored in [steps folder](src/test/java/com/redhat/service/smartevents/integration/tests/v1/steps). This folder contains also [hooks](src/test/java/com/redhat/service/smartevents/integration/tests/v1/steps/Hooks.java) taking care of environment initialization and cleanup.
 
-Test steps leverage Java client classes for various services stored in [resources package](src/test/java/com/redhat/service/smartevents/integration/tests/resources).
+Test steps leverage Java client classes for various services stored in [resources package](src/test/java/com/redhat/service/smartevents/integration/tests/v1/resources).
 
-Information is passed between steps using injected context, it is implementation is in [context folder](src/test/java/com/redhat/service/smartevents/integration/tests/context). This package also contains a resolver interpreting placeholders in scenarios, replacing them with expected values.
+Information is passed between steps using injected context, it is implementation is in the [common context folder](../../integration-tests-common/src/main/java/com/redhat/service/smartevents/integration/tests/context) shared by tests for different API versions. This package also contains a resolver interpreting placeholders in scenarios, replacing them with expected values.
 
 ### Test identifiers vs system identifiers
 
@@ -70,7 +70,7 @@ Currently, there is a possibility to use these placeholders in feature files:
 
 ### Local testing
 
-If you deployed application locally (by [running manager and operator locally](../../dev/README.md)) you can use [run-local-tests.sh](run-local-tests.sh) script to launch the tests with all local parameters set automatically.
+If you deployed application locally (by [running manager and operator locally](../../../dev/README.md)) you can use [run-local-tests.sh](run-local-tests.sh) script to launch the tests with all local parameters set automatically.
 
 Script has 3 options:
 - `-t TAGS`  
@@ -114,9 +114,11 @@ By Default test runs with those authentication parameters for Keycloak:
 <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
 ```
 
-You can update the parameters needs to configure in `integration-tests/manager-integration-tests/pom.xml` or via the maven command.
+You can update the parameters needs to configure in `integration-tests/manager-integration-tests/manager-integration-tests-v1/pom.xml` or via the maven command.
 
 ### Performance testing
+
+TO-DO: this section is a copy from v1 until a real performance tests are created for v2.
 
 In order to be able to run the [performance tests scenarios](src/test/resources/performance-features) locally you will need to have the following installed on your machine:
 
