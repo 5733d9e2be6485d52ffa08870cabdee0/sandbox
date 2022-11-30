@@ -16,6 +16,9 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createCondition;
@@ -123,6 +126,21 @@ public class BridgeDAOTest {
         Condition condition3 = retrieved.getConditions().get(2);
         retrieved.getConditions().remove(condition3);
         bridgeDAO.persist(retrieved);
+    }
+
+    @Test
+    public void testFindByNameAndCustomerId() {
+        Bridge bridge = buildBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        Bridge retrievedBridge = bridgeDAO.findByNameAndCustomerId("not-the-id", DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge).isNull();
+
+        retrievedBridge = bridgeDAO.findByNameAndCustomerId(DEFAULT_BRIDGE_NAME, "not-the-customer-id");
+        assertThat(retrievedBridge).isNull();
+
+        retrievedBridge = bridgeDAO.findByNameAndCustomerId(DEFAULT_BRIDGE_NAME, DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge).isNotNull();
     }
 
     @Test

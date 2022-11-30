@@ -14,6 +14,10 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @NamedQueries({
+        @NamedQuery(name = "BRIDGE_V2.findByNameAndCustomerId",
+                query = "from Bridge_V2 where name=:name and customer_id=:customerId"),
+        @NamedQuery(name = "BRIDGE_V2.findByIdWithConditions",
+                query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id"),
         @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
                 query = "select count(*) from Bridge_V2 where organisation_id=:organisationId")
 })
@@ -109,6 +113,7 @@ public class Bridge extends ManagedResourceV2 {
         this.subscriptionId = subscriptionId;
     }
 
+    @Override
     public List<Condition> getConditions() {
         return conditions;
     }

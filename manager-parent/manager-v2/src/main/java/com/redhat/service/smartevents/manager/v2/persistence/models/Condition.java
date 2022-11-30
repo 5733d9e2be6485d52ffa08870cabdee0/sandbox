@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 
 @Entity
 @Table(name = "CONDITION")
@@ -24,7 +25,8 @@ public class Condition {
     private String type;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ConditionStatus status;
 
     @Column(name = "reason")
     private String reason;
@@ -42,6 +44,19 @@ public class Condition {
     @Column(name = "last_transition_time", columnDefinition = "TIMESTAMP", nullable = false)
     private ZonedDateTime lastTransitionTime;
 
+    public Condition() {
+    }
+
+    public Condition(String type, ConditionStatus status, String reason, String message, String errorCode, ComponentType component, ZonedDateTime lastTransitionTime) {
+        this.type = type;
+        this.status = status;
+        this.reason = reason;
+        this.message = message;
+        this.errorCode = errorCode;
+        this.component = component;
+        this.lastTransitionTime = lastTransitionTime;
+    }
+
     public String getId() {
         return id;
     }
@@ -54,11 +69,11 @@ public class Condition {
         this.type = type;
     }
 
-    public String getStatus() {
+    public ConditionStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ConditionStatus status) {
         this.status = status;
     }
 

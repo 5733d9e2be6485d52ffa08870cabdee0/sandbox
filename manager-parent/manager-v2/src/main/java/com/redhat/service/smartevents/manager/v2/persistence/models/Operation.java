@@ -19,6 +19,14 @@ public class Operation {
     @Column(name = "operation_requested_at", columnDefinition = "TIMESTAMP", nullable = false)
     private ZonedDateTime requestedAt;
 
+    public Operation() {
+    }
+
+    public Operation(OperationType type, ZonedDateTime requestedAt) {
+        this.type = type;
+        this.requestedAt = requestedAt;
+    }
+
     public OperationType getType() {
         return type;
     }
