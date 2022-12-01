@@ -32,7 +32,7 @@ public class InternalPlatformExceptionMapperTest {
     @BeforeEach
     void setup() {
         when(bridgeErrorService.getError(InternalPlatformException.class)).thenReturn(Optional.of(MAPPED_ERROR));
-        this.mapper = new InternalPlatformExceptionMapper(bridgeErrorService);
+        this.mapper = new InternalPlatformExceptionMapper(bridgeErrorService, TestMappersUtils.getDefaultBuildersMock());
         this.mapper.init();
     }
 
@@ -45,6 +45,7 @@ public class InternalPlatformExceptionMapperTest {
         assertThat(error.getId()).isEqualTo("1");
         assertThat(error.getCode()).isEqualTo("mapped-code");
         assertThat(error.getReason()).startsWith("There was an internal exception that is not fixable from the user");
+        assertThat(error.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error.getId()));
     }
 
 }

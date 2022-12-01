@@ -33,6 +33,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ConstraintViolationExceptionMapperTest {
 
+    private static final String DEFAULT_HREF = "/api/v0/errors/";
+
     private static final BridgeError BRIDGE_ERROR = new BridgeError(1, "code", "reason", BridgeErrorType.USER);
 
     private static final BridgeError MAPPED_ERROR = new BridgeError(2, "mapped-code", "mapped-reason", BridgeErrorType.USER);
@@ -50,7 +52,7 @@ public class ConstraintViolationExceptionMapperTest {
 
     @BeforeEach
     void setup() {
-        this.mapper = new ConstraintViolationExceptionMapper(bridgeErrorService);
+        this.mapper = new ConstraintViolationExceptionMapper(bridgeErrorService, TestMappersUtils.getDefaultBuildersMock());
         when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
         this.mapper.init();
 
@@ -69,6 +71,7 @@ public class ConstraintViolationExceptionMapperTest {
         assertThat(error.getId()).isEqualTo("1");
         assertThat(error.getCode()).isEqualTo("code");
         assertThat(error.getReason()).isEqualTo("constraintViolation");
+        assertThat(error.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error.getId()));
     }
 
     @Test
@@ -82,6 +85,7 @@ public class ConstraintViolationExceptionMapperTest {
         assertThat(error.getId()).isEqualTo("1");
         assertThat(error.getCode()).isEqualTo("code");
         assertThat(error.getReason()).isEqualTo("hibernateConstraintViolation");
+        assertThat(error.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error.getId()));
     }
 
     @Test
@@ -98,6 +102,7 @@ public class ConstraintViolationExceptionMapperTest {
         assertThat(error.getId()).isEqualTo("1");
         assertThat(error.getCode()).isEqualTo("code");
         assertThat(error.getReason()).isEqualTo("hibernateConstraintViolation");
+        assertThat(error.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error.getId()));
     }
 
     @Test
@@ -114,6 +119,7 @@ public class ConstraintViolationExceptionMapperTest {
         assertThat(error.getId()).isEqualTo("2");
         assertThat(error.getCode()).isEqualTo("mapped-code");
         assertThat(error.getReason()).isEqualTo("not-found");
+        assertThat(error.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error.getId()));
     }
 
     @Test
@@ -134,11 +140,13 @@ public class ConstraintViolationExceptionMapperTest {
         assertThat(error1.getId()).isEqualTo("1");
         assertThat(error1.getCode()).isEqualTo("code");
         assertThat(error1.getReason()).isEqualTo("constraintViolation");
+        assertThat(error1.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error1.getId()));
 
         ErrorResponse error2 = sortedErrors.get(1);
         assertThat(error2.getId()).isEqualTo("2");
         assertThat(error2.getCode()).isEqualTo("mapped-code");
         assertThat(error2.getReason()).isEqualTo("not-found");
+        assertThat(error2.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error2.getId()));
     }
 
 }

@@ -8,14 +8,14 @@ import javax.ws.rs.ext.Provider;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
-import com.redhat.service.smartevents.infra.core.exceptions.mappers.JsonMappingExceptionMapper;
+import com.redhat.service.smartevents.infra.core.exceptions.mappers.ConstraintViolationExceptionMapper;
 
 @Provider
 @ApplicationScoped
-public class ManagerJsonMappingExceptionMapper extends JsonMappingExceptionMapper {
+public class ManagerConstraintViolationExceptionMapper extends ConstraintViolationExceptionMapper {
 
     @Inject
-    public ManagerJsonMappingExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
+    public ManagerConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
         super(bridgeErrorService, builders);
     }
 
@@ -24,5 +24,4 @@ public class ManagerJsonMappingExceptionMapper extends JsonMappingExceptionMappe
     protected void init() {
         super.init();
     }
-
 }

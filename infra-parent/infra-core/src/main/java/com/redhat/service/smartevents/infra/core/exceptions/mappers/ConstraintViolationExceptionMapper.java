@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import javax.enterprise.inject.Instance;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
@@ -33,8 +35,8 @@ public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<Cons
         //CDI proxy
     }
 
-    public ConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService) {
-        super(bridgeErrorService, UnclassifiedConstraintViolationException.class);
+    public ConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
+        super(bridgeErrorService, UnclassifiedConstraintViolationException.class, builders);
     }
 
     @Override
@@ -69,6 +71,7 @@ public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<Cons
 
             ErrorResponse errorResponse = toErrorResponse(error.get());
             errorResponse.setReason(eue.getMessage());
+            errorResponse.setHref(buildHref(cv, errorResponse.getId()));
             return errorResponse;
         }
 
@@ -76,6 +79,7 @@ public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<Cons
             LOGGER.warn(String.format("ConstraintViolation %s did not link to an ExternalUserException. The raw violation has been wrapped.", cv), cv);
             ErrorResponse errorResponse = toErrorResponse(cv);
             errorResponse.setReason(cv.toString());
+            errorResponse.setHref(buildHref(cv, errorResponse.getId()));
             return errorResponse;
         }
 
@@ -84,7 +88,16 @@ public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<Cons
     protected ErrorResponse toErrorResponse(ConstraintViolation<?> cv) {
         ErrorResponse errorResponse = toErrorResponse(defaultBridgeError);
         errorResponse.setReason(cv.toString());
+        errorResponse.setHref(buildHref(cv, errorResponse.getId()));
         return errorResponse;
     }
 
+    protected String buildHref(ConstraintViolation<?> cv, String id) {
+        Optional<ErrorHrefVersionProvider> builder = builders.stream().filter(x -> x.accepts(cv)).findFirst();
+        if (builder.isEmpty()) {
+            LOGGER.error("Could not retrieve HrefBuilder for constraint violation " + cv.getRootBeanClass());
+            return null;
+        }
+        return builder.get().buildHref(id);
+    }
 }
