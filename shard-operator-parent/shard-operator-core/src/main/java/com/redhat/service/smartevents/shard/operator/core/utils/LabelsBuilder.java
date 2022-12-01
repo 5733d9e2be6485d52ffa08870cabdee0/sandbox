@@ -6,7 +6,8 @@ import java.util.Map;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 
 /**
- * Helper to build labels for a given Kubernetes resource. Managed and Created By labels are always added with {@link #V1_OPERATOR_NAME} value.
+ * Helper to build labels for a given Kubernetes resource. Managed and Created By labels are added by specifying the
+ * operatorName value.
  *
  * @see <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/">Kubernetes Common Labels</a>
  */

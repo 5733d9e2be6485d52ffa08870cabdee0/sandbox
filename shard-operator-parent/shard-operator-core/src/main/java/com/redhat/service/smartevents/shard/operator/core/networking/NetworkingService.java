@@ -7,7 +7,7 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 public interface NetworkingService {
 
     // TODO: https://issues.redhat.com/browse/MGDOBR-995 refactor as we don't need anymore NetworkResource
-    NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata bridgeIngress, Secret secret, String host, String path);
+    NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata resource, Secret secret, String host, String path);
 
     EventSource buildInformerEventSource(String operatorName, String component);
 

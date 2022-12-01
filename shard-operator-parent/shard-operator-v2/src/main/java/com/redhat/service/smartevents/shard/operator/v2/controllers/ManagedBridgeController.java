@@ -122,11 +122,13 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
             LOGGER.info("The Knative Broker Resource for ManagedBridge '{}' in namespace '{}' is ready", managedBridge.getMetadata().getName(), managedBridge.getMetadata().getNamespace());
         }
 
+        // TODO - Provisioning of Ingress will be added by https://issues.redhat.com/browse/MGDOBR-1244
+
         if (!status.isReady()) {
             metricsService.onOperationComplete(managedBridge, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
-            //TODO - notify manager
-            //            notifyManager(bridgeIngress, ManagedResourceStatus.READY);
+            //TODO - Callback to Manager will be added in https://issues.redhat.com/browse/MGDOBR-1267
+            //notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(managedBridge);
         }
 

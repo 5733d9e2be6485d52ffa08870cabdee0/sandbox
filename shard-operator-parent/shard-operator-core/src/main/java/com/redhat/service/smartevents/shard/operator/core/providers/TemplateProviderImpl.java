@@ -49,30 +49,30 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String JWT_REQUEST_AUTHENTICATION_PATH = TEMPLATES_DIR + "/jwt-request-authentication.yaml";
 
     @Override
-    public Deployment loadBridgeExecutorDeploymentTemplate(HasMetadata bridgeExecutor, TemplateImportConfig config) {
+    public Deployment loadBridgeExecutorDeploymentTemplate(HasMetadata resource, TemplateImportConfig config) {
         Deployment deployment = loadYaml(Deployment.class, BRIDGE_EXECUTOR_DEPLOYMENT_PATH);
-        updateMetadata(bridgeExecutor, deployment.getMetadata(), config);
+        updateMetadata(resource, deployment.getMetadata(), config);
         return deployment;
     }
 
     @Override
-    public Service loadBridgeExecutorServiceTemplate(HasMetadata bridgeExecutor, TemplateImportConfig config) {
+    public Service loadBridgeExecutorServiceTemplate(HasMetadata resource, TemplateImportConfig config) {
         Service service = loadYaml(Service.class, BRIDGE_EXECUTOR_SERVICE_PATH);
-        updateMetadata(bridgeExecutor, service.getMetadata(), config);
+        updateMetadata(resource, service.getMetadata(), config);
         return service;
     }
 
     @Override
-    public Route loadBridgeIngressOpenshiftRouteTemplate(HasMetadata bridgeIngress, TemplateImportConfig config) {
+    public Route loadBridgeIngressOpenshiftRouteTemplate(HasMetadata resource, TemplateImportConfig config) {
         Route route = loadYaml(Route.class, BRIDGE_INGRESS_OPENSHIFT_ROUTE_PATH);
-        updateMetadata(bridgeIngress, route.getMetadata(), config);
+        updateMetadata(resource, route.getMetadata(), config);
         return route;
     }
 
     @Override
-    public Ingress loadBridgeIngressKubernetesIngressTemplate(HasMetadata bridgeIngress, TemplateImportConfig config) {
+    public Ingress loadBridgeIngressKubernetesIngressTemplate(HasMetadata resource, TemplateImportConfig config) {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
-        updateMetadata(bridgeIngress, ingress.getMetadata(), config);
+        updateMetadata(resource, ingress.getMetadata(), config);
         return ingress;
     }
 
@@ -84,37 +84,37 @@ public class TemplateProviderImpl implements TemplateProvider {
     }
 
     @Override
-    public Secret loadBridgeIngressSecretTemplate(HasMetadata bridgeIngress, TemplateImportConfig config) {
+    public Secret loadBridgeIngressSecretTemplate(HasMetadata resource, TemplateImportConfig config) {
         final Secret secret = loadYaml(Secret.class, BRIDGE_INGRESS_SECRET_PATH);
-        updateMetadata(bridgeIngress, secret.getMetadata(), config);
+        updateMetadata(resource, secret.getMetadata(), config);
         return secret;
     }
 
     @Override
-    public Secret loadBridgeExecutorSecretTemplate(HasMetadata bridgeExecutor, TemplateImportConfig config) {
+    public Secret loadBridgeExecutorSecretTemplate(HasMetadata resource, TemplateImportConfig config) {
         final Secret secret = loadYaml(Secret.class, BRIDGE_EXECUTOR_SECRET_PATH);
-        updateMetadata(bridgeExecutor, secret.getMetadata(), config);
+        updateMetadata(resource, secret.getMetadata(), config);
         return secret;
     }
 
     @Override
-    public ConfigMap loadBridgeIngressConfigMapTemplate(HasMetadata bridgeIngress, TemplateImportConfig config) {
+    public ConfigMap loadBridgeIngressConfigMapTemplate(HasMetadata resource, TemplateImportConfig config) {
         ConfigMap configMap = loadYaml(ConfigMap.class, BRIDGE_INGRESS_CONFIGMAP_PATH);
-        updateMetadata(bridgeIngress, configMap.getMetadata(), config);
+        updateMetadata(resource, configMap.getMetadata(), config);
         return configMap;
     }
 
     @Override
-    public KnativeBroker loadBridgeIngressBrokerTemplate(HasMetadata bridgeIngress, TemplateImportConfig config) {
+    public KnativeBroker loadBridgeIngressBrokerTemplate(HasMetadata resource, TemplateImportConfig config) {
         KnativeBroker knativeBroker = loadYaml(KnativeBroker.class, BRIDGE_INGRESS_BROKER_PATH);
-        updateMetadata(bridgeIngress, knativeBroker.getMetadata(), config);
+        updateMetadata(resource, knativeBroker.getMetadata(), config);
         return knativeBroker;
     }
 
     @Override
-    public AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(HasMetadata bridgeIngress, TemplateImportConfig config) {
+    public AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(HasMetadata resource, TemplateImportConfig config) {
         AuthorizationPolicy authorizationPolicy = loadYaml(AuthorizationPolicy.class, BRIDGE_INGRESS_AUTHORIZATION_POLICY_PATH);
-        updateMetadata(bridgeIngress, authorizationPolicy.getMetadata(), config);
+        updateMetadata(resource, authorizationPolicy.getMetadata(), config);
         return authorizationPolicy;
     }
 

@@ -103,7 +103,7 @@ public class ManagedBridgeServiceImplTest {
                     assertThat(knativeBroker.getSpec().getConfig().getApiVersion().length()).isGreaterThan(0);
                     kubernetesResourcePatcher.patchReadyKnativeBroker(knativeBroker.getMetadata().getName(), knativeBroker.getMetadata().getNamespace());
                     return true;
-                    //TODO -readd this as part of Ingress logic migration
+                    //TODO - will be re-added in https://issues.redhat.com/browse/MGDOBR-1244
                     //                    AuthorizationPolicy authorizationPolicy = fetchBridgeIngressAuthorizationPolicy(dto);
                     //                    assertThat(authorizationPolicy).isNotNull();
                     //                    assertThat(authorizationPolicy.getSpec().getAction().length()).isGreaterThan(0);

@@ -17,25 +17,25 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 
 public interface TemplateProvider {
-    Secret loadBridgeExecutorSecretTemplate(HasMetadata bridgeExecutor, TemplateImportConfig config);
+    Secret loadBridgeExecutorSecretTemplate(HasMetadata resource, TemplateImportConfig config);
 
-    Deployment loadBridgeExecutorDeploymentTemplate(HasMetadata bridgeExecutor, TemplateImportConfig config);
+    Deployment loadBridgeExecutorDeploymentTemplate(HasMetadata resource, TemplateImportConfig config);
 
-    Service loadBridgeExecutorServiceTemplate(HasMetadata bridgeExecutor, TemplateImportConfig config);
+    Service loadBridgeExecutorServiceTemplate(HasMetadata resource, TemplateImportConfig config);
 
-    Route loadBridgeIngressOpenshiftRouteTemplate(HasMetadata bridgeIngress, TemplateImportConfig config);
+    Route loadBridgeIngressOpenshiftRouteTemplate(HasMetadata resource, TemplateImportConfig config);
 
-    Ingress loadBridgeIngressKubernetesIngressTemplate(HasMetadata bridgeIngress, TemplateImportConfig config);
+    Ingress loadBridgeIngressKubernetesIngressTemplate(HasMetadata resource, TemplateImportConfig config);
 
     ServiceMonitor loadServiceMonitorTemplate(CustomResource resource, TemplateImportConfig config);
 
-    Secret loadBridgeIngressSecretTemplate(HasMetadata bridgeIngress, TemplateImportConfig config);
+    Secret loadBridgeIngressSecretTemplate(HasMetadata resource, TemplateImportConfig config);
 
-    ConfigMap loadBridgeIngressConfigMapTemplate(HasMetadata bridgeIngress, TemplateImportConfig config);
+    ConfigMap loadBridgeIngressConfigMapTemplate(HasMetadata resource, TemplateImportConfig config);
 
-    KnativeBroker loadBridgeIngressBrokerTemplate(HasMetadata bridgeIngress, TemplateImportConfig config);
+    KnativeBroker loadBridgeIngressBrokerTemplate(HasMetadata resource, TemplateImportConfig config);
 
-    AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(HasMetadata bridgeIngress, TemplateImportConfig config);
+    AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(HasMetadata resource, TemplateImportConfig config);
 
     Gateway loadIstioGatewayTemplate();
 

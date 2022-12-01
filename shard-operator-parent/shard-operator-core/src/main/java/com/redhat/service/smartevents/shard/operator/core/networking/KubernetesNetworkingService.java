@@ -46,19 +46,19 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata bridgeIngress, Secret secret, String host, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(HasMetadata resource, Secret secret, String host, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
-        Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
+        Ingress expected = buildIngress(resource, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
 
         Ingress existing = client.network().v1().ingresses()
                 .inNamespace(service.getMetadata().getNamespace())
-                .withName(bridgeIngress.getMetadata().getName())
+                .withName(resource.getMetadata().getName())
                 .get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             client.network().v1().ingresses()
                     .inNamespace(service.getMetadata().getNamespace())
-                    .withName(bridgeIngress.getMetadata().getName())
+                    .withName(resource.getMetadata().getName())
                     .createOrReplace(expected);
             return buildNetworkingResource(expected);
         }
