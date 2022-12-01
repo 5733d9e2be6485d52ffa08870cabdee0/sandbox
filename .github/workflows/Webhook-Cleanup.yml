@@ -2,7 +2,7 @@ name: Webhook Requests Cleanup
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 * * * *'
 jobs:
   run-webhoook-cleanup-script:
     timeout-minutes: 30
