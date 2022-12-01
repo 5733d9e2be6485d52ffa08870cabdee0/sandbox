@@ -22,7 +22,7 @@ Logs are stored in `target/logs` directory, contains logs of all containers and 
 
 ## Local testing
 
-Alternatively, if you started the environment for local development via `dev/bin/manager-run.sh` script, you can use the `integration-tests/shard-operator-integration-tests/run-local-tests.sh` script to launch the test with all local parameters set automatically.
+Alternatively, if you started the environment for local development via `dev/bin/manager-run.sh` script, you can use the `integration-tests/shard-operator-integration-tests/shard-operator-integration-tests-v1/run-local-tests.sh` script to launch the test with all local parameters set automatically.
 
 Script has 2 options:
 
