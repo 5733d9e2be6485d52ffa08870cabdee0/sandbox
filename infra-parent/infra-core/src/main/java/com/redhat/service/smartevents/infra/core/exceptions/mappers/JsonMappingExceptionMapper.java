@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 
@@ -27,7 +27,7 @@ public class JsonMappingExceptionMapper extends BaseExceptionMapper<JsonMappingE
         //CDI proxy
     }
 
-    public JsonMappingExceptionMapper(BridgeErrorService bridgeErrorService, Instance<HrefBuilder> builders) {
+    public JsonMappingExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
         super(bridgeErrorService, ExternalUserException.class, builders);
     }
 

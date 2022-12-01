@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
@@ -35,7 +35,7 @@ public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<Cons
         //CDI proxy
     }
 
-    public ConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<HrefBuilder> builders) {
+    public ConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
         super(bridgeErrorService, UnclassifiedConstraintViolationException.class, builders);
     }
 
@@ -93,7 +93,7 @@ public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<Cons
     }
 
     protected String buildHref(ConstraintViolation<?> cv, String id) {
-        Optional<HrefBuilder> builder = builders.stream().filter(x -> x.accepts(cv)).findFirst();
+        Optional<ErrorHrefVersionProvider> builder = builders.stream().filter(x -> x.accepts(cv)).findFirst();
         if (builder.isEmpty()) {
             LOGGER.error("Could not retrieve HrefBuilder for constraint violation " + cv.getRootBeanClass());
             return null;

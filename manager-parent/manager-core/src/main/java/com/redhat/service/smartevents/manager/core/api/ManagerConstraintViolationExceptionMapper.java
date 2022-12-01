@@ -8,7 +8,7 @@ import javax.validation.ConstraintViolation;
 import javax.ws.rs.ext.Provider;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 import com.redhat.service.smartevents.infra.core.exceptions.mappers.ConstraintViolationExceptionMapper;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 
@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 public class ManagerConstraintViolationExceptionMapper extends ConstraintViolationExceptionMapper {
 
     @Inject
-    public ManagerConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<HrefBuilder> builders) {
+    public ManagerConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
         super(bridgeErrorService, builders);
     }
 

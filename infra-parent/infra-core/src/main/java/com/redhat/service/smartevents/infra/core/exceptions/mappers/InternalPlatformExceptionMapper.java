@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
@@ -22,7 +22,7 @@ public class InternalPlatformExceptionMapper extends BaseExceptionMapper<Interna
         //CDI proxy
     }
 
-    public InternalPlatformExceptionMapper(BridgeErrorService bridgeErrorService, Instance<HrefBuilder> builders) {
+    public InternalPlatformExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
         super(bridgeErrorService, InternalPlatformException.class, builders);
     }
 

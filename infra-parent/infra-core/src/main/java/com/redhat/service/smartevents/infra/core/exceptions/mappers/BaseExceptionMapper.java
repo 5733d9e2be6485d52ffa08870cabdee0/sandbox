@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 
@@ -27,7 +27,7 @@ public abstract class BaseExceptionMapper<T extends Exception> implements Except
 
     protected BridgeError defaultBridgeError;
 
-    protected Instance<HrefBuilder> builders;
+    protected Instance<ErrorHrefVersionProvider> builders;
 
     protected BaseExceptionMapper() {
         //CDI proxy
@@ -35,7 +35,7 @@ public abstract class BaseExceptionMapper<T extends Exception> implements Except
 
     protected BaseExceptionMapper(BridgeErrorService bridgeErrorService,
             Class<? extends RuntimeException> defaultRuntimeException,
-            Instance<HrefBuilder> builders) {
+            Instance<ErrorHrefVersionProvider> builders) {
         this.bridgeErrorService = bridgeErrorService;
         this.defaultRuntimeException = defaultRuntimeException;
         this.builders = builders;
@@ -81,7 +81,7 @@ public abstract class BaseExceptionMapper<T extends Exception> implements Except
     }
 
     protected String buildHrefFromApiVersion(Throwable e, String id) {
-        Optional<HrefBuilder> builder = builders.stream().filter(x -> x.accepts(e)).findFirst();
+        Optional<ErrorHrefVersionProvider> builder = builders.stream().filter(x -> x.accepts(e)).findFirst();
         if (builder.isEmpty()) {
             LOGGER.error("Could not retrieve HrefBuilder for exception ", e);
             return null;
