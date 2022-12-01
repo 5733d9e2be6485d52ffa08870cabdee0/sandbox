@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
@@ -26,13 +25,11 @@ import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDe
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
-import com.redhat.service.smartevents.manager.v2.metrics.ManagerMetricsServiceV2;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v2.workers.WorkManager;
 
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getModifiedAt;
@@ -50,13 +47,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     BridgeService bridgeService;
 
     @Inject
-    WorkManager workManager;
-
-    @Inject
     QuotaConfigurationProvider quotaConfigurationProvider;
-
-    @Inject
-    ManagerMetricsServiceV2 metricsService;
 
     @Override
     @Transactional
@@ -99,8 +90,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(processor);
-        workManager.schedule(processor);
-        metricsService.onOperationStart(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
+
+        // TODO: schedule work for dependencies
+
+        // TODO: record metrics with MetricsService
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
                 processor.getId(),

@@ -17,7 +17,6 @@ import com.redhat.service.smartevents.manager.v2.api.user.models.responses.Proce
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v2.workers.WorkManager;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -70,9 +69,6 @@ public class ProcessorServiceImplTest {
 
     @InjectMock
     BridgeService bridgeServiceMock;
-
-    @InjectMock
-    WorkManager workManagerMock;
 
     @BeforeEach
     public void cleanUp() {
@@ -160,10 +156,6 @@ public class ProcessorServiceImplTest {
         ArgumentCaptor<Processor> processorCaptor1 = ArgumentCaptor.forClass(Processor.class);
         verify(processorDAO, times(1)).persist(processorCaptor1.capture());
         assertThat(processorCaptor1.getValue()).isEqualTo(processor);
-
-        ArgumentCaptor<Processor> processorCaptor3 = ArgumentCaptor.forClass(Processor.class);
-        verify(workManagerMock, times(1)).schedule(processorCaptor3.capture());
-        assertThat(processorCaptor3.getValue()).isEqualTo(processor);
     }
 
     @Test

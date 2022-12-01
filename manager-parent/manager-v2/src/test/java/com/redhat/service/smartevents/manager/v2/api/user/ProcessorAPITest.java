@@ -29,15 +29,12 @@ import com.redhat.service.smartevents.manager.v2.utils.TestUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyConditions;
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -90,6 +87,7 @@ public class ProcessorAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @Disabled("https://issues.redhat.com/browse/MGDOBR-1284")
     public void addProcessorWithWrongDefinitionToBridge() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -143,33 +141,6 @@ public class ProcessorAPITest {
         when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("organisation-with-no-quota");
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor"))
                 .then().statusCode(402).body("kind", Matchers.equalTo("Errors"));
-    }
-
-    @Test
-    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
-    @Disabled("BridgeService.getReadyBridge(..) needs to be implemented.")
-    public void basicMetricsForBridgeAndProcessors() {
-        BridgeResponse bridgeResponse = createAndDeployBridge();
-
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor")).as(ProcessorResponse.class);
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2")).as(ProcessorResponse.class);
-
-        String metrics = given()
-                .filter(new ResponseLoggingFilter())
-                .contentType(ContentType.JSON)
-                .when()
-                .get("/q/metrics")
-                .then()
-                .extract()
-                .body()
-                .asString();
-
-        assertThat(metrics).isNotNull();
-        assertThat(metrics)
-                .contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v2/bridges\",}")
-                .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v2/bridges\",}")
-                .contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v2/bridges/" + bridgeResponse.getId() + "/processors\",}")
-                .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v2/bridges/" + bridgeResponse.getId() + "/processors\",}");
     }
 
     private BridgeResponse createBridge() {
