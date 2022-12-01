@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.infra.core.exceptions.mappers;
 
 import java.util.Optional;
 
+import javax.enterprise.inject.Instance;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 
@@ -25,14 +27,18 @@ public abstract class BaseExceptionMapper<T extends Exception> implements Except
 
     protected BridgeError defaultBridgeError;
 
+    protected Instance<HrefBuilder> builders;
+
     protected BaseExceptionMapper() {
         //CDI proxy
     }
 
     protected BaseExceptionMapper(BridgeErrorService bridgeErrorService,
-            Class<? extends RuntimeException> defaultRuntimeException) {
+            Class<? extends RuntimeException> defaultRuntimeException,
+            Instance<HrefBuilder> builders) {
         this.bridgeErrorService = bridgeErrorService;
         this.defaultRuntimeException = defaultRuntimeException;
+        this.builders = builders;
     }
 
     protected void init() {
@@ -51,6 +57,7 @@ public abstract class BaseExceptionMapper<T extends Exception> implements Except
         if (error.isPresent()) {
             ErrorResponse errorResponse = toErrorResponse(error.get());
             errorResponse.setReason(e.getMessage());
+            errorResponse.setHref(buildHrefFromApiVersion(e, errorResponse.getId()));
             builder.entity(ErrorsResponse.toErrors(errorResponse));
         } else {
             builder.entity(ErrorsResponse.toErrors(unmappedException(e)));
@@ -65,6 +72,7 @@ public abstract class BaseExceptionMapper<T extends Exception> implements Except
                 e);
         ErrorResponse errorResponse = toErrorResponse(defaultBridgeError);
         errorResponse.setReason(e.getMessage());
+        errorResponse.setHref(buildHrefFromApiVersion(e, errorResponse.getId()));
         return errorResponse;
     }
 
@@ -72,4 +80,12 @@ public abstract class BaseExceptionMapper<T extends Exception> implements Except
         return ErrorResponse.from(be);
     }
 
+    protected String buildHrefFromApiVersion(Throwable e, String id) {
+        Optional<HrefBuilder> builder = builders.stream().filter(x -> x.accepts(e)).findFirst();
+        if (builder.isEmpty()) {
+            LOGGER.error("Could not retrieve HrefBuilder for exception ", e);
+            return null;
+        }
+        return builder.get().buildHref(id);
+    }
 }

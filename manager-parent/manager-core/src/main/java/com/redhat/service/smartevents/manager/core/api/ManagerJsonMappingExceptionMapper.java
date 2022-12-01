@@ -2,10 +2,12 @@ package com.redhat.service.smartevents.manager.core.api;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.ws.rs.ext.Provider;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
 import com.redhat.service.smartevents.infra.core.exceptions.mappers.JsonMappingExceptionMapper;
 
 @Provider
@@ -13,8 +15,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.mappers.JsonMappingE
 public class ManagerJsonMappingExceptionMapper extends JsonMappingExceptionMapper {
 
     @Inject
-    public ManagerJsonMappingExceptionMapper(BridgeErrorService bridgeErrorService) {
-        super(bridgeErrorService);
+    public ManagerJsonMappingExceptionMapper(BridgeErrorService bridgeErrorService, Instance<HrefBuilder> builders) {
+        super(bridgeErrorService, builders);
     }
 
     @Override

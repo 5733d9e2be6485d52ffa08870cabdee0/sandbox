@@ -1,23 +1,24 @@
-package com.redhat.service.smartevents.manager.v1.api;
+package com.redhat.service.smartevents.manager.core.api;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.ext.Provider;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.HrefBuilder;
 import com.redhat.service.smartevents.infra.core.exceptions.mappers.ConstraintViolationExceptionMapper;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
-import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 
 @Provider
 @ApplicationScoped
 public class ManagerConstraintViolationExceptionMapper extends ConstraintViolationExceptionMapper {
 
     @Inject
-    public ManagerConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService) {
-        super(bridgeErrorService);
+    public ManagerConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<HrefBuilder> builders) {
+        super(bridgeErrorService, builders);
     }
 
     @Override
@@ -28,8 +29,6 @@ public class ManagerConstraintViolationExceptionMapper extends ConstraintViolati
 
     @Override
     protected ErrorResponse toErrorResponse(ConstraintViolation<?> cv) {
-        ErrorResponse errorResponse = super.toErrorResponse(cv);
-        errorResponse.setHref(V1APIConstants.V1_ERROR_API_BASE_PATH + errorResponse.getId());
-        return errorResponse;
+        return super.toErrorResponse(cv);
     }
 }

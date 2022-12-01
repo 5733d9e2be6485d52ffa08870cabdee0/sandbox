@@ -34,7 +34,8 @@ public class JsonMappingExceptionMapperTest {
 
     @BeforeEach
     void setup() {
-        this.mapper = new JsonMappingExceptionMapper(bridgeErrorService);
+        // TODO: fix
+        this.mapper = new JsonMappingExceptionMapper(bridgeErrorService, null);
         when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
         this.mapper.init();
     }

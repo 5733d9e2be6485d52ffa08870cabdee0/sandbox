@@ -33,7 +33,8 @@ public class ExternalUserExceptionMapperTest {
 
     @BeforeEach
     void setup() {
-        this.mapper = new ExternalUserExceptionMapper(bridgeErrorService);
+        // TODO: null
+        this.mapper = new ExternalUserExceptionMapper(bridgeErrorService, null);
         when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
         this.mapper.init();
     }
