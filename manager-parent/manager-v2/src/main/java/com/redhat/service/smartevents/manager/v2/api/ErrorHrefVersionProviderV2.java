@@ -8,7 +8,7 @@ import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 @ApplicationScoped
 public class ErrorHrefVersionProviderV2 extends AbstractErrorHrefVersionProvider {
 
-    private static final String PACKAGE_REGEX_MATCH = "com.redhat.service.smartevents.*.v1.*";
+    private static final String PACKAGE_REGEX_MATCH = "com.redhat.service.smartevents.*.v2.*";
 
     @Override
     protected String getPackageRegexMatch() {
