@@ -13,94 +13,108 @@ import javax.persistence.Table;
 
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 
 @Entity
 @Table(name = "CONDITION")
-public class Condition extends ConditionDTO {
+public class Condition {
 
+    @Id
     private String id = UUID.randomUUID().toString();
 
+    @Column(name = "type", nullable = false)
+    private String type;
+
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ConditionStatus status;
+
+    @Column(name = "reason")
+    private String reason;
+
+    @Column(name = "message")
+    private String message;
+
+    @Column(name = "errorCode")
+    private String errorCode;
+
+    @Column(name = "component", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ComponentType component;
 
+    @Column(name = "last_transition_time", columnDefinition = "TIMESTAMP", nullable = false)
+    private ZonedDateTime lastTransitionTime;
+
     public Condition() {
-        super();
-    }
-
-    public Condition(String type, ConditionStatus status) {
-        super(type, status);
-    }
-
-    public Condition(ConditionDTO dto, ComponentType component) {
-        super(dto.getType(), dto.getStatus());
-        setReason(dto.getReason());
-        setMessage(dto.getMessage());
-        setErrorCode(dto.getErrorCode());
-        setLastTransitionTime(dto.getLastTransitionTime());
-        setComponent(component);
     }
 
     public Condition(String type, ConditionStatus status, String reason, String message, String errorCode, ComponentType component, ZonedDateTime lastTransitionTime) {
-        super(type, status, reason, message, errorCode, lastTransitionTime);
+        this.type = type;
+        this.status = status;
+        this.reason = reason;
+        this.message = message;
+        this.errorCode = errorCode;
         this.component = component;
+        this.lastTransitionTime = lastTransitionTime;
     }
 
-    @Id
     public String getId() {
         return id;
     }
 
-    // We don't want to expose this, but it is required for method-level @Column annotations.
-    // We're using method-level @Column annotations as we're extending the underlying DTO.
-    void setId(String id) {
-        this.id = id;
-    }
-
-    @Override
-    @Column(name = "type", nullable = false)
     public String getType() {
-        return super.getType();
+        return type;
     }
 
-    @Override
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public ConditionStatus getStatus() {
-        return super.getStatus();
+        return status;
     }
 
-    @Override
-    @Column(name = "reason")
+    public void setStatus(ConditionStatus status) {
+        this.status = status;
+    }
+
     public String getReason() {
-        return super.getReason();
+        return reason;
     }
 
-    @Override
-    @Column(name = "message")
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
     public String getMessage() {
-        return super.getMessage();
+        return message;
     }
 
-    @Override
-    @Column(name = "errorCode")
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public String getErrorCode() {
-        return super.getErrorCode();
+        return errorCode;
     }
 
-    @Override
-    @Column(name = "last_transition_time", columnDefinition = "TIMESTAMP", nullable = false)
-    public ZonedDateTime getLastTransitionTime() {
-        return super.getLastTransitionTime();
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
     }
 
-    @Column(name = "component", nullable = false)
-    @Enumerated(EnumType.STRING)
     public ComponentType getComponent() {
         return component;
     }
 
     public void setComponent(ComponentType component) {
         this.component = component;
+    }
+
+    public ZonedDateTime getLastTransitionTime() {
+        return lastTransitionTime;
+    }
+
+    public void setLastTransitionTime(ZonedDateTime lastTransitionTime) {
+        this.lastTransitionTime = lastTransitionTime;
     }
 
     /*
@@ -123,5 +137,4 @@ public class Condition extends ConditionDTO {
     public int hashCode() {
         return Objects.hash(id);
     }
-
 }
