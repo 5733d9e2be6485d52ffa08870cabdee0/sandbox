@@ -1,19 +1,16 @@
 package com.redhat.service.smartevents.shard.operator.v2.providers;
 
-import java.util.Map;
-import java.util.UUID;
-
-import javax.inject.Inject;
-
-import org.junit.jupiter.api.Test;
-
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
-
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+import org.junit.jupiter.api.Test;
+
+import javax.inject.Inject;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,7 +33,6 @@ public class NamespaceProviderImplTest {
                 .withNamespace(expectedNamespace)
                 .withCustomerId(UUID.randomUUID().toString())
                 .withBridgeName(UUID.randomUUID().toString())
-                .withHost(UUID.randomUUID().toString())
                 .withOwner(UUID.randomUUID().toString())
                 .build();
 

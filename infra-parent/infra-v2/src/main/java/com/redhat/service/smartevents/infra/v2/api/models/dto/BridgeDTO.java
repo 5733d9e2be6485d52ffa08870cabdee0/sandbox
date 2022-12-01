@@ -1,11 +1,12 @@
 package com.redhat.service.smartevents.infra.v2.api.models.dto;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BridgeDTO {
@@ -35,6 +36,9 @@ public class BridgeDTO {
 
     @JsonProperty("operation")
     private OperationType operationType;
+
+    @JsonProperty("deletionRequestedAt")
+    private ZonedDateTime deletionRequestedAt;
 
     public BridgeDTO() {
     }
@@ -121,6 +125,14 @@ public class BridgeDTO {
 
     public void setOperationType(OperationType operationType) {
         this.operationType = operationType;
+    }
+
+    public ZonedDateTime getDeletionRequestedAt() {
+        return deletionRequestedAt;
+    }
+
+    public void setDeletionRequestedAt(ZonedDateTime deletionRequestedAt) {
+        this.deletionRequestedAt = deletionRequestedAt;
     }
 
     @Override
