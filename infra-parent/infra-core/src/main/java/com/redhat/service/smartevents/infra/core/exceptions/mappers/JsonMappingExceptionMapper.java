@@ -34,7 +34,6 @@ public class JsonMappingExceptionMapper extends BaseExceptionMapper<JsonMappingE
     @Override
     public Response toResponse(JsonMappingException e) {
         Throwable cause = Objects.nonNull(e.getCause()) ? e.getCause() : e;
-        // TODO: refactor, add tests
         ResponseBuilder builder = mapError(cause, getStatusCode(cause));
         return builder.build();
     }
