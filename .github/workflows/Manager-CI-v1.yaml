@@ -53,7 +53,7 @@ jobs:
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
       KIND_MAIN_NODE_HOSTNAME: kind-control-plane
     concurrency:
-      group: event-bridge-manager-pr-${{ github.head_ref }}
+      group: event-bridge-manager-v1-pr-${{ github.head_ref }}
       cancel-in-progress: true
     timeout-minutes: 60
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
