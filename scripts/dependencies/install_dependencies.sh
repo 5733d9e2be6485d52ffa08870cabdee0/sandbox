@@ -20,3 +20,5 @@ install_operator_and_wait servicemesh/serviceMeshSub.yaml
 
 # set up service mesh resources
 waitForSuccess 10 oc apply -k servicemesh
+
+echo "All dependencies installed"
