@@ -80,7 +80,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         //            return UpdateControl.updateStatus(bridgeIngress);
         //        }
 
-        Secret secret = managedBridgeService.fetchOrCreateBridgeSecret(managedBridge);
+        Secret secret = managedBridgeService.fetchBridgeSecret(managedBridge);
 
         if (secret == null) {
             LOGGER.info("The Secret for the ManagedBridge with id '{}' has been not created yet.",

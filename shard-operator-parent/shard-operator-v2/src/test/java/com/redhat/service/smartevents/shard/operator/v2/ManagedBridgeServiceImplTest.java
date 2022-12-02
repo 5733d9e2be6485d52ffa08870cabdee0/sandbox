@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
 import java.time.Duration;
+import java.util.Base64;
 
 import javax.inject.Inject;
 
@@ -14,6 +15,8 @@ import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfig
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
+import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 import com.redhat.service.smartevents.shard.operator.v2.utils.V2KubernetesResourcePatcher;
@@ -43,6 +46,8 @@ public class ManagedBridgeServiceImplTest {
     @Inject
     V2KubernetesResourcePatcher kubernetesResourcePatcher;
 
+    Base64.Encoder encoder = Base64.getEncoder();
+
     @BeforeEach
     public void beforeEach() {
         kubernetesResourcePatcher.cleanUp();
@@ -60,15 +65,24 @@ public class ManagedBridgeServiceImplTest {
         Secret secret = fetchManagedBridgeSecret(bridgeDTO);
         assertThat(secret).isNotNull();
         assertThat(secret.getMetadata().getName()).isEqualTo(managedBridge.getMetadata().getName());
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.TLS_KEY_SECRET).length()).isGreaterThan(0);
+
+        KafkaConfigurationSpec kafkaConfiguration = managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration();
+
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, encode(kafkaConfiguration.getSecurityProtocol()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, encode(kafkaConfiguration.getUser()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, encode(kafkaConfiguration.getPassword()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, encode(kafkaConfiguration.getSaslMechanism()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, encode(kafkaConfiguration.getTopic()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET, encode(kafkaConfiguration.getBootstrapServers()));
+
+        DNSConfigurationSpec dnsConfiguration = managedBridge.getSpec().getDnsConfiguration();
+
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, encode(dnsConfiguration.getTls().getCertificate()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.TLS_KEY_SECRET, encode(dnsConfiguration.getTls().getKey()));
+    }
+
+    private String encode(String value) {
+        return encoder.encodeToString(value.getBytes());
     }
 
     @Test

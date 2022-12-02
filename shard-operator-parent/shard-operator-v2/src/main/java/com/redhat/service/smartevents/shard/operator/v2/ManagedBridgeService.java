@@ -13,7 +13,7 @@ public interface ManagedBridgeService {
 
     void deleteManagedBridge(BridgeDTO bridgeDTO);
 
-    Secret fetchOrCreateBridgeSecret(ManagedBridge managedBridge);
+    Secret fetchBridgeSecret(ManagedBridge managedBridge);
 
     ConfigMap fetchOrCreateBridgeConfigMap(ManagedBridge managedBridge, Secret secret);
 

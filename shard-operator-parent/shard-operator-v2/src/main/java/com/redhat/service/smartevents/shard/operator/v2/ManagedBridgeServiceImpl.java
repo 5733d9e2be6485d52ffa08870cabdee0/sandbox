@@ -109,7 +109,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     }
 
     @Override
-    public Secret fetchOrCreateBridgeSecret(ManagedBridge managedBridge) {
+    public Secret fetchBridgeSecret(ManagedBridge managedBridge) {
         return kubernetesClient
                 .secrets()
                 .inNamespace(managedBridge.getMetadata().getNamespace())

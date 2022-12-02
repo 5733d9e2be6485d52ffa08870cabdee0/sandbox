@@ -67,7 +67,7 @@ public class ManagedBridgeControllerTest {
         assertThat(managedBridge.getStatus().isConditionTypeFalse(ManagedBridgeStatus.SECRET_AVAILABLE)).isTrue();
     }
 
-    private void deployBridgeIngressSecret(ManagedBridge managedBridge) {
+    private void deployManagedBridgeSecret(ManagedBridge managedBridge) {
         Map<String, String> data = new HashMap<>();
         data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET, Base64.getEncoder().encodeToString("bootstrap.servers".getBytes(StandardCharsets.UTF_8)));
         data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString("topic".getBytes(StandardCharsets.UTF_8)));
@@ -91,7 +91,7 @@ public class ManagedBridgeControllerTest {
     void testCreateNewManagedBridge() {
         // Given
         ManagedBridge managedBridge = createManagedBridge();
-        deployBridgeIngressSecret(managedBridge);
+        deployManagedBridgeSecret(managedBridge);
 
         // When
         UpdateControl<ManagedBridge> updateControl = managedBridgeController.reconcile(managedBridge, null);
@@ -124,7 +124,7 @@ public class ManagedBridgeControllerTest {
     void testBridgeIngressKnativeBroker() {
         // Given
         ManagedBridge managedBridge = createManagedBridge();
-        deployBridgeIngressSecret(managedBridge);
+        deployManagedBridgeSecret(managedBridge);
 
         // When
         UpdateControl<ManagedBridge> updateControl = managedBridgeController.reconcile(managedBridge, null);
