@@ -35,6 +35,8 @@ import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v2.services.ProcessorService;
 
 import io.quarkus.security.Authenticated;
 
@@ -51,6 +53,9 @@ import io.quarkus.security.Authenticated;
 @Authenticated
 @RegisterRestClient
 public class ProcessorsAPI {
+
+    @Inject
+    ProcessorService processorService;
 
     @Inject
     IdentityResolver identityResolver;
@@ -105,7 +110,11 @@ public class ProcessorsAPI {
     @POST
     @Path("{bridgeId}/processors")
     public Response createProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        String owner = identityResolver.resolveOwner(jwt);
+        String organisationId = identityResolver.resolveOrganisationId(jwt);
+        Processor processor = processorService.createProcessor(bridgeId, customerId, owner, organisationId, processorRequest);
+        return Response.accepted(processorService.toResponse(processor)).build();
     }
 
     @APIResponses(value = {
