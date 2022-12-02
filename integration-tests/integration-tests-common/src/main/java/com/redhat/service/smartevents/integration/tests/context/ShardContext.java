@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.cucumber.common;
+package com.redhat.service.smartevents.integration.tests.context;
 
 import io.cucumber.java.Scenario;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
@@ -7,13 +7,13 @@ import io.fabric8.openshift.client.OpenShiftClient;
 /**
  * Shared scenario context
  */
-public class Context {
+public class ShardContext {
 
     private Scenario scenario;
     private String namespace;
     private OpenShiftClient oc;
 
-    public Context() {
+    public ShardContext() {
         namespace = GlobalContext.getUniqueNamespaceName();
         oc = new DefaultOpenShiftClient();
     }

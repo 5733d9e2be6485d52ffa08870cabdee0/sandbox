@@ -17,9 +17,7 @@
 
   <packaging>pom</packaging>
   <modules>
-    <module>shard-operator-integration-tests-common</module>
     <module>shard-operator-integration-tests-v1</module>
     <module>shard-operator-integration-tests-v2</module>
   </modules>
-
 </project>

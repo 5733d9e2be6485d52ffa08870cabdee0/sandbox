@@ -31,8 +31,8 @@
 
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>shard-operator-integration-tests-common</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <artifactId>integration-tests-common</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
