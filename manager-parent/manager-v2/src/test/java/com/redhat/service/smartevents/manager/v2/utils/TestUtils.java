@@ -1,5 +1,9 @@
 package com.redhat.service.smartevents.manager.v2.utils;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 
@@ -17,6 +21,36 @@ public class TestUtils {
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when();
+    }
+
+    public static Response listBridges() {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH);
+    }
+
+    public static Response listBridges(int page, int size) {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + "?size=" + size + "&page=" + page);
+    }
+
+    public static Response listBridgesFilterByName(String name) {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + "?name=" + name);
+    }
+
+    public static Response listBridgesFilterByStatus(ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?" + queryString);
+    }
+
+    public static Response listBridgesFilterByStatusWithAnyValue(String... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?" + queryString);
+    }
+
+    public static Response listBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
     }
 
     public static Response createBridge(BridgeRequest request) {

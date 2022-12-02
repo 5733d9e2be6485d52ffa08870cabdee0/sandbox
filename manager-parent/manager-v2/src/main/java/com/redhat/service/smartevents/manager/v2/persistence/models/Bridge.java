@@ -13,13 +13,28 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.FilterDefs;
+import org.hibernate.annotations.Filters;
+import org.hibernate.annotations.ParamDef;
+
 @NamedQueries({
         @NamedQuery(name = "BRIDGE_V2.findByNameAndCustomerId",
                 query = "from Bridge_V2 where name=:name and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE_V2.findByIdWithConditions",
                 query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id"),
         @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
-                query = "select count(*) from Bridge_V2 where organisation_id=:organisationId")
+                query = "select count(*) from Bridge_V2 where organisation_id=:organisationId"),
+        @NamedQuery(name = "BRIDGE_V2.findByCustomerId",
+                // This query returns duplicated items!
+                query = "from Bridge_V2 b left join fetch b.conditions where customer_id=:customerId order by submitted_at desc")
+})
+@FilterDefs({
+        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
+})
+@Filters({
+        @Filter(name = "byName", condition = "name like :name"),
 })
 @Entity(name = "Bridge_V2")
 @Table(name = "BRIDGE_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
