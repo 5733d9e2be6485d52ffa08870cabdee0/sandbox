@@ -40,6 +40,8 @@ import org.hibernate.annotations.ParamDef;
 @Table(name = "BRIDGE_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
 public class Bridge extends ManagedResourceV2 {
 
+    public static final String CUSTOMER_ID_PARAM = "customerId";
+
     @Column(name = "endpoint")
     private String endpoint;
 
@@ -134,7 +136,15 @@ public class Bridge extends ManagedResourceV2 {
     }
 
     public void setConditions(List<Condition> conditions) {
-        this.conditions = conditions;
+        if (Objects.isNull(this.conditions)) {
+            this.conditions = conditions;
+        } else {
+            // Hibernate manages the underlying collection to handle one-to-many orphan removal.
+            // If we replace the underlying collection Hibernate complains that its managed collection
+            // becomes disconnected. Therefore, clear it and add all.
+            this.conditions.clear();
+            this.conditions.addAll(conditions);
+        }
     }
 
     /*

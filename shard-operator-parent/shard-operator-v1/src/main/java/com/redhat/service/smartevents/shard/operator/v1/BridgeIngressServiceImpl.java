@@ -16,12 +16,13 @@ import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -112,7 +113,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public void createOrUpdateBridgeIngressSecret(BridgeIngress bridgeIngress, BridgeDTO bridgeDTO) {
-        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(bridgeIngress, TemplateImportConfig.withDefaults());
+        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(bridgeIngress, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET,
                 Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getBootstrapServers().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientId().getBytes()));
@@ -150,7 +151,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public ConfigMap fetchOrCreateBridgeIngressConfigMap(BridgeIngress bridgeIngress, Secret secret) {
-        ConfigMap expected = templateProvider.loadBridgeIngressConfigMapTemplate(bridgeIngress, TemplateImportConfig.withDefaults());
+        ConfigMap expected = templateProvider.loadBridgeIngressConfigMapTemplate(bridgeIngress, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
 
         expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP, GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_VALUE_CONFIGMAP); // TODO: move to DTO?
         expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP, GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_VALUE_CONFIGMAP); // TODO: move to DTO?
@@ -180,7 +181,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public KnativeBroker fetchOrCreateBridgeIngressBroker(BridgeIngress bridgeIngress, ConfigMap configMap) {
-        KnativeBroker expected = templateProvider.loadBridgeIngressBrokerTemplate(bridgeIngress, TemplateImportConfig.withDefaults());
+        KnativeBroker expected = templateProvider.loadBridgeIngressBrokerTemplate(bridgeIngress, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
         expected.getSpec().getConfig().setName(configMap.getMetadata().getName());
         expected.getSpec().getConfig().setNamespace(configMap.getMetadata().getNamespace());
         expected.getMetadata().getAnnotations().replace(GlobalConfigurationsConstants.KNATIVE_BROKER_EXTERNAL_TOPIC_ANNOTATION_NAME,
@@ -215,7 +216,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @Override
     public AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress, String path) {
         AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress,
-                new TemplateImportConfig().withNameFromParent()
+                new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withNameFromParent()
                         .withPrimaryResourceFromParent());
         /**
          * https://github.com/istio/istio/issues/37221

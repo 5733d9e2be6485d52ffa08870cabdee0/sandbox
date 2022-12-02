@@ -48,7 +48,7 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
     public void cleanUpEmptyNamespaces() {
         List<Namespace> namespaces = kubernetesClient
                 .namespaces()
-                .withLabels(new LabelsBuilder().buildWithDefaults())
+                .withLabels(new LabelsBuilder().buildWithDefaults(LabelsBuilder.V1_OPERATOR_NAME))
                 .list()
                 .getItems();
         for (Namespace namespace : namespaces) {
@@ -68,7 +68,7 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
     }
 
     private Map<String, String> createLabels(final String customerId) {
-        return new LabelsBuilder().withCustomerId(customerId).buildWithDefaults();
+        return new LabelsBuilder().withCustomerId(customerId).buildWithDefaults(LabelsBuilder.V1_OPERATOR_NAME);
     }
 
     private Namespace ensureManagedLabels(final Namespace namespace, final String customerId) {

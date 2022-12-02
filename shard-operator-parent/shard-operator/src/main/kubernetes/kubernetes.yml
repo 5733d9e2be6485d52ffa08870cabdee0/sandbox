@@ -131,6 +131,21 @@ rules:
       - delete
       - patch
       - update
+  - apiGroups:
+      - com.redhat.service.smartevents
+    resources:
+      - managedbridges
+      - managedbridges/status
+      - managedprocessors
+      - managedprocessors/status
+    verbs:
+        - get
+        - list
+        - watch
+        - create
+        - delete
+        - patch
+        - update
   # add here the core resources we need to manage
   #- apiGroups:
   #    - ""

@@ -17,8 +17,8 @@ public class BridgeIngressTest {
 
         assertThat(bridgeIngress.getMetadata().getNamespace()).isEqualTo("ns");
         assertThat(bridgeIngress.getMetadata().getName()).isEqualTo(BridgeIngress.OB_RESOURCE_NAME_PREFIX + TestSupport.BRIDGE_ID);
-        assertThat(bridgeIngress.getMetadata().getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
-        assertThat(bridgeIngress.getMetadata().getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
+        assertThat(bridgeIngress.getMetadata().getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.V1_OPERATOR_NAME);
+        assertThat(bridgeIngress.getMetadata().getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.V1_OPERATOR_NAME);
         assertThat(bridgeIngress.getMetadata().getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(BridgeIngress.COMPONENT_NAME);
 
         assertThat(bridgeIngress.getSpec().getBridgeName()).isEqualTo(dto.getName());

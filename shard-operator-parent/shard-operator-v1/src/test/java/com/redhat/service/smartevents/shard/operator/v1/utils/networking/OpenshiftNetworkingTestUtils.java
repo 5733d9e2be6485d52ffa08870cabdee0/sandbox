@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.v1.utils.networking;
 
-import com.redhat.service.smartevents.shard.operator.v1.networking.OpenshiftNetworkingService;
+import com.redhat.service.smartevents.shard.operator.core.networking.OpenshiftNetworkingService;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;

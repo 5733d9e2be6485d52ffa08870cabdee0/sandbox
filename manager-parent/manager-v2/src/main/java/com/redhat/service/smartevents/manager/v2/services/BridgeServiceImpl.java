@@ -62,6 +62,11 @@ public class BridgeServiceImpl implements BridgeService {
     AccountManagementService accountManagementService;
 
     @Override
+    public Bridge getReadyBridge(String bridgeId, String customerId) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    @Override
     @Transactional
     public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {

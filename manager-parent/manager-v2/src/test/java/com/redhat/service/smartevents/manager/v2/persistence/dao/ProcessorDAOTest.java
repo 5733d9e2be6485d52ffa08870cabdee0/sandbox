@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
@@ -46,7 +47,6 @@ public class ProcessorDAOTest {
     @Test
     @Transactional
     public void testStoreProcessor() {
-
         Bridge bridge = createBridge();
         bridgeDAO.persist(bridge);
 
@@ -61,7 +61,6 @@ public class ProcessorDAOTest {
     @Test
     @Transactional
     public void testStoreProcessorWithConditions() {
-
         Bridge bridge = createBridge();
         bridgeDAO.persist(bridge);
 
@@ -113,4 +112,47 @@ public class ProcessorDAOTest {
         retrieved.getConditions().remove(condition3);
         processorDAO.persist(retrieved);
     }
+
+    @Test
+    public void findByBridgeIdAndName_noMatchingBridgeId() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+
+        assertThat(processorDAO.findByBridgeIdAndName("doesNotExist", p.getName())).isNull();
+    }
+
+    @Test
+    public void findByBridgeIdAndName_noMatchingProcessorName() {
+        Bridge b = createBridge();
+        createProcessor(b, "foo");
+
+        assertThat(processorDAO.findByBridgeIdAndName(b.getId(), "doesNotExist")).isNull();
+    }
+
+    @Test
+    public void findByBridgeIdAndName() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        bridgeDAO.persist(b);
+        processorDAO.persist(p);
+
+        Processor byBridgeIdAndName = processorDAO.findByBridgeIdAndName(b.getId(), p.getName());
+        assertThat(byBridgeIdAndName).isNotNull();
+        assertThat(byBridgeIdAndName.getName()).isEqualTo(p.getName());
+        assertThat(byBridgeIdAndName.getBridge().getId()).isEqualTo(b.getId());
+    }
+
+    @Test
+    public void countByBridgeIdAndCustomerId() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        Processor p1 = createProcessor(b, "bar");
+        bridgeDAO.persist(b);
+        processorDAO.persist(p);
+        processorDAO.persist(p1);
+
+        long total = processorDAO.countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(total).isEqualTo(2L);
+    }
+
 }
