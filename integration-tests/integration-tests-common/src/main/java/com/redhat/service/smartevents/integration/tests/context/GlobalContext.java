@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.cucumber.common;
+package com.redhat.service.smartevents.integration.tests.context;
 
 import java.util.HashSet;
 import java.util.Random;
