@@ -52,7 +52,7 @@ elif [ ! -f "${flow_file}" ]; then
   echo "$0: flow file \"${flow_file}\" doesn't exist"; usage_and_exit 1;
 fi
 
-json_flow=$( yq e -o=json "$flow_file" )
+json_flow=$( yq -o=json "$flow_file" )
 
 set -x
 
