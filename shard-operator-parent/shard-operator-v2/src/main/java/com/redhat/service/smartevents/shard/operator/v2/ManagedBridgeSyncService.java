@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
@@ -25,21 +26,20 @@ public class ManagedBridgeSyncService {
     @Inject
     NamespaceProvider namespaceProvider;
 
-    public void syncManagedBridgeWithManager(){
+    public void syncManagedBridgeWithManager() {
         managerClient.fetchBridgesToDeployOrDelete()
                 .onItem()
                 .invoke(this::processDelta)
                 .subscribe().with(
-                        success -> LOGGER.debug("Successfully process ManagedBridge delta"),
-                        failed -> LOGGER.debug("Fail to process ManagedBridge delta")
-                );
+                        success -> LOGGER.debug("Successfully processed ManagedBridge deltas"),
+                        error -> LOGGER.error("Failed to process ManagedBridge deltas", error));
     }
 
     private void processDelta(List<BridgeDTO> bridgeDTOList) {
         for (BridgeDTO bridgeDTO : bridgeDTOList) {
             String namespace = namespaceProvider.getNamespaceName(bridgeDTO.getId());
             ManagedBridge managedBridge = ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, namespace);
-            if (bridgeDTO.getDeletionRequestedAt() != null) {
+            if (bridgeDTO.getOperationType() == OperationType.DELETE) {
                 managedBridgeService.deleteManagedBridgeResources(managedBridge);
             } else {
                 managedBridgeService.createManagedBridgeResources(managedBridge);

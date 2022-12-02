@@ -12,7 +12,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
     @Inject
-    private NamespaceProvider namespaceProvider;
+    NamespaceProvider namespaceProvider;
 
     @Override
     public void createManagedBridgeResources(ManagedBridge managedBridge) {

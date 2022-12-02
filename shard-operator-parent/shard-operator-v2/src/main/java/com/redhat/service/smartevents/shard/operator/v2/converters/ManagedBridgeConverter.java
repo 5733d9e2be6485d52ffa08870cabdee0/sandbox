@@ -1,15 +1,17 @@
 package com.redhat.service.smartevents.shard.operator.v2.converters;
 
-import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.shard.operator.v2.resources.*;
-
-import javax.enterprise.context.ApplicationScoped;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-@ApplicationScoped
+import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
+import com.redhat.service.smartevents.shard.operator.v2.resources.KNativeBrokerConfigurationSpec;
+import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
+import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
+
 public class ManagedBridgeConverter {
 
     public static ManagedBridge fromBridgeDTOToManageBridge(BridgeDTO bridgeDTO, String namespace) {

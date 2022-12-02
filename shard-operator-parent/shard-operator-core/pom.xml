@@ -78,11 +78,11 @@
       <artifactId>logger-java-log4j</artifactId>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-test-openshift-client</artifactId>
-          <scope>test</scope>
-      </dependency>
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-test-openshift-client</artifactId>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <testResources>

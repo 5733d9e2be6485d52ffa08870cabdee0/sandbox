@@ -1,13 +1,16 @@
 package com.redhat.service.smartevents.shard.operator.core;
 
-import com.redhat.service.smartevents.infra.core.auth.AbstractOidcClient;
-import io.quarkus.oidc.client.OidcClientConfig;
-import io.quarkus.oidc.client.OidcClients;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.concurrent.ScheduledExecutorService;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import com.redhat.service.smartevents.infra.core.auth.AbstractOidcClient;
+
+import io.quarkus.oidc.client.OidcClientConfig;
+import io.quarkus.oidc.client.OidcClients;
 
 @ApplicationScoped
 public class EventBridgeOidcClient extends AbstractOidcClient {

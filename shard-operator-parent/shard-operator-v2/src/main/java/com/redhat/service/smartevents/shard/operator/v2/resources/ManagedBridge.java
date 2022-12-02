@@ -21,7 +21,8 @@ import static java.util.Objects.requireNonNull;
 @ShortNames("mbi")
 public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced {
 
-    public static final String COMPONENT_NAME = "ingress";
+    public static final String COMPONENT_NAME = "managed-bridge";
+    public static final String SME_RESOURCE_NAME_PREFIX = "brdg-";
 
     /**
      * Don't use this default constructor!
@@ -45,7 +46,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
     }
 
     public static String resolveResourceName(String id) {
-        return KubernetesResourceUtil.sanitizeName(id);
+        return SME_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
     }
 
     public static final class Builder {
