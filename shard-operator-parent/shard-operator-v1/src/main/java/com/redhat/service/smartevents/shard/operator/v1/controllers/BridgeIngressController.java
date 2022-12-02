@@ -26,6 +26,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
+import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
+import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
@@ -35,8 +37,6 @@ import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFacto
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
-import com.redhat.service.smartevents.shard.operator.v1.networking.NetworkResource;
-import com.redhat.service.smartevents.shard.operator.v1.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressStatus;
 
@@ -57,9 +57,10 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
-        EventSourceInitializer<BridgeIngress>, ErrorStatusHandler<BridgeIngress> {
+        EventSourceInitializer<BridgeIngress>,
+        ErrorStatusHandler<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -94,11 +95,11 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
 
         List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(networkingService.buildInformerEventSource(BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(networkingService.buildInformerEventSource(LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
 
         return eventSources;
     }
@@ -166,7 +167,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             status.markConditionTrue(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
         }
 
-        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, secret, path);
+        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, secret, bridgeIngress.getSpec().getHost(), path);
 
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready",

@@ -17,8 +17,8 @@ public class BridgeExecutorTest {
 
         assertThat(bridgeExecutor.getMetadata().getNamespace()).isEqualTo("ns");
         assertThat(bridgeExecutor.getMetadata().getName()).isEqualTo(BridgeExecutor.OB_RESOURCE_NAME_PREFIX + TestSupport.PROCESSOR_ID);
-        assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
-        assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
+        assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.V1_OPERATOR_NAME);
+        assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.V1_OPERATOR_NAME);
         assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(BridgeExecutor.COMPONENT_NAME);
 
         assertThat(bridgeExecutor.getSpec().getProcessorName()).isEqualTo(dto.getName());

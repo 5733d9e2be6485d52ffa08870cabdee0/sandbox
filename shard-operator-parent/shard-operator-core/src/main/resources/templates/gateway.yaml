@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: "" # used for filtering of Deployments created by the controller
+    app.kubernetes.io/created-by: "" # Specify the operator
+    app.kubernetes.io/component: ingress # used to specify the component
+  name: ""
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
