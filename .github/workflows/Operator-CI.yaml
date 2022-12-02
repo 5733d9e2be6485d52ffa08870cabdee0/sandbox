@@ -26,15 +26,15 @@ jobs:
         id: start-aws-runner
         uses: ./.github/actions/start-aws-runner
         with:
-          aws-access-key-id: ${{ env.KSUTA_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.KSUTA_AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.KSUTA_AWS_REGION }}
-          github-token: ${{ env.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          aws-access-key-id: ${{ env.GHA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.GHA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.GHA_AWS_REGION }}
+          github-token: ${{ env.GHA_GH_PERSONAL_ACCESS_TOKEN }}
         env:
-          KSUTA_AWS_ACCESS_KEY_ID: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
-          KSUTA_AWS_SECRET_ACCESS_KEY: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
-          KSUTA_AWS_REGION: ${{ secrets.KSUTA_AWS_REGION }}
-          KSUTA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          GHA_AWS_ACCESS_KEY_ID: ${{ secrets.GHA_AWS_ACCESS_KEY_ID }}
+          GHA_AWS_SECRET_ACCESS_KEY: ${{ secrets.GHA_AWS_SECRET_ACCESS_KEY }}
+          GHA_AWS_REGION: ${{ secrets.GHA_AWS_REGION }}
+          GHA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GHA_GH_PERSONAL_ACCESS_TOKEN }}
   event-bridge-build:
     needs: start-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
@@ -144,14 +144,14 @@ jobs:
       - name: Stop AWS runner
         uses: ./.github/actions/stop-aws-runner
         with:
-          aws-access-key-id: ${{ env.KSUTA_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.KSUTA_AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.KSUTA_AWS_REGION }}
-          github-token: ${{ env.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          aws-access-key-id: ${{ env.GHA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.GHA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.GHA_AWS_REGION }}
+          github-token: ${{ env.GHA_GH_PERSONAL_ACCESS_TOKEN }}
           label: ${{ needs.start-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
         env:
-          KSUTA_AWS_ACCESS_KEY_ID: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
-          KSUTA_AWS_SECRET_ACCESS_KEY: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
-          KSUTA_AWS_REGION: ${{ secrets.KSUTA_AWS_REGION }}
-          KSUTA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          GHA_AWS_ACCESS_KEY_ID: ${{ secrets.GHA_AWS_ACCESS_KEY_ID }}
+          GHA_AWS_SECRET_ACCESS_KEY: ${{ secrets.GHA_AWS_SECRET_ACCESS_KEY }}
+          GHA_AWS_REGION: ${{ secrets.GHA_AWS_REGION }}
+          GHA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GHA_GH_PERSONAL_ACCESS_TOKEN }}
