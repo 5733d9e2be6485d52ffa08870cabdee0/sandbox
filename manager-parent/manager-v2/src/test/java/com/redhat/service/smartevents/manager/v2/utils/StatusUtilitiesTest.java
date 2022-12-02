@@ -26,6 +26,25 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class StatusUtilitiesTest {
 
+    private static Stream<Arguments> getStatusMessageParameters() {
+        Object[][] arguments = {
+                { null, null },
+                { List.of(), List.of() },
+                { List.of(createConditionWithErrorCodeAndMessage(null, "Failed")), List.of() },
+                { List.of(createConditionWithErrorCodeAndMessage("1", (String) null)), List.of() },
+                { List.of(createConditionWithErrorCodeAndMessage("1", "Failed")), List.of("[1] Failed") },
+                { List.of(createConditionWithErrorCodeAndMessage("1", "Failed"), createConditionWithErrorCodeAndMessage("2", "Broken")), List.of("[1] Failed", "[2] Broken") },
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
+    private static Condition createConditionWithErrorCodeAndMessage(String errorCode, String message) {
+        Condition c = new Condition();
+        c.setErrorCode(errorCode);
+        c.setMessage(message);
+        return c;
+    }
+
     @Test
     public void testGetModifiedAt_Null() {
         assertThat(StatusUtilities.getModifiedAt(null)).isNull();
@@ -261,25 +280,6 @@ public class StatusUtilitiesTest {
         } else {
             messages.forEach(m -> assertThat(message).contains(m));
         }
-    }
-
-    private static Stream<Arguments> getStatusMessageParameters() {
-        Object[][] arguments = {
-                { null, null },
-                { List.of(), List.of() },
-                { List.of(createConditionWithErrorCodeAndMessage(null, "Failed")), List.of() },
-                { List.of(createConditionWithErrorCodeAndMessage("1", (String) null)), List.of() },
-                { List.of(createConditionWithErrorCodeAndMessage("1", "Failed")), List.of("[1] Failed") },
-                { List.of(createConditionWithErrorCodeAndMessage("1", "Failed"), createConditionWithErrorCodeAndMessage("2", "Broken")), List.of("[1] Failed", "[2] Broken") },
-        };
-        return Stream.of(arguments).map(Arguments::of);
-    }
-
-    private static Condition createConditionWithErrorCodeAndMessage(String errorCode, String message) {
-        Condition c = new Condition();
-        c.setErrorCode(errorCode);
-        c.setMessage(message);
-        return c;
     }
 
     private Condition createComponentConditionWithStatus(ComponentType componentType, ConditionStatus conditionStatus) {

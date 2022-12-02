@@ -22,5 +22,4 @@ public class TestConstants {
 
     public static final String FAILED_CONDITION_ERROR_CODE = "OPENBRIDGE-1";
     public static final String FAILED_CONDITION_ERROR_MESSAGE = "Something went wrong";
-
 }

@@ -77,7 +77,7 @@ public class ProcessorServiceImplTest {
         reset(bridgeServiceMock);
         reset(processorDAO);
 
-        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_NAME);
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         assertThat(getManagedResourceStatus(bridge)).isEqualTo(READY);
 
         Processor processor = createProcessor(bridge, createReadyConditions());

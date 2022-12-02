@@ -168,10 +168,10 @@ public class BridgeDAOTest {
 
     @Test
     public void testListByCustomerId() {
-        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME);
+        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createAcceptedBridge("mySecondBridgeName");
+        Bridge bridge2 = Fixtures.createAcceptedBridge("mySecondBridgeId", "mySecondBridgeName");
         bridgeDAO.persist(bridge2);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID, new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE));
@@ -187,10 +187,10 @@ public class BridgeDAOTest {
 
     @Test
     public void testListByCustomerIdFilterByName() {
-        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME);
+        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createAcceptedBridge("mySecondBridgeName");
+        Bridge bridge2 = Fixtures.createAcceptedBridge("mySecondBridgeId", "mySecondBridgeName");
         bridgeDAO.persist(bridge2);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
@@ -205,10 +205,10 @@ public class BridgeDAOTest {
 
     @Test
     public void testListByCustomerIdFilterByNameWildcard() {
-        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME);
+        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createAcceptedBridge("mySecondBridgeName");
+        Bridge bridge2 = Fixtures.createAcceptedBridge("mySecondBridgeId", "mySecondBridgeName");
         bridgeDAO.persist(bridge2);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
@@ -223,10 +223,10 @@ public class BridgeDAOTest {
 
     @Test
     public void testListByCustomerIdFilterByStatus() {
-        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME);
+        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createReadyBridge("mySecondBridgeName");
+        Bridge bridge2 = Fixtures.createReadyBridge("mySecondBridgeId", "mySecondBridgeName");
         bridgeDAO.persist(bridge2);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
@@ -241,10 +241,10 @@ public class BridgeDAOTest {
 
     @Test
     public void testListByCustomerIdFilterByNameAndStatus() {
-        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME);
+        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createReadyBridge("mySecondBridgeName");
+        Bridge bridge2 = Fixtures.createReadyBridge("mySecondBridgeId", "mySecondBridgeName");
         bridgeDAO.persist(bridge2);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
@@ -259,10 +259,10 @@ public class BridgeDAOTest {
 
     @Test
     public void testListByCustomerIdFilterByMoreStatuses() {
-        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME);
+        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createReadyBridge("mySecondBridgeName");
+        Bridge bridge2 = Fixtures.createReadyBridge("mySecondBridgeId", "mySecondBridgeName");
         bridgeDAO.persist(bridge2);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
@@ -319,7 +319,7 @@ public class BridgeDAOTest {
     public void testListByCustomerIdPaginationFilterByStatus() {
         for (int i = 0; i < 10; i++) {
             String id = String.valueOf(i);
-            Bridge bridge = i % 2 == 0 ? Fixtures.createReadyBridge(id) : Fixtures.createAcceptedBridge(id);
+            Bridge bridge = i % 2 == 0 ? Fixtures.createReadyBridge(id, id) : Fixtures.createAcceptedBridge(id, id);
             bridgeDAO.persist(bridge);
         }
 

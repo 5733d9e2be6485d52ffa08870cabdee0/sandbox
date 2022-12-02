@@ -159,5 +159,4 @@ public class ProcessorAPITest {
         Bridge bridge = bridgeDAO.findById(bridgeId);
         bridge.setConditions(conditions);
     }
-
 }

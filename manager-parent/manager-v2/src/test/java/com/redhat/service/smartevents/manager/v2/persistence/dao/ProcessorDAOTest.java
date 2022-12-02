@@ -154,5 +154,4 @@ public class ProcessorDAOTest {
         long total = processorDAO.countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(total).isEqualTo(2L);
     }
-
 }

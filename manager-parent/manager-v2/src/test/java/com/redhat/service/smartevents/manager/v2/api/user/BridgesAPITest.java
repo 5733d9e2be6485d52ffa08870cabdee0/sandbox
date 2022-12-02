@@ -35,6 +35,7 @@ import io.restassured.response.Response;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -163,10 +164,10 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesFilterByName() {
-        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME + "1");
+        Bridge bridge1 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID + "1", DEFAULT_BRIDGE_NAME + "1");
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME + "2");
+        Bridge bridge2 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID + "2", DEFAULT_BRIDGE_NAME + "2");
         bridgeDAO.persist(bridge2);
 
         BridgeListResponse bridgeListResponse = TestUtils.listBridgesFilterByName(DEFAULT_BRIDGE_NAME + "1").as(BridgeListResponse.class);
@@ -207,10 +208,10 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesFilterByStatus() {
-        Bridge bridge1 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_NAME + "1");
+        Bridge bridge1 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID + "1", DEFAULT_BRIDGE_NAME + "1");
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME + "2");
+        Bridge bridge2 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID + "2", DEFAULT_BRIDGE_NAME + "2");
         bridgeDAO.persist(bridge2);
 
         BridgeListResponse bridgeListResponse = TestUtils.listBridgesFilterByStatus(ACCEPTED).as(BridgeListResponse.class);
@@ -229,10 +230,10 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesFilterByMultipleStatuses() {
-        Bridge bridge1 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_NAME + "1");
+        Bridge bridge1 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID + "1", DEFAULT_BRIDGE_NAME + "1");
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_NAME + "2");
+        Bridge bridge2 = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID + "2", DEFAULT_BRIDGE_NAME + "2");
         bridgeDAO.persist(bridge2);
 
         BridgeListResponse bridgeListResponse = TestUtils.listBridgesFilterByStatus(READY, ACCEPTED).as(BridgeListResponse.class);
@@ -270,10 +271,10 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesFilterByNameAndStatus() {
-        Bridge bridge1 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_NAME + "1");
+        Bridge bridge1 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID + "1", DEFAULT_BRIDGE_NAME + "1");
         bridgeDAO.persist(bridge1);
 
-        Bridge bridge2 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_NAME + "2");
+        Bridge bridge2 = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID + "2", DEFAULT_BRIDGE_NAME + "2");
         bridgeDAO.persist(bridge2);
 
         BridgeListResponse bridgeListResponse = TestUtils.listBridgesFilterByNameAndStatus(DEFAULT_BRIDGE_NAME + "1", READY).as(BridgeListResponse.class);
@@ -292,7 +293,7 @@ public class BridgesAPITest {
     public void testPagination() {
         int totalBridges = 15;
         for (int i = 0; i < totalBridges; i++) {
-            Bridge b = Fixtures.createReadyBridge(DEFAULT_BRIDGE_NAME + i);
+            Bridge b = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID + i, DEFAULT_BRIDGE_NAME + i);
             bridgeDAO.persist(b);
         }
 
