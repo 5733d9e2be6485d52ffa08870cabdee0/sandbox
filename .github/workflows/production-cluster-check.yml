@@ -49,7 +49,7 @@ jobs:
       - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the stable branch again
         uses: actions/checkout@v3
         with:
-          ref: "stable"
+          ref: "prod"
       - name: Compile sandbox repo
         uses: ./.github/actions/maven
         with:
