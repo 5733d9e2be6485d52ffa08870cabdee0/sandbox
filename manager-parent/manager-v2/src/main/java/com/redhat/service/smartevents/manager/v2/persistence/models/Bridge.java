@@ -27,8 +27,7 @@ import org.hibernate.annotations.ParamDef;
         @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
                 query = "select count(*) from Bridge_V2 where organisation_id=:organisationId"),
         @NamedQuery(name = "BRIDGE_V2.findByCustomerId",
-                // This query returns duplicated items!
-                query = "from Bridge_V2 b left join fetch b.conditions where customer_id=:customerId order by submitted_at desc")
+                query = "select distinct (b) from Bridge_V2 b left join fetch b.conditions where customer_id=:customerId order by submitted_at desc")
 })
 @FilterDefs({
         @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),

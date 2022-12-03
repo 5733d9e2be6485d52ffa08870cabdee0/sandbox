@@ -53,8 +53,7 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         // As the status of the resource is a view over the conditions, it has to be calculated on the fly. ATM we do it in java, in case there are
         // performance issues we might move the filtering to the database adapting the database schema accordingly.
 
-        // NOTE that the left join fetch returns duplicate results. We have to apply a DISTINCT.
-        List<Bridge> filtered = query.list().stream().distinct().collect(Collectors.toList());
+        List<Bridge> filtered = query.list();
         Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             // Calculate the status of the resource and apply filter.
