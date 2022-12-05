@@ -5,13 +5,13 @@ import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
 @ApplicationScoped
 @Transactional
-public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
+public class BridgeDAO implements ManagedResourceV2DAO<Bridge> {
 
+    @Override
     public Bridge findByIdWithConditions(String id) {
         Parameters params = Parameters
                 .with("id", id);

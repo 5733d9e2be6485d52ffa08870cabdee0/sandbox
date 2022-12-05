@@ -10,9 +10,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.workers.resources.BridgeWorker;
-import com.redhat.service.smartevents.manager.v2.workers.resources.ProcessorWorker;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.convertFromJobData;
 
@@ -22,12 +20,6 @@ import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzW
 public class WorkJob implements Job {
 
     private static final String BRIDGE_WORKER_CLASSNAME = Bridge.class.getName();
-
-    private static final String PROCESSOR_WORKER_CLASSNAME = Processor.class.getName();
-
-    // Inject workers - BridgeWorker and ProcessorWorker
-    @Inject
-    ProcessorWorker processorWorker;
 
     @Inject
     BridgeWorker bridgeWorker;
@@ -44,17 +36,11 @@ public class WorkJob implements Job {
     private Worker<?> findWorker(Work work) {
         if (isWorkForBridge(work)) {
             return bridgeWorker;
-        } else if (isWorkForProcessor(work)) {
-            return processorWorker;
         }
         throw new InternalPlatformException("Unable to locate worker for resource of type '" + work.getType() + "', with id '" + work.getManagedResourceId() + "'");
     }
 
     private boolean isWorkForBridge(Work work) {
         return BRIDGE_WORKER_CLASSNAME.equals(work.getType());
-    }
-
-    private boolean isWorkForProcessor(Work work) {
-        return PROCESSOR_WORKER_CLASSNAME.equals(work.getType());
     }
 }

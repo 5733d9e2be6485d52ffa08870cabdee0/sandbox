@@ -15,11 +15,10 @@ import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvid
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.ManagedResourceV2DAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.services.BridgeService;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
-
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 @ApplicationScoped
 public class BridgeWorker extends AbstractWorker<Bridge> {
@@ -42,7 +41,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     DnsService dnsService;
 
     @Override
-    public PanacheRepositoryBase<Bridge, String> getDao() {
+    public ManagedResourceV2DAO<Bridge> getDao() {
         return bridgeDAO;
     }
 

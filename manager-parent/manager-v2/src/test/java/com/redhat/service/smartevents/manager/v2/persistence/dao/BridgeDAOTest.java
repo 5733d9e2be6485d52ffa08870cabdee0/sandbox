@@ -104,6 +104,15 @@ public class BridgeDAOTest {
         assertThat(conditions.size()).isEqualTo(2);
     }
 
+    @Test
+    public void testFindByIdWithConditions() {
+        Bridge bridge = createBridgeWithConditions();
+
+        Bridge retrieved = bridgeDAO.findByIdWithConditions(bridge.getId());
+
+        assertThat(retrieved.getConditions().size()).isEqualTo(bridge.getConditions().size());
+    }
+
     @Transactional
     protected Bridge createBridgeWithConditions() {
         Bridge bridge = createBridge();

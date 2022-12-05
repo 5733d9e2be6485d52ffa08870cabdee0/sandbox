@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.v2.workers.resources;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -22,18 +21,17 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2;
-import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.ConditionDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.ManagedResourceV2DAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
-
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
 import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
@@ -43,7 +41,6 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 
 public abstract class AbstractWorker<T extends ManagedResourceV2> implements Worker<T> {
@@ -65,6 +62,9 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
     @V2
     @Inject
     WorkManager workManager;
+
+    @Inject
+    ConditionDAO conditionDAO;
 
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
@@ -130,7 +130,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
 
     @Transactional
     protected T load(String id) {
-        return getDao().findById(id);
+        return getDao().findByIdWithConditions(id);
     }
 
     @Transactional
@@ -170,19 +170,20 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
         return persist(managedResource);
     }
 
-    public abstract PanacheRepositoryBase<T, String> getDao();
+    public abstract ManagedResourceV2DAO<T> getDao();
 
     protected abstract T createDependencies(Work work, T managedResource);
 
+    @Transactional
     protected <R> R executeWithFailureRecording(String conditionType, T managedResource, Callable<R> function) {
         Condition condition = findConditionByType(conditionType, managedResource);
+        condition = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
         try {
             R result = function.call();
 
             condition.setType(conditionType);
             condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
             condition.setStatus(ConditionStatus.TRUE);
-            getDao().getEntityManager().merge(managedResource);
 
             return result;
         } catch (Exception e) {
@@ -192,7 +193,6 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
             condition.setStatus(ConditionStatus.FALSE);
             condition.setMessage("Failed to deploy " + conditionType + " due to " + e.getMessage());
             condition.setReason(bridgeErrorInstance.getReason());
-            getDao().getEntityManager().merge(managedResource);
 
             throw new RuntimeException(e);
         }
@@ -208,29 +208,22 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
     // flag that work is complete. B would check on the status of C and A on B. These methods allow for this.
     public boolean isProvisioningComplete(T managedResource) {
         // The resource is in PROVISIONING if all the MANAGER conditions are READY.
-        return PROVISIONING.equals(StatusUtilities.getManagedResourceStatus(managedResource));
+        return StatusUtilities.managerDependenciesCompleted(managedResource);
     }
 
     public boolean isDeprovisioningComplete(T managedResource) {
         // TODO: we don't have a state to figure out that we have deleted all the dependencies.
-        return DELETING.equals(StatusUtilities.getManagedResourceStatus(managedResource));
+        return StatusUtilities.managerDependenciesCompleted(managedResource);
     }
 
     private Condition findConditionByType(String conditionType, T managedResource) {
         Optional<Condition> condition = managedResource.getConditions().stream().filter(x -> conditionType.equals(x.getType())).findFirst();
 
         // The condition should be already there. But in case it is not there, we log and create it.
-        return condition.orElseGet(() -> {
-            LOGGER.warn("Condition '{}' not found for resource '{}'. It will be added anyways.", conditionType, managedResource);
-            return createAndAddCondition(managedResource.getConditions());
+        return condition.orElseThrow(() -> {
+            String message = String.format("Condition '%s' not found for resource '%s'.", conditionType, managedResource);
+            LOGGER.error(message);
+            return new IllegalStateException(message);
         });
-    }
-
-    private Condition createAndAddCondition(List<Condition> conditions) {
-        Condition condition = new Condition();
-        condition.setComponent(ComponentType.MANAGER);
-
-        conditions.add(condition);
-        return condition;
     }
 }

@@ -87,6 +87,15 @@ public class ProcessorDAOTest {
         assertThat(conditions.size()).isEqualTo(2);
     }
 
+    @Test
+    public void testFindByIdWithConditions() {
+        Processor processor = createProcessorWithConditions();
+
+        Processor retrieved = processorDAO.findByIdWithConditions(processor.getId());
+
+        assertThat(retrieved.getConditions().size()).isEqualTo(processor.getConditions().size());
+    }
+
     @Transactional
     protected Processor createProcessorWithConditions() {
         Bridge bridge = createBridge();
