@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# a fake change to trigger tests - 2
+
 source common_tools.sh
 
 echo "Installing Serverless Operator"
