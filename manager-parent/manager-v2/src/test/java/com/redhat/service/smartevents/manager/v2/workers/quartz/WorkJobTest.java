@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers.quartz;
+package com.redhat.service.smartevents.manager.v2.workers.quartz;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -13,22 +13,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.workers.resources.BridgeWorker;
-import com.redhat.service.smartevents.manager.v1.workers.resources.ProcessorWorker;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v2.workers.resources.BridgeWorker;
+import com.redhat.service.smartevents.manager.v2.workers.resources.ProcessorWorker;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,14 +63,6 @@ public class WorkJobTest {
         assertExecutes(Processor.class, processorWorker);
     }
 
-    @Test
-    void testExecutesConnector() {
-        JobDataMap jobDataMap = stubJobDataMap(ConnectorEntity.class);
-        when(context.getMergedJobDataMap()).thenReturn(jobDataMap);
-
-        assertThatThrownBy(() -> workJob.execute(context)).isInstanceOf(InternalPlatformException.class);
-    }
-
     void assertExecutes(Class<? extends ManagedResource> managedResourceClass, Worker<?> worker) {
         JobDataMap jobDataMap = stubJobDataMap(managedResourceClass);
         when(context.getMergedJobDataMap()).thenReturn(jobDataMap);
@@ -100,5 +89,4 @@ public class WorkJobTest {
 
         return jobDataMap;
     }
-
 }

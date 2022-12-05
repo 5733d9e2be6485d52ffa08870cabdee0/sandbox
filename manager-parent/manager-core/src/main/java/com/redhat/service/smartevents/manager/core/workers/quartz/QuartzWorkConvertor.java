@@ -1,10 +1,10 @@
-package com.redhat.service.smartevents.manager.v1.workers.quartz;
+package com.redhat.service.smartevents.manager.core.workers.quartz;
 
 import java.time.ZonedDateTime;
 
 import org.quartz.JobDataMap;
 
-import com.redhat.service.smartevents.manager.v1.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.Work;
 
 public class QuartzWorkConvertor {
 

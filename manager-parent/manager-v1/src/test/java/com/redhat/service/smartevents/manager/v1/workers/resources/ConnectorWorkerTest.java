@@ -21,6 +21,8 @@ import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
+import com.redhat.service.smartevents.manager.core.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.connectors.ConnectorsApiClient;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ConnectorsDAO;
@@ -30,8 +32,6 @@ import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEnt
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
-import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 

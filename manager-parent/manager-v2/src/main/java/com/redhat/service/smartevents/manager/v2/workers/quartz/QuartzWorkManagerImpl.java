@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers.quartz;
+package com.redhat.service.smartevents.manager.v2.workers.quartz;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.v1.api.V1;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -29,7 +29,7 @@ import io.quarkus.runtime.Quarkus;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.convertToJobData;
 
-@V1
+@V2
 @ApplicationScoped
 public class QuartzWorkManagerImpl implements WorkManager {
 
@@ -46,6 +46,7 @@ public class QuartzWorkManagerImpl implements WorkManager {
     @PostConstruct
     public void init() {
         try {
+            LOGGER.info("INIT");
             workJob = JobBuilder.newJob(WorkJob.class).storeDurably().build();
             quartz.addJob(workJob, false);
         } catch (SchedulerException e) {
@@ -56,6 +57,7 @@ public class QuartzWorkManagerImpl implements WorkManager {
 
     @Override
     public Work schedule(ManagedResource managedResource) {
+        LOGGER.info("SUCA");
         Work work = Work.forResource(managedResource);
         doSchedule(work);
         return work;

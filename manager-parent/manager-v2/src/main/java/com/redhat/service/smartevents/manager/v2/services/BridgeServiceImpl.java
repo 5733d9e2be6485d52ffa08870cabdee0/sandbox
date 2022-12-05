@@ -26,6 +26,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -54,6 +55,10 @@ public class BridgeServiceImpl implements BridgeService {
 
     @Inject
     DnsService dnsService;
+
+    @V2
+    @Inject
+    WorkManager workManager;
 
     @V2
     @Inject
@@ -89,8 +94,7 @@ public class BridgeServiceImpl implements BridgeService {
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
-
-        // TODO: schedule work for dependencies
+        workManager.schedule(bridge);
 
         // TODO: record metrics with MetricsService
 
@@ -160,7 +164,6 @@ public class BridgeServiceImpl implements BridgeService {
     private List<Condition> createAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
-        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_PERMISSIONS_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;

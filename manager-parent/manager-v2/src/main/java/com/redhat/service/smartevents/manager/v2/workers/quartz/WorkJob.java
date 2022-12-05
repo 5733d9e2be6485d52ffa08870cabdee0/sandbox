@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers.quartz;
+package com.redhat.service.smartevents.manager.v2.workers.quartz;
 
 import javax.inject.Inject;
 
@@ -9,10 +9,10 @@ import org.quartz.JobExecutionContext;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.workers.resources.BridgeWorker;
-import com.redhat.service.smartevents.manager.v1.workers.resources.ProcessorWorker;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v2.workers.resources.BridgeWorker;
+import com.redhat.service.smartevents.manager.v2.workers.resources.ProcessorWorker;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.convertFromJobData;
 
@@ -22,11 +22,10 @@ import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzW
 public class WorkJob implements Job {
 
     private static final String BRIDGE_WORKER_CLASSNAME = Bridge.class.getName();
-    private static final String LEGACY_BRIDGE_WORKER_CLASSNAME = "com.redhat.service.smartevents.manager.models.Bridge";
 
     private static final String PROCESSOR_WORKER_CLASSNAME = Processor.class.getName();
-    private static final String LEGACY_PROCESSOR_WORKER_CLASSNAME = "com.redhat.service.smartevents.manager.models.Processor";
 
+    // Inject workers - BridgeWorker and ProcessorWorker
     @Inject
     ProcessorWorker processorWorker;
 
@@ -52,19 +51,10 @@ public class WorkJob implements Job {
     }
 
     private boolean isWorkForBridge(Work work) {
-        if (BRIDGE_WORKER_CLASSNAME.equals(work.getType())) {
-            return true;
-        } else {
-            return LEGACY_BRIDGE_WORKER_CLASSNAME.equals(work.getType());
-        }
+        return BRIDGE_WORKER_CLASSNAME.equals(work.getType());
     }
 
     private boolean isWorkForProcessor(Work work) {
-        if (PROCESSOR_WORKER_CLASSNAME.equals(work.getType())) {
-            return true;
-        } else {
-            return LEGACY_PROCESSOR_WORKER_CLASSNAME.equals(work.getType());
-        }
+        return PROCESSOR_WORKER_CLASSNAME.equals(work.getType());
     }
-
 }

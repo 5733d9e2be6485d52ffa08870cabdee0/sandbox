@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers.quartz;
+package com.redhat.service.smartevents.manager.core.workers.quartz;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -6,9 +6,9 @@ import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
 
+import com.redhat.service.smartevents.manager.core.mocks.ManagedResourceForTests;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
-import com.redhat.service.smartevents.manager.v1.mocks.ManagedResourceForTests;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.Work;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,9 +1,12 @@
-package com.redhat.service.smartevents.manager.v1.workers.resources;
+package com.redhat.service.smartevents.manager.v2.workers.resources;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -18,12 +21,17 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.v1.api.V1;
+import com.redhat.service.smartevents.infra.v2.api.V2;
+import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
-import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
+import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
@@ -35,9 +43,10 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
+import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 
-public abstract class AbstractWorker<T extends ManagedResourceV1> implements Worker<T> {
+public abstract class AbstractWorker<T extends ManagedResourceV2> implements Worker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
@@ -53,7 +62,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
     @ConfigProperty(name = "event-bridge.resources.workers.timeout-seconds")
     int timeoutSeconds;
 
-    @V1
+    @V2
     @Inject
     WorkManager workManager;
 
@@ -73,9 +82,6 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
         boolean areRetriesExceeded = areRetriesExceeded(work, managedResource);
         boolean isTimeoutExceeded = isTimeoutExceeded(work, managedResource);
         if (areRetriesExceeded || isTimeoutExceeded) {
-            managedResource.setStatus(FAILED);
-            persist(managedResource);
-
             InternalPlatformException failure;
             if (areRetriesExceeded) {
                 failure = new ProvisioningMaxRetriesExceededException(String.format(RETRIES_FAILURE_MESSAGE,
@@ -91,7 +97,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
         }
 
         T updated = managedResource;
-        if (PROVISIONING_STARTED.contains(managedResource.getStatus())) {
+        if (OperationType.CREATE.equals(managedResource.getOperation().getType()) || OperationType.UPDATE.equals(managedResource.getOperation().getType())) {
             try {
                 updated = createDependencies(work, managedResource);
             } catch (Exception e) {
@@ -103,7 +109,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
                     workManager.reschedule(work);
                 }
             }
-        } else if (DEPROVISIONING_STARTED.contains(managedResource.getStatus())) {
+        } else if (OperationType.DELETE.equals(managedResource.getOperation().getType())) {
             try {
                 updated = deleteDependencies(work, managedResource);
             } catch (Exception e) {
@@ -158,14 +164,39 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
         String managedResourceId = getId(work);
         T managedResource = load(managedResourceId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
-        managedResource.setErrorId(bridgeErrorInstance.getId());
-        managedResource.setErrorUUID(bridgeErrorInstance.getUuid());
+
+        // Add failed condition with details.
+
         return persist(managedResource);
     }
 
     public abstract PanacheRepositoryBase<T, String> getDao();
 
     protected abstract T createDependencies(Work work, T managedResource);
+
+    protected <R> R executeWithFailureRecording(String conditionType, T managedResource, Callable<R> function) {
+        Condition condition = findConditionByType(conditionType, managedResource);
+        try {
+            R result = function.call();
+
+            condition.setType(conditionType);
+            condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
+            condition.setStatus(ConditionStatus.TRUE);
+            getDao().getEntityManager().merge(managedResource);
+
+            return result;
+        } catch (Exception e) {
+            BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
+            condition.setErrorCode(bridgeErrorInstance.getCode());
+            condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
+            condition.setStatus(ConditionStatus.FALSE);
+            condition.setMessage("Failed to deploy " + conditionType + " due to " + e.getMessage());
+            condition.setReason(bridgeErrorInstance.getReason());
+            getDao().getEntityManager().merge(managedResource);
+
+            throw new RuntimeException(e);
+        }
+    }
 
     protected abstract T deleteDependencies(Work work, T managedResource);
 
@@ -175,8 +206,31 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
     // chain: A->B->C where A is the primary work, B a dependency on A and C a dependency on B. We would not want
     // the work for A to be removed from the Work Queue until B and C are complete. Therefore, neither B nor C should
     // flag that work is complete. B would check on the status of C and A on B. These methods allow for this.
-    public abstract boolean isProvisioningComplete(T managedResource);
+    public boolean isProvisioningComplete(T managedResource) {
+        // The resource is in PROVISIONING if all the MANAGER conditions are READY.
+        return PROVISIONING.equals(StatusUtilities.getManagedResourceStatus(managedResource));
+    }
 
-    public abstract boolean isDeprovisioningComplete(T managedResource);
+    public boolean isDeprovisioningComplete(T managedResource) {
+        // TODO: we don't have a state to figure out that we have deleted all the dependencies.
+        return DELETING.equals(StatusUtilities.getManagedResourceStatus(managedResource));
+    }
 
+    private Condition findConditionByType(String conditionType, T managedResource) {
+        Optional<Condition> condition = managedResource.getConditions().stream().filter(x -> conditionType.equals(x.getType())).findFirst();
+
+        // The condition should be already there. But in case it is not there, we log and create it.
+        return condition.orElseGet(() -> {
+            LOGGER.warn("Condition '{}' not found for resource '{}'. It will be added anyways.", conditionType, managedResource);
+            return createAndAddCondition(managedResource.getConditions());
+        });
+    }
+
+    private Condition createAndAddCondition(List<Condition> conditions) {
+        Condition condition = new Condition();
+        condition.setComponent(ComponentType.MANAGER);
+
+        conditions.add(condition);
+        return condition;
+    }
 }
