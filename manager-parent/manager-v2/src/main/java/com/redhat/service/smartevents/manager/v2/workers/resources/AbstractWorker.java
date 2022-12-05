@@ -4,7 +4,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -19,8 +18,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2;
+import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
@@ -35,23 +34,11 @@ import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
 import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 
 public abstract class AbstractWorker<T extends ManagedResourceV2> implements Worker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
-
-    private static final Set<ManagedResourceStatus> PROVISIONING_STARTED = Set.of(ACCEPTED, PREPARING);
-    private static final Set<ManagedResourceStatus> DEPROVISIONING_STARTED = Set.of(DEPROVISION, DELETING);
-
-    protected static final Set<ManagedResourceStatus> PROVISIONING_COMPLETED = Set.of(READY, FAILED);
-    protected static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETED = Set.of(DELETED, FAILED);
 
     @ConfigProperty(name = "event-bridge.resources.worker.max-retries")
     int maxRetries;
@@ -165,7 +152,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
         T managedResource = load(managedResourceId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
 
-        // Add failed condition with details.
+        markFailedConditions(managedResource, bridgeErrorInstance);
 
         return persist(managedResource);
     }
@@ -174,7 +161,9 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
 
     protected abstract T createDependencies(Work work, T managedResource);
 
-    @Transactional
+    // @Transactional is meant to roll back when something goes wrong (an exception is thrown). Given that we need to
+    // catch, change the condition status and rethrow, we have have to dontRollbackOn=Exception.class.
+    @Transactional(dontRollbackOn = { Exception.class })
     protected <R> R executeWithFailureRecording(String conditionType, T managedResource, Callable<R> function) {
         Condition condition = findConditionByType(conditionType, managedResource);
         condition = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
@@ -198,6 +187,23 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
         }
     }
 
+    @Transactional
+    protected void markFailedConditions(T managedResource, BridgeErrorInstance bridgeErrorInstance) {
+        // Mark all the Manager conditions with status != TRUE as failed.
+        for (Condition condition : managedResource.getConditions()) {
+            if (ComponentType.MANAGER.equals(condition.getComponent()) && !ConditionStatus.TRUE.equals(condition.getStatus())) {
+                condition = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
+                condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
+                condition.setStatus(ConditionStatus.FAILED);
+                // set the error code with the areRetriesExceeded/isTimeoutExceeded.. ?
+                condition.setErrorCode(bridgeErrorInstance.getCode());
+                // Don't overwrite the message and the reason to keep track of the original failures (if it was recorded).
+                //                condition.setMessage(String.format("Error ID: '%s', Error UUID: '%s'", bridgeErrorInstance.getId(), bridgeErrorInstance.getUuid()));
+                //                condition.setReason(bridgeErrorInstance.getReason());
+            }
+        }
+    }
+
     protected abstract T deleteDependencies(Work work, T managedResource);
 
     // When Work is "complete" the Work is removed from the Work Queue acted on by WorkManager.
@@ -207,19 +213,17 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
     // the work for A to be removed from the Work Queue until B and C are complete. Therefore, neither B nor C should
     // flag that work is complete. B would check on the status of C and A on B. These methods allow for this.
     public boolean isProvisioningComplete(T managedResource) {
-        // The resource is in PROVISIONING if all the MANAGER conditions are READY.
         return StatusUtilities.managerDependenciesCompleted(managedResource);
     }
 
     public boolean isDeprovisioningComplete(T managedResource) {
-        // TODO: we don't have a state to figure out that we have deleted all the dependencies.
         return StatusUtilities.managerDependenciesCompleted(managedResource);
     }
 
     private Condition findConditionByType(String conditionType, T managedResource) {
         Optional<Condition> condition = managedResource.getConditions().stream().filter(x -> conditionType.equals(x.getType())).findFirst();
 
-        // The condition should be already there. But in case it is not there, we log and create it.
+        // The conditions should be created/updated when the request from the user is accepted.
         return condition.orElseThrow(() -> {
             String message = String.format("Condition '%s' not found for resource '%s'.", conditionType, managedResource);
             LOGGER.error(message);

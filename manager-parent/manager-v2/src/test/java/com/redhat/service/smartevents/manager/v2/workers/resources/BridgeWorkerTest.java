@@ -90,6 +90,7 @@ class BridgeWorkerTest {
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
+    // TODO: refactor
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
     void testProvisionWorkWithKnownResource(ManagedResourceStatus status,
@@ -129,6 +130,7 @@ class BridgeWorkerTest {
                 Arguments.of(PREPARING, PROVISIONING, true, true, false));
     }
 
+    // TODO: refactor
     @Transactional
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParams")
