@@ -8,6 +8,8 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 
 public interface BridgeService {
 
+    Bridge getBridge(String bridgeId, String customerId);
+
     Bridge getReadyBridge(String bridgeId, String customerId);
 
     Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest);
