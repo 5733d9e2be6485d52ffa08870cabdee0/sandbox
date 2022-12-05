@@ -10,15 +10,30 @@ public class KafkaConfigurationSpec {
 
     String saslMechanism;
 
-    String userId;
+    String user;
 
     String password;
 
-    String topicName;
+    String topic;
 
-    int numberOfPartitions;
+    int numberOfPartitions = 1;
 
-    int numberOfReplicas;
+    int numberOfReplicas = 3;
+
+    public KafkaConfigurationSpec() {
+
+    }
+
+    private KafkaConfigurationSpec(Builder builder) {
+        setBootstrapServers(builder.bootstrapServers);
+        setSecurityProtocol(builder.securityProtocol);
+        setSaslMechanism(builder.saslMechanism);
+        setUser(builder.user);
+        setPassword(builder.password);
+        setTopic(builder.topic);
+        setNumberOfPartitions(builder.numberOfPartitions);
+        setNumberOfReplicas(builder.numberOfReplicas);
+    }
 
     public String getBootstrapServers() {
         return bootstrapServers;
@@ -44,12 +59,12 @@ public class KafkaConfigurationSpec {
         this.saslMechanism = saslMechanism;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUser() {
+        return user;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUser(String user) {
+        this.user = user;
     }
 
     public String getPassword() {
@@ -60,12 +75,12 @@ public class KafkaConfigurationSpec {
         this.password = password;
     }
 
-    public String getTopicName() {
-        return topicName;
+    public String getTopic() {
+        return topic;
     }
 
-    public void setTopicName(String topicName) {
-        this.topicName = topicName;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public int getNumberOfPartitions() {
@@ -94,12 +109,75 @@ public class KafkaConfigurationSpec {
         }
         KafkaConfigurationSpec that = (KafkaConfigurationSpec) o;
         return numberOfPartitions == that.numberOfPartitions && numberOfReplicas == that.numberOfReplicas && Objects.equals(bootstrapServers, that.bootstrapServers)
-                && Objects.equals(securityProtocol, that.securityProtocol) && Objects.equals(saslMechanism, that.saslMechanism) && Objects.equals(userId, that.userId)
-                && Objects.equals(password, that.password) && Objects.equals(topicName, that.topicName);
+                && Objects.equals(securityProtocol, that.securityProtocol) && Objects.equals(saslMechanism, that.saslMechanism) && Objects.equals(user, that.user)
+                && Objects.equals(password, that.password) && Objects.equals(topic, that.topic);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(bootstrapServers, securityProtocol, saslMechanism, userId, password, topicName, numberOfPartitions, numberOfReplicas);
+        return Objects.hash(bootstrapServers, securityProtocol, saslMechanism, user, password, topic, numberOfPartitions, numberOfReplicas);
+    }
+
+    public static final class Builder {
+
+        private String bootstrapServers;
+        private String securityProtocol;
+        private String saslMechanism;
+        private String user;
+        private String password;
+        private String topic;
+        private int numberOfPartitions;
+        private int numberOfReplicas;
+
+        private Builder() {
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public Builder bootstrapServers(String val) {
+            bootstrapServers = val;
+            return this;
+        }
+
+        public Builder securityProtocol(String val) {
+            securityProtocol = val;
+            return this;
+        }
+
+        public Builder saslMechanism(String val) {
+            saslMechanism = val;
+            return this;
+        }
+
+        public Builder user(String val) {
+            user = val;
+            return this;
+        }
+
+        public Builder password(String val) {
+            password = val;
+            return this;
+        }
+
+        public Builder topic(String val) {
+            topic = val;
+            return this;
+        }
+
+        public Builder numberOfPartitions(int val) {
+            numberOfPartitions = val;
+            return this;
+        }
+
+        public Builder numberOfReplicas(int val) {
+            numberOfReplicas = val;
+            return this;
+        }
+
+        public KafkaConfigurationSpec build() {
+            return new KafkaConfigurationSpec(this);
+        }
     }
 }

@@ -7,8 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
-import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -119,7 +119,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
                     .withLabels(new LabelsBuilder()
                             .withCustomerId(customerId)
                             .withComponent(COMPONENT_NAME)
-                            .buildWithDefaults())
+                            .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
             ManagedProcessorSpec ManagedProcessorSpec = new ManagedProcessorSpec();

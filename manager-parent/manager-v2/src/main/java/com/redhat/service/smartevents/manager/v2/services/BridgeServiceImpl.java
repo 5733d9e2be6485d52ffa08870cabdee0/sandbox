@@ -17,7 +17,9 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.TermsNotAcceptedYetException;
+import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
@@ -65,6 +67,11 @@ public class BridgeServiceImpl implements BridgeService {
     AccountManagementService accountManagementService;
 
     @Override
+    public Bridge getReadyBridge(String bridgeId, String customerId) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    @Override
     @Transactional
     public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
@@ -101,6 +108,12 @@ public class BridgeServiceImpl implements BridgeService {
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
 
         return bridge;
+    }
+
+    @Transactional
+    @Override
+    public ListResult<Bridge> getBridges(String customerId, QueryResourceInfo queryInfo) {
+        return bridgeDAO.findByCustomerId(customerId, queryInfo);
     }
 
     @Override

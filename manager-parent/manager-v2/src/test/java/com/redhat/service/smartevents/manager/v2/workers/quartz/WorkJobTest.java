@@ -17,9 +17,7 @@ import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.workers.resources.BridgeWorker;
-import com.redhat.service.smartevents.manager.v2.workers.resources.ProcessorWorker;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
@@ -31,9 +29,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class WorkJobTest {
-
-    @Mock
-    ProcessorWorker processorWorker;
 
     @Mock
     BridgeWorker bridgeWorker;
@@ -50,17 +45,11 @@ public class WorkJobTest {
     public void setup() {
         workJob = new WorkJob();
         workJob.bridgeWorker = bridgeWorker;
-        workJob.processorWorker = processorWorker;
     }
 
     @Test
     void testExecutesBridge() {
         assertExecutes(Bridge.class, bridgeWorker);
-    }
-
-    @Test
-    void testExecutesProcessor() {
-        assertExecutes(Processor.class, processorWorker);
     }
 
     void assertExecutes(Class<? extends ManagedResource> managedResourceClass, Worker<?> worker) {
