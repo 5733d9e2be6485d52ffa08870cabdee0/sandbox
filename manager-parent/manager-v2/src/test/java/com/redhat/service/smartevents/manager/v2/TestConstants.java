@@ -17,7 +17,9 @@ public class TestConstants {
     public static final String DEFAULT_CLOUD_PROVIDER = "aws";
     public static final String DEFAULT_REGION = "us-east-1";
 
+    public static final int DEFAULT_PAGE = 0;
+    public static final int DEFAULT_PAGE_SIZE = 10;
+
     public static final String FAILED_CONDITION_ERROR_CODE = "OPENBRIDGE-1";
     public static final String FAILED_CONDITION_ERROR_MESSAGE = "Something went wrong";
-
 }

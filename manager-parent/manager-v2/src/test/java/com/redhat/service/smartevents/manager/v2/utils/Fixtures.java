@@ -18,25 +18,44 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
+
 public class Fixtures {
 
     public static Bridge createBridge() {
-        return createBridge(null);
-    }
-
-    public static Bridge createBridge(List<Condition> conditions) {
         Operation operation = new Operation();
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
+        return createBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME, operation, null);
+    }
+
+    public static Bridge createReadyBridge(String id, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createBridge(id, name, operation, createReadyConditions());
+    }
+
+    public static Bridge createAcceptedBridge(String id, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createBridge(id, name, operation, createAcceptedConditions());
+    }
+
+    private static Bridge createBridge(String id, String name, Operation operation, List<Condition> conditions) {
         Bridge b = new Bridge();
+        b.setId(id);
         b.setOperation(operation);
         b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        b.setId(TestConstants.DEFAULT_BRIDGE_ID);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
         b.setOwner(TestConstants.DEFAULT_USER_NAME);
-        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
+        b.setName(name);
         b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setEndpoint("https://bridge.redhat.com");
         b.setCloudProvider(TestConstants.DEFAULT_CLOUD_PROVIDER);
@@ -141,5 +160,4 @@ public class Fixtures {
         condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
         return condition;
     }
-
 }

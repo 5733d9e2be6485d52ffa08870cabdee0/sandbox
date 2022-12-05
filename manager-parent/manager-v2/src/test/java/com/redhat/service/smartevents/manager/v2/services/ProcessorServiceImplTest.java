@@ -28,6 +28,7 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_ID;
@@ -37,6 +38,7 @@ import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBri
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createFailedConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProcessor;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProvisioningConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,7 +77,7 @@ public class ProcessorServiceImplTest {
         reset(bridgeServiceMock);
         reset(processorDAO);
 
-        Bridge bridge = createBridge(createReadyConditions());
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         assertThat(getManagedResourceStatus(bridge)).isEqualTo(READY);
 
         Processor processor = createProcessor(bridge, createReadyConditions());
