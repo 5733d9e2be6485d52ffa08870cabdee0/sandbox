@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.cucumber.common;
+package com.redhat.service.smartevents.integration.tests.common;
 
 import java.time.Duration;
 import java.time.Instant;

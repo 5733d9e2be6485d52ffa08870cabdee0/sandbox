@@ -5,19 +5,14 @@
 
   <parent>
     <groupId>com.redhat.service.smartevents</groupId>
-    <artifactId>integration-tests</artifactId>
+    <artifactId>shard-operator-integration-tests</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>shard-operator-integration-tests</artifactId>
+  <artifactId>shard-operator-integration-tests-v2</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>SmartEvents :: Shard Operator Integration Tests</name>
+  <name>SmartEvents :: Shard Operator Integration Tests v2</name>
 
-  <packaging>pom</packaging>
-  <modules>
-    <module>shard-operator-integration-tests-v1</module>
-    <module>shard-operator-integration-tests-v2</module>
-  </modules>
 </project>

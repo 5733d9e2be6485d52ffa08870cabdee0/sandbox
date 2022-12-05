@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.cucumber.logs;
+package com.redhat.service.smartevents.integration.tests.logs;
 
 import java.io.IOException;
 import java.nio.file.Files;

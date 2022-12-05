@@ -3,8 +3,8 @@ package com.redhat.service.smartevents.shard.operator.cucumber.steps;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
-import com.redhat.service.smartevents.shard.operator.cucumber.common.Context;
-import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
+import com.redhat.service.smartevents.integration.tests.common.TimeUtils;
+import com.redhat.service.smartevents.integration.tests.context.ShardContext;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -21,9 +21,9 @@ import io.fabric8.kubernetes.api.model.networking.v1.IngressList;
  */
 public class KubernetesSteps {
 
-    private Context context;
+    private ShardContext context;
 
-    public KubernetesSteps(Context context) {
+    public KubernetesSteps(ShardContext context) {
         this.context = context;
     }
 
