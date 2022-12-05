@@ -13,8 +13,6 @@ import org.mockito.Mockito;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -31,9 +29,6 @@ public class ManagerBridgeSyncServiceTest {
 
     @InjectMock
     ManagedBridgeService managedBridgeService;
-
-    @InjectMock
-    NamespaceProvider namespaceProvider;
 
     @Test
     public void syncManagedBridgeWithManager() {
@@ -59,22 +54,21 @@ public class ManagerBridgeSyncServiceTest {
         bridgeDTO2.setOwner("testOwner");
         bridgeDTOList.add(bridgeDTO2);
 
-        Mockito.doNothing().when(managedBridgeService).createManagedBridgeResources(Mockito.any(ManagedBridge.class));
-        Mockito.doNothing().when(managedBridgeService).deleteManagedBridgeResources(Mockito.any(ManagedBridge.class));
+        Mockito.doNothing().when(managedBridgeService).createManagedBridge(bridgeDTO1);
+        Mockito.doNothing().when(managedBridgeService).deleteManagedBridge(bridgeDTO2);
         Mockito.when(managerClient.fetchBridgesToDeployOrDelete()).thenReturn(Uni.createFrom().item(bridgeDTOList));
-        Mockito.when(namespaceProvider.getNamespaceName(Mockito.anyString())).thenReturn("testNamespace");
 
         // test
         managedBridgeSyncService.syncManagedBridgeWithManager();
 
-        ArgumentCaptor<ManagedBridge> createBridgeArgumentCaptor = ArgumentCaptor.forClass(ManagedBridge.class);
-        Mockito.verify(managedBridgeService).createManagedBridgeResources(createBridgeArgumentCaptor.capture());
-        ManagedBridge creationRequest = createBridgeArgumentCaptor.getValue();
-        Assertions.assertThat(creationRequest.getSpec().getId()).isEqualTo(bridgeDTO1.getId());
+        ArgumentCaptor<BridgeDTO> createBridgeArgumentCaptor = ArgumentCaptor.forClass(BridgeDTO.class);
+        Mockito.verify(managedBridgeService).createManagedBridge(createBridgeArgumentCaptor.capture());
+        BridgeDTO creationRequest = createBridgeArgumentCaptor.getValue();
+        Assertions.assertThat(creationRequest.getId()).isEqualTo(bridgeDTO1.getId());
 
-        ArgumentCaptor<ManagedBridge> deleteBridgeArgumentCaptor = ArgumentCaptor.forClass(ManagedBridge.class);
-        Mockito.verify(managedBridgeService).deleteManagedBridgeResources(deleteBridgeArgumentCaptor.capture());
-        ManagedBridge deletionRequest = deleteBridgeArgumentCaptor.getValue();
-        Assertions.assertThat(deletionRequest.getSpec().getId()).isEqualTo(bridgeDTO2.getId());
+        ArgumentCaptor<BridgeDTO> deleteBridgeArgumentCaptor = ArgumentCaptor.forClass(BridgeDTO.class);
+        Mockito.verify(managedBridgeService).deleteManagedBridge(deleteBridgeArgumentCaptor.capture());
+        BridgeDTO deletionRequest = deleteBridgeArgumentCaptor.getValue();
+        Assertions.assertThat(deletionRequest.getId()).isEqualTo(bridgeDTO2.getId());
     }
 }

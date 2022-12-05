@@ -1,0 +1,25 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: ""
+  namespace: ""
+  labels:
+    app.kubernetes.io/managed-by: "" # used for filtering of Deployments created by the controller
+    app.kubernetes.io/created-by: "" # Specify the operator
+    app.kubernetes.io/component: ingress # used to specify the component
+  annotations:
+    operator-sdk/primary-resource-name: ""
+    operator-sdk/primary-resource-namespace: ""
+spec:
+  host: ""
+  to:
+    kind: Service
+    name: ""
+  port:
+    targetPort: http2
+  tls:
+    key: ""
+    certificate: ""
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

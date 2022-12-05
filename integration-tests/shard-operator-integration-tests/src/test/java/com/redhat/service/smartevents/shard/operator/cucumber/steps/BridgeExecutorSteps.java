@@ -37,7 +37,7 @@ public class BridgeExecutorSteps {
                         new ObjectMetaBuilder()
                                 .withLabels(
                                         new LabelsBuilder()
-                                                .withManagedByOperator()
+                                                .withManagedByOperator(LabelsBuilder.V1_OPERATOR_NAME)
                                                 .withComponent(BridgeExecutor.COMPONENT_NAME)
                                                 .build())
                                 .withNamespace(bridgeExecutor.getMetadata().getNamespace())

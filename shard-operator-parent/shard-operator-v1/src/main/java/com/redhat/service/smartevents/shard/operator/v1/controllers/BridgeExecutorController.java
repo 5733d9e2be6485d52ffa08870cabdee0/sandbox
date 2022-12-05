@@ -58,7 +58,7 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         EventSourceInitializer<BridgeExecutor>, ErrorStatusHandler<BridgeExecutor> {
 
@@ -92,10 +92,10 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
 
         List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
 
         return eventSources;
     }

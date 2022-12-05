@@ -33,7 +33,7 @@ public class ExternalUserExceptionMapperTest {
 
     @BeforeEach
     void setup() {
-        this.mapper = new ExternalUserExceptionMapper(bridgeErrorService);
+        this.mapper = new ExternalUserExceptionMapper(bridgeErrorService, TestMappersUtils.getDefaultBuildersMock());
         when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
         this.mapper.init();
     }
@@ -49,6 +49,7 @@ public class ExternalUserExceptionMapperTest {
         assertThat(error.getId()).isEqualTo("2");
         assertThat(error.getCode()).isEqualTo("mapped-code");
         assertThat(error.getReason()).isEqualTo("message");
+        assertThat(error.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error.getId()));
     }
 
     @Test
@@ -62,6 +63,7 @@ public class ExternalUserExceptionMapperTest {
         assertThat(error.getId()).isEqualTo("1");
         assertThat(error.getCode()).isEqualTo("code");
         assertThat(error.getReason()).isEqualTo("unmapped-reason");
+        assertThat(error.getHref()).isEqualTo(TestMappersUtils.getDefaultHref(error.getId()));
     }
 
 }

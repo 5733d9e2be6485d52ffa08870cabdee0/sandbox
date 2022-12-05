@@ -1,16 +1,17 @@
 package com.redhat.service.smartevents.shard.operator.v2.providers;
 
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
-import com.redhat.service.smartevents.shard.operator.v2.resources.KNativeBrokerConfigurationSpec;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
-import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -30,20 +31,14 @@ public class NamespaceProviderImplTest {
     NamespaceProviderImpl namespaceProvider;
 
     private ManagedBridge createManagedBridge() {
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        String expectedNamespace = namespaceProvider.getNamespaceName(bridgeDTO.getId());
+        return Fixtures.createManagedBridge(bridgeDTO, expectedNamespace);
+    }
 
-        String id = UUID.randomUUID().toString();
-        String expectedNamespace = namespaceProvider.getNamespaceName(id);
-        ManagedBridge mb = ManagedBridge.fromBuilder()
-                .withBridgeId(id)
-                .withNamespace(expectedNamespace)
-                .withCustomerId(UUID.randomUUID().toString())
-                .withBridgeName(UUID.randomUUID().toString())
-                .withOwner(UUID.randomUUID().toString())
-                .withDnsConfigurationSpec(new DNSConfigurationSpec())
-                .withKnativeBrokerConfigurationSpec(new KNativeBrokerConfigurationSpec())
-                .build();
-
-        return mb;
+    @BeforeEach
+    public void before() {
+        kubernetesClient.namespaces().delete();
     }
 
     @Test

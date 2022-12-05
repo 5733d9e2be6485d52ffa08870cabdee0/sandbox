@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.infra.core.exceptions.mappers;
 
 import java.util.Objects;
 
+import javax.enterprise.inject.Instance;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 
@@ -25,13 +27,12 @@ public class JsonMappingExceptionMapper extends BaseExceptionMapper<JsonMappingE
         //CDI proxy
     }
 
-    public JsonMappingExceptionMapper(BridgeErrorService bridgeErrorService) {
-        super(bridgeErrorService, ExternalUserException.class);
+    public JsonMappingExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
+        super(bridgeErrorService, ExternalUserException.class, builders);
     }
 
     @Override
     public Response toResponse(JsonMappingException e) {
-        LOGGER.debug("Failure", e);
         Throwable cause = Objects.nonNull(e.getCause()) ? e.getCause() : e;
         ResponseBuilder builder = mapError(cause, getStatusCode(cause));
         return builder.build();

@@ -17,25 +17,20 @@ public class ManagedBridgeConverter {
     public static ManagedBridge fromBridgeDTOToManageBridge(BridgeDTO bridgeDTO, String namespace) {
         try {
 
-            TLSSpec tlsSpec = new TLSSpec();
-            tlsSpec.setCertificate(bridgeDTO.getTlsCertificate());
-            tlsSpec.setKey(bridgeDTO.getTlsKey());
-
-            DNSConfigurationSpec dns = new DNSConfigurationSpec();
-            dns.setHost(new URL(bridgeDTO.getEndpoint()).getHost());
-            dns.setTls(tlsSpec);
+            DNSConfigurationSpec dns = DNSConfigurationSpec.Builder.builder()
+                    .host(new URL(bridgeDTO.getEndpoint()).getHost())
+                    .tls(new TLSSpec(bridgeDTO.getTlsKey(), bridgeDTO.getTlsCertificate()))
+                    .build();
 
             KafkaConnectionDTO kafkaConnectionDTO = bridgeDTO.getKafkaConnection();
-            KafkaConfigurationSpec kafkaConfigurationSpec = new KafkaConfigurationSpec();
-            kafkaConfigurationSpec.setBootstrapServers(kafkaConnectionDTO.getBootstrapServers());
-            kafkaConfigurationSpec.setPassword(kafkaConnectionDTO.getClientSecret());
-            kafkaConfigurationSpec.setUserId(kafkaConnectionDTO.getClientId());
-            kafkaConfigurationSpec.setSaslMechanism(kafkaConnectionDTO.getSaslMechanism());
-            kafkaConfigurationSpec.setSecurityProtocol(kafkaConnectionDTO.getSecurityProtocol());
-            kafkaConfigurationSpec.setTopicName(kafkaConnectionDTO.getTopic());
-
-            KNativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec = new KNativeBrokerConfigurationSpec();
-            kNativeBrokerConfigurationSpec.setKafkaConfiguration(kafkaConfigurationSpec);
+            KafkaConfigurationSpec kafkaConfigurationSpec = KafkaConfigurationSpec.Builder.builder()
+                    .bootstrapServers(kafkaConnectionDTO.getBootstrapServers())
+                    .password(kafkaConnectionDTO.getClientSecret())
+                    .user(kafkaConnectionDTO.getClientId())
+                    .saslMechanism(kafkaConnectionDTO.getSaslMechanism())
+                    .securityProtocol(kafkaConnectionDTO.getSecurityProtocol())
+                    .topic(kafkaConnectionDTO.getTopic())
+                    .build();
 
             return new ManagedBridge.Builder()
                     .withNamespace(namespace)
@@ -44,7 +39,7 @@ public class ManagedBridgeConverter {
                     .withOwner(bridgeDTO.getOwner())
                     .withBridgeId(bridgeDTO.getId())
                     .withDnsConfigurationSpec(dns)
-                    .withKnativeBrokerConfigurationSpec(kNativeBrokerConfigurationSpec)
+                    .withKnativeBrokerConfigurationSpec(new KNativeBrokerConfigurationSpec(kafkaConfigurationSpec))
                     .build();
         } catch (MalformedURLException e) {
             throw new InvalidURLException("Could not extract host from " + bridgeDTO.getEndpoint());

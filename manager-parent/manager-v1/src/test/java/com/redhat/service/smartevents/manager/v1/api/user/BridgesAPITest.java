@@ -22,6 +22,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Pro
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
@@ -253,6 +254,7 @@ public class BridgesAPITest {
     private void assertErrorResponses(ErrorsResponse errorsResponse, Set<Class<? extends RuntimeException>> exceptions) {
         Set<String> expectedErrorCodes = exceptions.stream().map(e -> errorDAO.findByException(e).getCode()).collect(Collectors.toSet());
 
+        assertThat(errorsResponse.getItems().stream().allMatch(x -> x.getHref().contains(V1APIConstants.V1_ERROR_API_BASE_PATH))).isTrue();
         assertThat(errorsResponse.getItems())
                 .hasSize(expectedErrorCodes.size())
                 .map(ErrorResponse::getCode)
@@ -269,6 +271,7 @@ public class BridgesAPITest {
         assertThat(error.getId()).isEqualTo("4");
         assertThat(error.getCode()).endsWith("4");
         assertThat(error.getReason()).isNotBlank();
+        assertThat(error.getHref()).contains(V1APIConstants.V1_ERROR_API_BASE_PATH);
     }
 
     @Test

@@ -216,18 +216,37 @@
 
       <dependency>
         <groupId>com.redhat.service.smartevents</groupId>
-        <artifactId>manager-integration-tests</artifactId>
+        <artifactId>shard-operator-v2</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.smartevents</groupId>
-        <artifactId>manager-integration-tests</artifactId>
+        <artifactId>shard-operator-v2</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.smartevents</groupId>
-        <artifactId>manager-integration-tests</artifactId>
+        <artifactId>shard-operator-v2</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>integration-tests-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>integration-tests-common</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>integration-tests-common</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>

@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.api.APIConstants;
@@ -17,6 +16,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Inv
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
@@ -103,7 +103,6 @@ public class BridgesAPITest {
                 .then().statusCode(400);
     }
 
-    @Disabled("https://issues.redhat.com/browse/MGDOBR-1284")
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge_withInvalidCloudProvider() {
@@ -113,7 +112,6 @@ public class BridgesAPITest {
         assertErrorResponses(errorsResponse, Set.of(InvalidCloudProviderException.class, InvalidRegionException.class));
     }
 
-    @Disabled("https://issues.redhat.com/browse/MGDOBR-1284")
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge_withInvalidRegion() {
@@ -126,6 +124,7 @@ public class BridgesAPITest {
     private void assertErrorResponses(ErrorsResponse errorsResponse, Set<Class<? extends RuntimeException>> exceptions) {
         Set<String> expectedErrorCodes = exceptions.stream().map(e -> errorDAO.findByException(e).getCode()).collect(Collectors.toSet());
 
+        assertThat(errorsResponse.getItems().stream().allMatch(x -> x.getHref().contains(V2APIConstants.V2_ERROR_API_BASE_PATH))).isTrue();
         assertThat(errorsResponse.getItems())
                 .hasSize(expectedErrorCodes.size())
                 .map(ErrorResponse::getCode)

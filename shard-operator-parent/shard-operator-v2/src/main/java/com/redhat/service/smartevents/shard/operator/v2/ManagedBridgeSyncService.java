@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
 @ApplicationScoped
 public class ManagedBridgeSyncService {
@@ -39,12 +37,10 @@ public class ManagedBridgeSyncService {
 
     private void processDelta(List<BridgeDTO> bridgeDTOList) {
         for (BridgeDTO bridgeDTO : bridgeDTOList) {
-            String namespace = namespaceProvider.getNamespaceName(bridgeDTO.getId());
-            ManagedBridge managedBridge = ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, namespace);
             if (bridgeDTO.getOperationType() == OperationType.DELETE) {
-                managedBridgeService.deleteManagedBridgeResources(managedBridge);
+                managedBridgeService.deleteManagedBridge(bridgeDTO);
             } else {
-                managedBridgeService.createManagedBridgeResources(managedBridge);
+                managedBridgeService.createManagedBridge(bridgeDTO);
             }
         }
     }
