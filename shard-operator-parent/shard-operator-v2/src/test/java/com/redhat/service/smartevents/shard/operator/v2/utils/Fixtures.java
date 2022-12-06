@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v2.utils;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
 public class Fixtures {
@@ -37,6 +38,6 @@ public class Fixtures {
     }
 
     public static ManagedBridge createManagedBridge(BridgeDTO bridgeDTO, String namespace) {
-        return ManagedBridge.fromDTO(bridgeDTO, namespace);
+        return ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, namespace);
     }
 }

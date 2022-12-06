@@ -36,6 +36,9 @@ public class BridgeDTO {
     @JsonProperty("operation")
     private OperationType operationType;
 
+    @JsonProperty("generation")
+    private long generation;
+
     public BridgeDTO() {
     }
 
@@ -121,6 +124,14 @@ public class BridgeDTO {
 
     public void setOperationType(OperationType operationType) {
         this.operationType = operationType;
+    }
+
+    public long getGeneration() {
+        return generation;
+    }
+
+    public void setGeneration(long generation) {
+        this.generation = generation;
     }
 
     @Override

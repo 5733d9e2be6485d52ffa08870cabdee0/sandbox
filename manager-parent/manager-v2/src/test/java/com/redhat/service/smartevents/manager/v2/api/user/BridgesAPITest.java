@@ -95,7 +95,7 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getEndpoint()).isNull();
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse.getPublishedAt()).isNull();
-        assertThat(bridgeResponse.getModifiedAt()).isNotNull();
+        assertThat(bridgeResponse.getModifiedAt()).isNull();
         assertThat(bridgeResponse.getHref()).contains(bridgeResponse.getId());
         assertThat(bridgeResponse.getOwner()).isNotNull();
         assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);

@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v1;
+package com.redhat.service.smartevents.shard.operator.core;
 
 import java.util.concurrent.ScheduledExecutorService;
 

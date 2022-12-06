@@ -11,6 +11,7 @@ import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImpo
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
@@ -37,7 +38,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
         String expectedNamespace = namespaceProvider.getNamespaceName(bridgeDTO.getId());
 
-        ManagedBridge expected = ManagedBridge.fromDTO(bridgeDTO, expectedNamespace);
+        ManagedBridge expected = ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, expectedNamespace);
         namespaceProvider.fetchOrCreateNamespace(expected);
 
         ManagedBridge existing = kubernetesClient
@@ -99,7 +100,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     @Override
     public void deleteManagedBridge(BridgeDTO bridgeDTO) {
 
-        ManagedBridge mb = ManagedBridge.fromDTO(bridgeDTO, null);
+        ManagedBridge mb = ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, null);
 
         /*
          * Pull in the rest of the logic from BridgeIngressServiceImpl to delete the other resources

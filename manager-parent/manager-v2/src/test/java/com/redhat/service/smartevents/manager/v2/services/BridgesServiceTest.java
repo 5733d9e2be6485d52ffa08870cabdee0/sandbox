@@ -95,7 +95,7 @@ public class BridgesServiceTest {
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getSubmittedAt()).isEqualTo(bridge.getSubmittedAt());
         assertThat(response.getPublishedAt()).isEqualTo(bridge.getPublishedAt());
-        assertThat(response.getModifiedAt()).isEqualTo(bridge.getOperation().getRequestedAt());
+        assertThat(response.getModifiedAt()).isNull();
         assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(response.getHref()).contains(bridge.getId());
         assertThat(response.getOwner()).isEqualTo(bridge.getOwner());
