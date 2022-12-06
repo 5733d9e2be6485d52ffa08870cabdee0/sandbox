@@ -5,15 +5,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderImpl;
-import io.quarkus.test.junit.mockito.InjectMock;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.v1.TestSupport;
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderImpl;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.Secret;
@@ -21,7 +19,6 @@ import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
-import org.mockito.Mockito;
 
 @QuarkusTest
 @WithOpenShiftTestServer
