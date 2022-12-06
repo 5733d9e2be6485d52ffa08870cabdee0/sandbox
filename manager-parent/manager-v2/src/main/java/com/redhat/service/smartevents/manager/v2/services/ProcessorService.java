@@ -18,5 +18,7 @@ public interface ProcessorService {
 
     Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
+    void deleteProcessor(String bridgeId, String processorId, String customerId);
+
     ProcessorResponse toResponse(Processor processor);
 }

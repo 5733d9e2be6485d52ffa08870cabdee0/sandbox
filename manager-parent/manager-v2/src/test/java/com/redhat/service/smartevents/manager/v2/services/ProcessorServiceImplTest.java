@@ -387,6 +387,48 @@ public class ProcessorServiceImplTest {
     }
 
     @Test
+    void testDeleteProcessor_processorDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.deleteProcessor(DEFAULT_BRIDGE_ID, NON_EXISTING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    void testDeleteProcess_processorIsNotReady() {
+        assertThatExceptionOfType(ProcessorLifecycleException.class)
+                .isThrownBy(() -> processorService.deleteProcessor(DEFAULT_BRIDGE_ID, PROVISIONING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    void testDeleteProcessor_processorStatusIsReady() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        doTestDeleteProcessor(createReadyProcessor(bridge));
+    }
+
+    @Test
+    void testDeleteProcessor_processorStatusIsFailed() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        doTestDeleteProcessor(createFailedProcessor(bridge));
+    }
+
+    private void doTestDeleteProcessor(Processor processor) {
+        processorService.deleteProcessor(DEFAULT_BRIDGE_ID, processor.getId(), DEFAULT_CUSTOMER_ID);
+
+        // TODO {manstis} There's nothing to assert on until WorkManager exists in v2.
+        // See https://issues.redhat.com/browse/MGDOBR-1304
+        // See https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1396
+        //
+        // ArgumentCaptor<Processor> processorArgumentCaptor = ArgumentCaptor.forClass(Processor.class);
+        // verify(workManagerMock).schedule(processorArgumentCaptor.capture());
+        //
+        // Processor parameter = processorArgumentCaptor.getValue();
+        // assertThat(parameter).isNotNull();
+        // assertThat(parameter).isEqualTo(processor);
+        // assertThat(StatusUtilities.getManagedResourceStatus(parameter)).isEqualTo(DEPROVISION);
+        // assertThat(parameter.getOperation().getType()).isEqualTo(OperationType.DELETE);
+        // assertThat(parameter.getOperation().getRequestedAt()).isNotNull();
+    }
+
+    @Test
     public void testToResponse() {
         Bridge bridge = createBridge();
         Processor processor = createProcessor(bridge);
