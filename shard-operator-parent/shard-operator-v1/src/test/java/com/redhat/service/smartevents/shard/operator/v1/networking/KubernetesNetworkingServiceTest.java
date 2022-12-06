@@ -2,12 +2,12 @@ package com.redhat.service.smartevents.shard.operator.v1.networking;
 
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderImpl;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.v1.TestSupport;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderImpl;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
