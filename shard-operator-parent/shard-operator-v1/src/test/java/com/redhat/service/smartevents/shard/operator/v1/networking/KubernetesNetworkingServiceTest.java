@@ -2,20 +2,18 @@ package com.redhat.service.smartevents.shard.operator.v1.networking;
 
 import javax.inject.Inject;
 
-import io.quarkus.test.junit.mockito.InjectMock;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderImpl;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.v1.TestSupport;
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
-import org.mockito.Mockito;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -24,16 +22,12 @@ public class KubernetesNetworkingServiceTest {
     @Inject
     KubernetesClient client;
 
-    @InjectMock
-    TemplateProvider templateProvider;
-
     @Inject
     IstioGatewayProvider istioGatewayProvider;
 
     @Test
     public void TestFetchOrCreateBrokerNetworkIngress() {
-        Mockito.when(templateProvider.loadBridgeIngressKubernetesIngressTemplate(Mockito.any(), Mockito.any())).thenCallRealMethod();
-        KubernetesNetworkingService kubernetesNetworkingService = new KubernetesNetworkingService(client, templateProvider, istioGatewayProvider);
+        KubernetesNetworkingService kubernetesNetworkingService = new KubernetesNetworkingService(client, new TemplateProviderImpl(), istioGatewayProvider);
         NetworkResource networkResource = kubernetesNetworkingService.fetchOrCreateBrokerNetworkIngress(buildBridgeIngress(), null, "testPath");
         Assertions.assertThat(networkResource.isReady()).isFalse();
         Assertions.assertThat(networkResource.getEndpoint()).isEqualTo("");

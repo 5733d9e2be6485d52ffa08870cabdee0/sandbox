@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderImpl;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,15 +16,12 @@ import com.redhat.service.smartevents.shard.operator.v1.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
-// import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import org.mockito.Mockito;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -32,16 +30,12 @@ public class OpenshiftNetworkingServiceTest {
     @Inject
     OpenShiftClient client;
 
-    @InjectMock
-    TemplateProvider templateProvider;
-
     @Inject
     IstioGatewayProvider istioGatewayProvider;
 
     @Test
     public void TestOpenshiftNetworkingService() {
-        Mockito.when(templateProvider.loadBridgeIngressOpenshiftRouteTemplate(Mockito.any(), Mockito.any())).thenCallRealMethod();
-        OpenshiftNetworkingService openshiftNetworkingService = new OpenshiftNetworkingService(client, templateProvider, istioGatewayProvider);
+        OpenshiftNetworkingService openshiftNetworkingService = new OpenshiftNetworkingService(client, new TemplateProviderImpl(), istioGatewayProvider);
         Secret secret = new Secret();
         Map<String, String> Secretdata = new HashMap<>();
         Secretdata.put(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, "VExTX0NFUlRJRklDQVRF");
