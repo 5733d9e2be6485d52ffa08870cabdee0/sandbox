@@ -1,14 +1,5 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
-import java.util.List;
-import java.util.function.Function;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,16 +7,24 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.core.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.core.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
-
+import com.redhat.service.smartevents.shard.operator.core.utils.WebClientUtils;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpRequest;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.List;
+import java.util.function.Function;
 
 @ApplicationScoped
 public class ManagerClientImpl implements ManagerClient {
@@ -50,6 +49,15 @@ public class ManagerClientImpl implements ManagerClient {
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))
                 .onItem().transform(this::getBridges);
+    }
+
+    @Override
+    public Uni<HttpResponse<Buffer>> notifyBridgeStatus(BridgeStatusDTO dto) {
+        LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", dto.getId());
+        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_BASE_PATH), request -> request.sendJson(dto))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     private List<BridgeDTO> getBridges(HttpResponse<Buffer> httpResponse) {
