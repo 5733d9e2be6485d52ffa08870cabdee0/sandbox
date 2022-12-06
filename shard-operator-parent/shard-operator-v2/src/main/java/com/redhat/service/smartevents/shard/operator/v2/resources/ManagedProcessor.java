@@ -53,17 +53,6 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
         return new Builder();
     }
 
-    public static ManagedProcessor fromDTO(ProcessorDTO processorDTO, String namespace) {
-        return new Builder()
-                .withNamespace(namespace)
-                .withProcessorId(processorDTO.getId())
-                .withBridgeId(processorDTO.getBridgeId())
-                .withCustomerId(processorDTO.getCustomerId())
-                .withDefinition(processorDTO.getFlows())
-                .withProcessorName(processorDTO.getName())
-                .build();
-    }
-
     public static String resolveResourceName(String id) {
         return OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
     }
@@ -77,7 +66,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
         private String processorName;
         private JsonNode processorDefinition;
 
-        private Builder() {
+        public Builder() {
 
         }
 

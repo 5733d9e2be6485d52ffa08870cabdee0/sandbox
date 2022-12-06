@@ -1,8 +1,10 @@
 package com.redhat.service.smartevents.shard.operator.v2.utils;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
@@ -23,7 +25,8 @@ public class Fixtures {
     public static final String KAFKA_SASL_MECHANISM = "PLAIN";
     public static final String KAFKA_TOPIC = "ob-my-id";
     public static final String KAFKA_ERROR_TOPIC = "ob-my-id-errors";
-
+    public static final String PROCESSOR_ID = "my-processor-id";
+    public static final String PROCESSOR_NAME = "my-processor-name";
     public static final KafkaConnectionDTO KAFKA_CONNECTION_DTO = new KafkaConnectionDTO(
             KAFKA_BOOTSTRAP_SERVERS,
             KAFKA_CLIENT_ID,
@@ -39,5 +42,9 @@ public class Fixtures {
 
     public static ManagedBridge createManagedBridge(BridgeDTO bridgeDTO, String namespace) {
         return ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, namespace);
+    }
+
+    public static ProcessorDTO createProcessor(OperationType operation) {
+        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, null, BRIDGE_ID, CUSTOMER_ID, USER_NAME, operation);
     }
 }

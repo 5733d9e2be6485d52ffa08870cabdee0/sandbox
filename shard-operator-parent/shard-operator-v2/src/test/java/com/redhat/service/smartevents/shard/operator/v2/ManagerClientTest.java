@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,39 +38,22 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         Mockito.when(eventBridgeOidcClient.getToken()).thenReturn("1234");
     }
 
-    public static final String KAFKA_BOOTSTRAP_SERVERS = "mytestkafka:9092";
-    public static final String KAFKA_CLIENT_ID = "client-id";
-    public static final String KAFKA_CLIENT_SECRET = "testsecret";
-    public static final String KAFKA_SECURITY_PROTOCOL = "PLAINTEXT";
-    public static final String KAFKA_SASL_MECHANISM = "PLAIN";
-    public static final String KAFKA_TOPIC = "ob-my-id";
-    public static final String KAFKA_ERROR_TOPIC = "ob-my-id-errors";
-
-    public static final KafkaConnectionDTO KAFKA_CONNECTION_DTO = new KafkaConnectionDTO(
-            KAFKA_BOOTSTRAP_SERVERS,
-            KAFKA_CLIENT_ID,
-            KAFKA_CLIENT_SECRET,
-            KAFKA_SECURITY_PROTOCOL,
-            KAFKA_SASL_MECHANISM,
-            KAFKA_TOPIC,
-            KAFKA_ERROR_TOPIC);
-
     @Test
     public void TestFetchBridgesToDeployOrDelete() throws JsonProcessingException {
 
-        BridgeDTO updateDTO = new BridgeDTO(
-                "bridgeStatusChange-1",
-                "myName-1",
-                "myEndpoint",
-                null,
-                null,
-                "myCustomerId",
-                "myUserName",
-                KAFKA_CONNECTION_DTO,
-                OperationType.CREATE);
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
 
-        stubBridgesToDeployOrDelete(List.of(updateDTO));
+        stubBridgesToDeployOrDelete(List.of(bridgeDTO));
 
         assertThat(managerClient.fetchBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(10)).size()).isEqualTo(1);
+    }
+
+    @Test
+    public void TestFetchProcessorsToDeployOrDelete() throws JsonProcessingException {
+        ProcessorDTO processorDTO = Fixtures.createProcessor(OperationType.CREATE);
+
+        stubProcessorsToDeployOrDelete(List.of(processorDTO));
+
+        assertThat(managerClient.fetchProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(10)).size()).isEqualTo(1);
     }
 }

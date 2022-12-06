@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -37,23 +38,12 @@ public class ManagerBridgeSyncServiceTest {
 
         // setup
         List<BridgeDTO> bridgeDTOList = new ArrayList<>();
-        BridgeDTO bridgeDTO1 = new BridgeDTO();
+        BridgeDTO bridgeDTO1 = Fixtures.createBridge(OperationType.CREATE);
         bridgeDTO1.setId("1");
-        bridgeDTO1.setName("bridge1");
-        bridgeDTO1.setCustomerId("cust1");
-        bridgeDTO1.setEndpoint("http://testendpoint.com/test");
-        bridgeDTO1.setKafkaConnection(new KafkaConnectionDTO());
-        bridgeDTO1.setOwner("testOwner");
         bridgeDTOList.add(bridgeDTO1);
 
-        BridgeDTO bridgeDTO2 = new BridgeDTO();
+        BridgeDTO bridgeDTO2 = Fixtures.createBridge(OperationType.DELETE);
         bridgeDTO2.setId("2");
-        bridgeDTO2.setName("bridge2");
-        bridgeDTO2.setCustomerId("cust2");
-        bridgeDTO2.setEndpoint("http://testendpoint.com/test");
-        bridgeDTO2.setOperationType(OperationType.DELETE);
-        bridgeDTO2.setKafkaConnection(new KafkaConnectionDTO());
-        bridgeDTO2.setOwner("testOwner");
         bridgeDTOList.add(bridgeDTO2);
 
         Mockito.doNothing().when(managedBridgeService).createManagedBridge(bridgeDTO1);
