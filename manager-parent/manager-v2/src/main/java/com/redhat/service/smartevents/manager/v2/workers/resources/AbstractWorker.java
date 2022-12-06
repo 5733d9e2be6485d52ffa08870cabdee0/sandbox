@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -28,8 +29,6 @@ import com.redhat.service.smartevents.manager.v2.persistence.dao.ManagedResource
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
-
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 public abstract class AbstractWorker<T extends ManagedResourceV2> implements Worker<T> {
 
@@ -77,7 +76,6 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
             } finally {
-                updated.getConditions().forEach(x -> LOGGER.info(x.getStatus().getValue()));
                 if (!isProvisioningComplete(updated)) {
                     workManager.reschedule(work);
                 }
@@ -146,42 +144,85 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
 
     protected abstract T createDependencies(Work work, T managedResource);
 
-    // @Transactional is meant to roll back when something goes wrong (an exception is thrown). Given that we need to
-    // catch, change the condition status and rethrow, we have have to dontRollbackOn=Exception.class.
+    /**
+     * Deploys/Removes a dependency from a worker.
+     * The <code>onResult</code> callback is meant to contain the logic to transition the <code>Condition</code> accordingly.
+     * In some cases it is necessary to parse the result of the <code>function</code> to understand if the dependency was properly deployed: the <code>onResult</code>
+     * callback is providing such flexibility.
+     * The <code>onException</code> callback is meant to handle exceptions raised by the <code>function</code>.
+     *
+     * Default implementations for the <code>onResult</code> and the <code>onException</code> are provided by the <code>defaultOnResult</code> and <code>defaultOnException</code> methods
+     * of this class.
+     *
+     * Note that @Transactional is meant to roll back when something goes wrong (an exception is thrown). Given that we need to
+     * catch, change the condition status and rethrow, we have have to dontRollbackOn=Exception.class.
+     *
+     * @param conditionType: The condition name of the dependency
+     * @param managedResource The managed resource
+     * @param function The function to deploy/undeploy a dependency
+     * @param onResult The callback with the result of the <code>function</code>. It should parse the result of the <code>function</code> and set the condition status accordingly.
+     * @param onException The callback to handle the exception raised by the <code>function</code>.
+     * @param <R> Generic for the returned object of the <code>function</code>.
+     * @return The returned object of the <code>function</code>.
+     */
     @Transactional(dontRollbackOn = { Exception.class })
-    protected <R> R executeWithFailureRecording(String conditionType, T managedResource, Callable<R> function) {
+    protected <R> R executeWithFailureRecording(String conditionType, T managedResource, Callable<R> function, BiFunction<R, Condition, Condition> onResult,
+            BiFunction<Exception, Condition, Condition> onException) {
         Condition condition = findConditionByType(conditionType, managedResource);
         Condition conditionRef = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
         try {
             R result = function.call();
-
-            conditionRef.setType(conditionType);
-            conditionRef.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
-            conditionRef.setStatus(ConditionStatus.TRUE);
-
-            // TODO refactor this, as we have to return the modified conditions as well.
-            condition.setType(conditionType);
-            condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
-            condition.setStatus(ConditionStatus.TRUE);
-
+            Condition modified = onResult.apply(result, condition);
+            Condition.copy(modified, conditionRef);
             return result;
         } catch (Exception e) {
-            BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
-            conditionRef.setErrorCode(bridgeErrorInstance.getCode());
-            conditionRef.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
-            conditionRef.setStatus(ConditionStatus.FALSE);
-            conditionRef.setMessage("Failed to deploy " + conditionType + " due to " + e.getMessage());
-            conditionRef.setReason(bridgeErrorInstance.getReason());
+            Condition modified = onException.apply(e, condition);
+            Condition.copy(modified, conditionRef);
+            throw new RuntimeException(e);
+        }
+    }
 
-            // TODO refactor this, as we have to return the modified conditions as well.
+    /**
+     * Generates the default <code>BiFunction</code> to be used in <code>executeWithFailureRecording</code>.
+     * In particular, if the <code>function</code> of <code>executeWithFailureRecording</code> is supposed to deploy
+     * the dependency immediately, the condition can be updated immediately.
+     * Don't use this default implementation in case you have to parse the result of the <code>function</code> to decide
+     * if the dependency was properly deployed or not. For example, some dependencies might take minutes to be deployed.
+     *
+     * With this default implementation, the condition is set to TRUE regardless the result of the <code>function</code>.
+     *
+     * @param type Condition type
+     * @param <R> Generic for the returned object of the <code>function</code>.
+     * @return The modified condition.
+     */
+    protected <R> BiFunction<R, Condition, Condition> defaultOnResult(String type) {
+        return (o, condition) -> {
+            condition.setType(type);
+            condition.setStatus(ConditionStatus.TRUE);
+            condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
+            return condition;
+        };
+    }
+
+    /**
+     * Generates the default <code>BiFunction</code> to be used in <code>executeWithFailureRecording</code>.
+     * Don't use this default implementation in case you have to handle exceptions in a custom way: with this default implementation,
+     * in case of an exception the condition is marked as FALSE.
+     *
+     * @param type Condition type
+     * @param <R> Generic for the returned object of the <code>function</code>.
+     * @return The modified condition.
+     */
+    protected BiFunction<Exception, Condition, Condition> defaultOnException(String type) {
+        return (e, condition) -> {
+            BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
             condition.setErrorCode(bridgeErrorInstance.getCode());
             condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
             condition.setStatus(ConditionStatus.FALSE);
-            condition.setMessage("Failed to deploy " + conditionType + " due to " + e.getMessage());
+            condition.setMessage("Failed to deploy " + type + " due to " + e.getMessage());
             condition.setReason(bridgeErrorInstance.getReason());
-
-            throw new RuntimeException(e);
-        }
+            return condition;
+        };
     }
 
     @Transactional
