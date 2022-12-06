@@ -130,7 +130,7 @@ class BridgeWorkerTest {
                 Arguments.of(PREPARING, PROVISIONING, true, true, false));
     }
 
-    // TODO: refactor
+    // TODO: refacto
     @Transactional
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParams")

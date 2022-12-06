@@ -46,7 +46,6 @@ public class QuartzWorkManagerImpl implements WorkManager {
     @PostConstruct
     public void init() {
         try {
-            LOGGER.info("INIT");
             workJob = JobBuilder.newJob(WorkJob.class).storeDurably().build();
             quartz.addJob(workJob, false);
         } catch (SchedulerException e) {
@@ -57,7 +56,6 @@ public class QuartzWorkManagerImpl implements WorkManager {
 
     @Override
     public Work schedule(ManagedResource managedResource) {
-        LOGGER.info("SUCA");
         Work work = Work.forResource(managedResource);
         doSchedule(work);
         return work;
