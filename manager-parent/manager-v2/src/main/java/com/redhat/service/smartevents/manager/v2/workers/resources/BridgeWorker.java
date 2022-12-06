@@ -59,20 +59,18 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
         Callable<Topic> createTopicCallable = () -> rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-        executeWithFailureRecording(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME,
-                                    bridge,
-                                    createTopicCallable,
-                                    defaultOnResult(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME),
-                                    defaultOnException(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME)
-        );
+        execute(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME,
+                bridge,
+                createTopicCallable,
+                defaultOnResult(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME),
+                defaultOnException(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME));
 
         Callable<Boolean> createDNSEntryCallable = () -> dnsService.createDnsRecord(bridge.getId());
-        executeWithFailureRecording(DefaultConditions.CP_DNS_RECORD_READY_NAME,
-                                    bridge,
-                                    createDNSEntryCallable,
-                                    defaultOnResult(DefaultConditions.CP_DNS_RECORD_READY_NAME),
-                                    defaultOnException(DefaultConditions.CP_DNS_RECORD_READY_NAME)
-        );
+        execute(DefaultConditions.CP_DNS_RECORD_READY_NAME,
+                bridge,
+                createDNSEntryCallable,
+                defaultOnResult(DefaultConditions.CP_DNS_RECORD_READY_NAME),
+                defaultOnException(DefaultConditions.CP_DNS_RECORD_READY_NAME));
 
         return persist(bridge);
     }
@@ -87,20 +85,18 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
         Callable<Void> deleteTopicCallable = () -> rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-        executeWithFailureRecording(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME,
-                                    bridge,
-                                    deleteTopicCallable,
-                                    defaultOnResult(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME),
-                                    defaultOnException(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME)
-        );
+        execute(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME,
+                bridge,
+                deleteTopicCallable,
+                defaultOnResult(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME),
+                defaultOnException(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME));
 
         Callable<Boolean> deleteDNSEntryCallable = () -> dnsService.deleteDnsRecord(bridge.getId());
-        executeWithFailureRecording(DefaultConditions.CP_DNS_RECORD_DELETED_NAME,
-                                    bridge,
-                                    deleteDNSEntryCallable,
-                                    defaultOnResult(DefaultConditions.CP_DNS_RECORD_DELETED_NAME),
-                                    defaultOnException(DefaultConditions.CP_DNS_RECORD_DELETED_NAME)
-        );
+        execute(DefaultConditions.CP_DNS_RECORD_DELETED_NAME,
+                bridge,
+                deleteDNSEntryCallable,
+                defaultOnResult(DefaultConditions.CP_DNS_RECORD_DELETED_NAME),
+                defaultOnException(DefaultConditions.CP_DNS_RECORD_DELETED_NAME));
 
         return persist(bridge);
     }

@@ -166,7 +166,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
      * @return The returned object of the <code>function</code>.
      */
     @Transactional(dontRollbackOn = { Exception.class })
-    protected <R> R executeWithFailureRecording(String conditionType, T managedResource, Callable<R> function, BiFunction<R, Condition, Condition> onResult,
+    protected <R> R execute(String conditionType, T managedResource, Callable<R> function, BiFunction<R, Condition, Condition> onResult,
             BiFunction<Exception, Condition, Condition> onException) {
         Condition condition = findConditionByType(conditionType, managedResource);
         Condition conditionRef = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
