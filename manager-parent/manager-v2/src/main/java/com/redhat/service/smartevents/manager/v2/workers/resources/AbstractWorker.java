@@ -15,9 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
@@ -32,8 +29,6 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
-import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
-import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 public abstract class AbstractWorker<T extends ManagedResourceV2> implements Worker<T> {
@@ -69,18 +64,8 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
         boolean areRetriesExceeded = areRetriesExceeded(work, managedResource);
         boolean isTimeoutExceeded = isTimeoutExceeded(work, managedResource);
         if (areRetriesExceeded || isTimeoutExceeded) {
-            InternalPlatformException failure;
-            if (areRetriesExceeded) {
-                failure = new ProvisioningMaxRetriesExceededException(String.format(RETRIES_FAILURE_MESSAGE,
-                        work.getType(),
-                        work.getManagedResourceId()));
-            } else {
-                failure = new ProvisioningTimeOutException(String.format(TIMEOUT_FAILURE_MESSAGE,
-                        work.getType(),
-                        work.getManagedResourceId()));
-            }
-
-            return recordError(work, failure);
+            // Transition all the Conditions with status != READY to FAILED.
+            return recordError(work);
         }
 
         T updated = managedResource;
@@ -147,12 +132,11 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
         return isTimeoutExceeded;
     }
 
-    protected T recordError(Work work, Exception e) {
+    protected T recordError(Work work) {
         String managedResourceId = getId(work);
         T managedResource = load(managedResourceId);
-        BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
 
-        markFailedConditions(managedResource, bridgeErrorInstance);
+        markFailedConditions(managedResource);
 
         return persist(managedResource);
     }
@@ -188,18 +172,14 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
     }
 
     @Transactional
-    protected void markFailedConditions(T managedResource, BridgeErrorInstance bridgeErrorInstance) {
+    protected void markFailedConditions(T managedResource) {
         // Mark all the Manager conditions with status != TRUE as failed.
         for (Condition condition : managedResource.getConditions()) {
             if (ComponentType.MANAGER.equals(condition.getComponent()) && !ConditionStatus.TRUE.equals(condition.getStatus())) {
                 condition = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
                 condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
                 condition.setStatus(ConditionStatus.FAILED);
-                // set the error code with the areRetriesExceeded/isTimeoutExceeded.. ?
-                condition.setErrorCode(bridgeErrorInstance.getCode());
                 // Don't overwrite the message and the reason to keep track of the original failures (if it was recorded).
-                //                condition.setMessage(String.format("Error ID: '%s', Error UUID: '%s'", bridgeErrorInstance.getId(), bridgeErrorInstance.getUuid()));
-                //                condition.setReason(bridgeErrorInstance.getReason());
             }
         }
     }
