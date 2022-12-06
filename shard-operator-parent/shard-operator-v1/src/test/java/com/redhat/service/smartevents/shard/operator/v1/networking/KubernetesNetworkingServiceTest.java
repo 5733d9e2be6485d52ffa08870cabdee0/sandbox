@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator.v1.networking;
 
 import javax.inject.Inject;
 
+import io.quarkus.test.junit.mockito.InjectMock;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+import org.mockito.Mockito;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -22,7 +24,7 @@ public class KubernetesNetworkingServiceTest {
     @Inject
     KubernetesClient client;
 
-    @Inject
+    @InjectMock
     TemplateProvider templateProvider;
 
     @Inject
@@ -30,6 +32,7 @@ public class KubernetesNetworkingServiceTest {
 
     @Test
     public void TestFetchOrCreateBrokerNetworkIngress() {
+        Mockito.when(templateProvider.loadBridgeIngressKubernetesIngressTemplate(Mockito.any(), Mockito.any())).thenCallRealMethod();
         KubernetesNetworkingService kubernetesNetworkingService = new KubernetesNetworkingService(client, templateProvider, istioGatewayProvider);
         NetworkResource networkResource = kubernetesNetworkingService.fetchOrCreateBrokerNetworkIngress(buildBridgeIngress(), null, "testPath");
         Assertions.assertThat(networkResource.isReady()).isFalse();

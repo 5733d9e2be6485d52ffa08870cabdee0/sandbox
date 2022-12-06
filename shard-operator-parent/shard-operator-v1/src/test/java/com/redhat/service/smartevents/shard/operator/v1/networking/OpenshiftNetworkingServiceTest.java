@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import io.quarkus.test.junit.mockito.InjectMock;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +21,7 @@ import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -30,7 +32,7 @@ public class OpenshiftNetworkingServiceTest {
     @Inject
     OpenShiftClient client;
 
-    @Inject
+    @InjectMock
     TemplateProvider templateProvider;
 
     @Inject
@@ -38,6 +40,7 @@ public class OpenshiftNetworkingServiceTest {
 
     @Test
     public void TestOpenshiftNetworkingService() {
+        Mockito.when(templateProvider.loadBridgeIngressOpenshiftRouteTemplate(Mockito.any(), Mockito.any())).thenCallRealMethod();
         OpenshiftNetworkingService openshiftNetworkingService = new OpenshiftNetworkingService(client, templateProvider, istioGatewayProvider);
         Secret secret = new Secret();
         Map<String, String> Secretdata = new HashMap<>();
