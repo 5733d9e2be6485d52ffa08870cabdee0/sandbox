@@ -16,9 +16,11 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import io.smallrye.mutiny.Uni;
 
 @QuarkusTest
+@WithOpenShiftTestServer
 public class ManagerBridgeSyncServiceTest {
 
     @Inject

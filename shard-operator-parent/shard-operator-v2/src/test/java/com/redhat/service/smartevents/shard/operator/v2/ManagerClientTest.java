@@ -17,10 +17,12 @@ import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
+@WithOpenShiftTestServer
 public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @InjectMock

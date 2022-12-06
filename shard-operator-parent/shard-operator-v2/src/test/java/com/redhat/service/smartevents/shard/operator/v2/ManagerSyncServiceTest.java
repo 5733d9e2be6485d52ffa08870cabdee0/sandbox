@@ -7,8 +7,10 @@ import org.mockito.Mockito;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 @QuarkusTest
+@WithOpenShiftTestServer
 public class ManagerSyncServiceTest {
 
     @InjectMock
