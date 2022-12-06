@@ -191,13 +191,11 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
      *
      * With this default implementation, the condition is set to TRUE regardless the result of the <code>function</code>.
      *
-     * @param type Condition type
      * @param <R> Generic for the returned object of the <code>function</code>.
      * @return The modified condition.
      */
-    protected <R> BiFunction<R, Condition, Condition> defaultOnResult(String type) {
+    protected <R> BiFunction<R, Condition, Condition> defaultOnResult() {
         return (o, condition) -> {
-            condition.setType(type);
             condition.setStatus(ConditionStatus.TRUE);
             condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
             return condition;
@@ -209,17 +207,16 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
      * Don't use this default implementation in case you have to handle exceptions in a custom way: with this default implementation,
      * in case of an exception the condition is marked as FALSE.
      *
-     * @param type Condition type
      * @param <R> Generic for the returned object of the <code>function</code>.
      * @return The modified condition.
      */
-    protected BiFunction<Exception, Condition, Condition> defaultOnException(String type) {
+    protected BiFunction<Exception, Condition, Condition> defaultOnException() {
         return (e, condition) -> {
             BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
             condition.setErrorCode(bridgeErrorInstance.getCode());
             condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
             condition.setStatus(ConditionStatus.FALSE);
-            condition.setMessage("Failed to deploy " + type + " due to " + e.getMessage());
+            condition.setMessage("Failed to deploy " + condition.getType() + " due to " + e.getMessage());
             condition.setReason(bridgeErrorInstance.getReason());
             return condition;
         };

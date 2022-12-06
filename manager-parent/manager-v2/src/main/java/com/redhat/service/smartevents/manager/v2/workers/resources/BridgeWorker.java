@@ -62,15 +62,15 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         execute(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME,
                 bridge,
                 createTopicCallable,
-                defaultOnResult(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME),
-                defaultOnException(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME));
+                defaultOnResult(),
+                defaultOnException());
 
         Callable<Boolean> createDNSEntryCallable = () -> dnsService.createDnsRecord(bridge.getId());
         execute(DefaultConditions.CP_DNS_RECORD_READY_NAME,
                 bridge,
                 createDNSEntryCallable,
-                defaultOnResult(DefaultConditions.CP_DNS_RECORD_READY_NAME),
-                defaultOnException(DefaultConditions.CP_DNS_RECORD_READY_NAME));
+                defaultOnResult(),
+                defaultOnException());
 
         return persist(bridge);
     }
@@ -88,15 +88,15 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         execute(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME,
                 bridge,
                 deleteTopicCallable,
-                defaultOnResult(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME),
-                defaultOnException(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME));
+                defaultOnResult(),
+                defaultOnException());
 
         Callable<Boolean> deleteDNSEntryCallable = () -> dnsService.deleteDnsRecord(bridge.getId());
         execute(DefaultConditions.CP_DNS_RECORD_DELETED_NAME,
                 bridge,
                 deleteDNSEntryCallable,
-                defaultOnResult(DefaultConditions.CP_DNS_RECORD_DELETED_NAME),
-                defaultOnException(DefaultConditions.CP_DNS_RECORD_DELETED_NAME));
+                defaultOnResult(),
+                defaultOnException());
 
         return persist(bridge);
     }
