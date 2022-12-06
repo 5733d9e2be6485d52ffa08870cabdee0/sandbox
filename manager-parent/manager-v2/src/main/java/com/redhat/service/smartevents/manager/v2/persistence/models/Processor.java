@@ -14,6 +14,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.FilterDefs;
+import org.hibernate.annotations.Filters;
+import org.hibernate.annotations.ParamDef;
+
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 
 @NamedQueries({
@@ -21,10 +27,20 @@ import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDe
                 query = "from Processor_V2 p left join fetch p.conditions where p.id=:id"),
         @NamedQuery(name = "PROCESSOR_V2.findByBridgeIdAndName",
                 query = "from Processor_V2 p where p.name=:name and p.bridge.id=:bridgeId"),
+        @NamedQuery(name = "PROCESSOR_V2.findByBridgeIdAndCustomerId",
+                query = "select distinct (p) from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt desc"),
+        @NamedQuery(name = "PROCESSOR_V2.findByIdBridgeIdAndCustomerId",
+                query = "from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.id=:id and p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR_V2.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor_V2 p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId")
 })
 @Entity(name = "Processor_V2")
+@FilterDefs({
+        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") })
+})
+@Filters({
+        @Filter(name = "byName", condition = "name like :name")
+})
 @Table(name = "PROCESSOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id" }) })
 public class Processor extends ManagedDefinedResourceV2<ProcessorDefinition> {
 

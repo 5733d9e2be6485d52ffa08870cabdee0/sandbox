@@ -15,7 +15,12 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.core.models.ListResult;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
@@ -30,6 +35,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getModifiedAt;
@@ -48,6 +54,29 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     QuotaConfigurationProvider quotaConfigurationProvider;
+
+    @Override
+    @Transactional
+    public Processor getProcessor(String bridgeId, String processorId, String customerId) {
+        Bridge bridge = bridgeService.getBridge(bridgeId, customerId);
+        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(bridge.getId(), processorId, bridge.getCustomerId());
+        if (Objects.isNull(processor)) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on Bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
+        }
+
+        return processor;
+    }
+
+    @Override
+    @Transactional
+    public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
+        Bridge bridge = bridgeService.getBridge(bridgeId, customerId);
+        ManagedResourceStatus status = StatusUtilities.getManagedResourceStatus(bridge);
+        if (status != ManagedResourceStatus.READY && status != ManagedResourceStatus.FAILED) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
+        }
+        return processorDAO.findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo);
+    }
 
     @Override
     @Transactional
