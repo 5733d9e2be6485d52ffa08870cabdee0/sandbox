@@ -24,6 +24,8 @@ import org.hibernate.annotations.ParamDef;
                 query = "from Bridge_V2 where name=:name and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE_V2.findByIdWithConditions",
                 query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id"),
+        @NamedQuery(name = "BRIDGE.findByIdAndCustomerIdWithConditions",
+                query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
                 query = "select count(*) from Bridge_V2 where organisation_id=:organisationId"),
         @NamedQuery(name = "BRIDGE_V2.findByCustomerId",
