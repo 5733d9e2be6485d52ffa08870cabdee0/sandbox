@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.shard.operator.v1.networking;
 
 import javax.inject.Inject;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
@@ -14,6 +13,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -29,8 +30,8 @@ public class KubernetesNetworkingServiceTest {
     public void TestFetchOrCreateBrokerNetworkIngress() {
         KubernetesNetworkingService kubernetesNetworkingService = new KubernetesNetworkingService(client, new TemplateProviderImpl(), istioGatewayProvider);
         NetworkResource networkResource = kubernetesNetworkingService.fetchOrCreateBrokerNetworkIngress(buildBridgeIngress(), null, "testPath");
-        Assertions.assertThat(networkResource.isReady()).isFalse();
-        Assertions.assertThat(networkResource.getEndpoint()).isEqualTo("");
+        assertThat(networkResource.isReady()).isFalse();
+        assertThat(networkResource.getEndpoint()).isEqualTo("");
     }
 
     private BridgeIngress buildBridgeIngress() {
