@@ -43,6 +43,8 @@ import dev.bf2.ffm.ams.core.models.CreateResourceRequest;
 import dev.bf2.ffm.ams.core.models.ResourceCreated;
 import dev.bf2.ffm.ams.core.models.TermsRequest;
 
+import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getModifiedAt;
+
 @ApplicationScoped
 public class BridgeServiceImpl implements BridgeService {
 
@@ -124,7 +126,7 @@ public class BridgeServiceImpl implements BridgeService {
         }
         response.setSubmittedAt(bridge.getSubmittedAt());
         response.setPublishedAt(bridge.getPublishedAt());
-        response.setModifiedAt(bridge.getOperation().getRequestedAt());
+        response.setModifiedAt(getModifiedAt(bridge));
         response.setHref(V2APIConstants.V2_USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
         response.setCloudProvider(bridge.getCloudProvider());
