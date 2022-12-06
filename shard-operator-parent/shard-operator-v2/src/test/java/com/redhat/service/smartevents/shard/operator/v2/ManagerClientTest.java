@@ -14,7 +14,6 @@ import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
-import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -26,9 +25,6 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @InjectMock
     EventBridgeOidcClient eventBridgeOidcClient;
-
-    @InjectMock
-    OperatorMetricsService metricsService;
 
     @Inject
     ManagerClientImpl managerClient;
