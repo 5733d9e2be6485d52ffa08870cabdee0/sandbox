@@ -5,6 +5,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.AMSFailException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
@@ -69,8 +72,23 @@ public class BridgeServiceImpl implements BridgeService {
     AccountManagementService accountManagementService;
 
     @Override
+    @Transactional
+    public Bridge getBridge(String bridgeId, String customerId) {
+        Bridge bridge = bridgeDAO.findByIdAndCustomerIdWithConditions(bridgeId, customerId);
+        if (Objects.isNull(bridge)) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", bridgeId, customerId));
+        }
+        return bridge;
+    }
+
+    @Override
+    @Transactional
     public Bridge getReadyBridge(String bridgeId, String customerId) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        Bridge bridge = getBridge(bridgeId, customerId);
+        if (StatusUtilities.getManagedResourceStatus(bridge) != ManagedResourceStatus.READY) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.READY));
+        }
+        return bridge;
     }
 
     @Override

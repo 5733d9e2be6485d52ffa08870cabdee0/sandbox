@@ -359,6 +359,19 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges.getItems().get(0).getName()).isEqualTo("0");
     }
 
+    @Test
+    public void testFindByIdAndCustomerIdWithConditions_Found() {
+        Bridge bridge = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThat(bridgeDAO.findByIdAndCustomerIdWithConditions(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isEqualTo(bridge);
+    }
+
+    @Test
+    public void testFindByIdAndCustomerIdWithConditions_NotFound() {
+        assertThat(bridgeDAO.findByIdAndCustomerIdWithConditions(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isNull();
+    }
+
     private Bridge buildBridge(String id, String name) {
         Bridge bridge = createBridge();
         bridge.setId(id);

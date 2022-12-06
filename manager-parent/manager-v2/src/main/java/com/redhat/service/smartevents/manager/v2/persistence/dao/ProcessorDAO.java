@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.manager.v2.persistence.dao;
 
-import java.util.List;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
@@ -24,16 +22,8 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
     }
 
     public Processor findByBridgeIdAndName(String bridgeId, String name) {
-        Parameters p = Parameters.with(Processor.NAME_PARAM, name).and(Processor.BRIDGE_ID_PARAM, bridgeId);
-        return singleResultFromList(find("#PROCESSOR_V2.findByBridgeIdAndName", p));
-    }
-
-    private Processor singleResultFromList(PanacheQuery<Processor> find) {
-        List<Processor> processors = find.list();
-        if (processors.size() > 1) {
-            throw new IllegalStateException("Multiple Entities returned from a Query that should only return a single Entity");
-        }
-        return processors.size() == 1 ? processors.get(0) : null;
+        Parameters params = Parameters.with(Processor.NAME_PARAM, name).and(Processor.BRIDGE_ID_PARAM, bridgeId);
+        return find("#PROCESSOR_V2.findByBridgeIdAndName", params).firstResult();
     }
 
     public long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {
