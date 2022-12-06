@@ -1,7 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.v2.utils;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;

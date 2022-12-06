@@ -1,13 +1,15 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
-import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 
 @ApplicationScoped
 public class ManagedProcessorSyncService {
@@ -20,14 +22,13 @@ public class ManagedProcessorSyncService {
     @Inject
     ManagedProcessorService managedProcessorService;
 
-    public void syncManagedProcessorWithManager(){
+    public void syncManagedProcessorWithManager() {
         managerClient.fetchProcessorsToDeployOrDelete()
                 .onItem()
                 .invoke(this::processDelta)
                 .subscribe().with(
                         success -> LOGGER.debug("Successfully processed ManagedProcessor deltas"),
-                        failed -> LOGGER.debug("Failed to process ManagedProcessor deltas")
-                );
+                        failed -> LOGGER.debug("Failed to process ManagedProcessor deltas"));
     }
 
     private void processDelta(List<ProcessorDTO> processorDTOList) {

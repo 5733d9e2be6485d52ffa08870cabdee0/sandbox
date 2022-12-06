@@ -5,15 +5,14 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;

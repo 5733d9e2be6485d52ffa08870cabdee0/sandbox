@@ -6,7 +6,6 @@ import java.util.function.Function;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +16,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.core.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.core.metrics.ManagerRequestStatus;

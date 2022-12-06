@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-
 import javax.enterprise.context.ApplicationScoped;
+
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 
 @ApplicationScoped
 public class ManagedProcessorServiceImpl implements ManagedProcessorService {

@@ -1,20 +1,23 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
-import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
-import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
-import io.smallrye.mutiny.Uni;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
+
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+import io.smallrye.mutiny.Uni;
 
 @QuarkusTest
 @WithOpenShiftTestServer
