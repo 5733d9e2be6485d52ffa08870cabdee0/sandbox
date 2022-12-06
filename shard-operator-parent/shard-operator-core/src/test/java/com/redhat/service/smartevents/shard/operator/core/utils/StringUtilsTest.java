@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.core.utils;
 
-import org.junit.Assert;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class StringUtilsTest {
@@ -9,10 +9,10 @@ public class StringUtilsTest {
     public void TestStringIsNullOrEmpty() {
 
         boolean result = StringUtils.stringIsNullOrEmpty(null);
-        Assert.assertTrue(result);
+        Assertions.assertThat(Boolean.parseBoolean(String.valueOf(result))).isTrue();
 
         result = StringUtils.stringIsNullOrEmpty("");
-        Assert.assertTrue(result);
+        Assertions.assertThat(Boolean.parseBoolean(String.valueOf(result))).isTrue();
 
     }
 
@@ -20,7 +20,7 @@ public class StringUtilsTest {
     public void TestemptyToNull() {
         String testString = null;
         testString = StringUtils.emptyToNull(null);
-        Assert.assertFalse(Boolean.parseBoolean(testString));
+        Assertions.assertThat(Boolean.parseBoolean(testString)).isFalse();
 
     }
 
