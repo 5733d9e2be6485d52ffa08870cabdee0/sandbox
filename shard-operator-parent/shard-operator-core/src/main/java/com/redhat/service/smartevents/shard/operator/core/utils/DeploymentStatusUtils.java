@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
  */
 public final class DeploymentStatusUtils {
 
+
     // https://pkg.go.dev/k8s.io/api/apps/v1#DeploymentConditionType
 
     public static final String PROGRESSING_CONDITION_TYPE = "Progressing";
