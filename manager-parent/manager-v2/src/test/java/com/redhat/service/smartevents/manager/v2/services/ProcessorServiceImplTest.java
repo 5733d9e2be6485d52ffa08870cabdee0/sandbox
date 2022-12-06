@@ -37,9 +37,9 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_US
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createFailedConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProcessor;
-import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProvisioningConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProcessorProvisioningConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProcessorReadyConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyBridge;
-import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -80,10 +80,10 @@ public class ProcessorServiceImplTest {
         Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         assertThat(getManagedResourceStatus(bridge)).isEqualTo(READY);
 
-        Processor processor = createProcessor(bridge, createReadyConditions());
+        Processor processor = createProcessor(bridge, createProcessorReadyConditions());
         assertThat(getManagedResourceStatus(processor)).isEqualTo(READY);
 
-        Processor provisioningProcessor = createProcessor(bridge, createProvisioningConditions());
+        Processor provisioningProcessor = createProcessor(bridge, createProcessorProvisioningConditions());
         provisioningProcessor.setId(PROVISIONING_PROCESSOR_ID);
         provisioningProcessor.setName(PROVISIONING_PROCESSOR_NAME);
         assertThat(getManagedResourceStatus(provisioningProcessor)).isEqualTo(PROVISIONING);

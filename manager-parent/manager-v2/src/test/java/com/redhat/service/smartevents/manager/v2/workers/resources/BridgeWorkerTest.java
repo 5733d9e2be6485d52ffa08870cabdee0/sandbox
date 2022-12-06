@@ -20,10 +20,12 @@ import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvid
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
+import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
@@ -31,14 +33,11 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.v2.workers.resources.WorkerTestUtils.makeWork;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -93,13 +92,12 @@ class BridgeWorkerTest {
     // TODO: refactor
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
-    void testProvisionWorkWithKnownResource(ManagedResourceStatus status,
+    void testProvisionWorkWithKnownResource(
+            ManagedResourceStatus status,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {
-        Bridge bridge = Fixtures.createBridge();
-        //        bridge.setStatus(status);
-        bridgeDAO.persist(bridge);
+        Bridge bridge = createAndPersistDefaultAcceptedBridge();
 
         Work work = makeWork(bridge);
 
@@ -113,21 +111,27 @@ class BridgeWorkerTest {
 
         worker.handleWork(work);
 
+        Bridge retrieved = bridgeDAO.findByIdWithConditions(bridge.getId());
+
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(status);
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).createDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(any());
     }
 
+    @Transactional
+    protected Bridge createAndPersistDefaultAcceptedBridge() {
+        Bridge bridge = Fixtures.createAcceptedBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+        return bridge;
+    }
+
     private static Stream<Arguments> provisionWorkWithKnownResourceParams() {
         return Stream.of(
-                Arguments.of(ACCEPTED, READY, false, false, true),
-                Arguments.of(ACCEPTED, PROVISIONING, true, false, false),
-                Arguments.of(ACCEPTED, PROVISIONING, false, true, false),
-                Arguments.of(ACCEPTED, PROVISIONING, true, true, false),
-                Arguments.of(PREPARING, READY, false, false, true),
-                Arguments.of(PREPARING, PROVISIONING, true, false, false),
-                Arguments.of(PREPARING, PROVISIONING, false, true, false),
-                Arguments.of(PREPARING, PROVISIONING, true, true, false));
+                Arguments.of(PROVISIONING, false, false, true),
+                Arguments.of(PREPARING, true, false, false),
+                Arguments.of(PREPARING, false, true, false),
+                Arguments.of(PREPARING, true, true, false));
     }
 
     // TODO: refacto
@@ -135,12 +139,10 @@ class BridgeWorkerTest {
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParams")
     void testDeletionWorkWithKnownResource(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {
-        Bridge bridge = Fixtures.createBridge();
-        //        bridge.setStatus(status);
+        Bridge bridge = createAndPersistDefaultDeprovisionBridge();
         bridgeDAO.persist(bridge);
 
         Work work = makeWork(bridge);
@@ -153,23 +155,26 @@ class BridgeWorkerTest {
             doThrow(new InternalPlatformException("dns error")).when(dnsServiceMock).deleteDnsRecord(eq(bridge.getId()));
         }
 
-        Bridge refreshed = worker.handleWork(work);
+        Bridge retrieved = worker.handleWork(work);
 
-        //        assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(status);
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).deleteDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }
 
+    @Transactional
+    protected Bridge createAndPersistDefaultDeprovisionBridge() {
+        Bridge bridge = Fixtures.createDeprovisionBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+        return bridge;
+    }
+
     private static Stream<Arguments> deletionWorkWithKnownResourceParams() {
         return Stream.of(
-                Arguments.of(DEPROVISION, DELETED, false, false, true),
-                Arguments.of(DEPROVISION, DELETING, false, true, false),
-                Arguments.of(DEPROVISION, DELETING, true, false, false),
-                Arguments.of(DEPROVISION, DELETING, true, true, false),
-                Arguments.of(DELETING, DELETED, false, false, true),
-                Arguments.of(DELETING, DELETING, false, true, false),
-                Arguments.of(DELETING, DELETING, true, false, false),
-                Arguments.of(DELETING, DELETING, true, true, false));
+                Arguments.of(DELETING, false, false, true),
+                Arguments.of(DELETING, false, true, false),
+                Arguments.of(DELETING, true, false, false),
+                Arguments.of(DELETING, true, true, false));
     }
 }

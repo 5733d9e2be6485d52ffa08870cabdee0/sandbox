@@ -77,6 +77,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
             } finally {
+                updated.getConditions().forEach(x -> LOGGER.info(x.getStatus().getValue()));
                 if (!isProvisioningComplete(updated)) {
                     workManager.reschedule(work);
                 }
@@ -150,10 +151,15 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
     @Transactional(dontRollbackOn = { Exception.class })
     protected <R> R executeWithFailureRecording(String conditionType, T managedResource, Callable<R> function) {
         Condition condition = findConditionByType(conditionType, managedResource);
-        condition = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
+        Condition conditionRef = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
         try {
             R result = function.call();
 
+            conditionRef.setType(conditionType);
+            conditionRef.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
+            conditionRef.setStatus(ConditionStatus.TRUE);
+
+            // TODO refactor this, as we have to return the modified conditions as well.
             condition.setType(conditionType);
             condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
             condition.setStatus(ConditionStatus.TRUE);
@@ -161,6 +167,13 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
             return result;
         } catch (Exception e) {
             BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
+            conditionRef.setErrorCode(bridgeErrorInstance.getCode());
+            conditionRef.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
+            conditionRef.setStatus(ConditionStatus.FALSE);
+            conditionRef.setMessage("Failed to deploy " + conditionType + " due to " + e.getMessage());
+            conditionRef.setReason(bridgeErrorInstance.getReason());
+
+            // TODO refactor this, as we have to return the modified conditions as well.
             condition.setErrorCode(bridgeErrorInstance.getCode());
             condition.setLastTransitionTime(ZonedDateTime.now(ZoneOffset.UTC));
             condition.setStatus(ConditionStatus.FALSE);

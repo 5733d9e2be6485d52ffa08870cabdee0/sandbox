@@ -36,7 +36,7 @@ public class Fixtures {
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createBridge(id, name, operation, createReadyConditions());
+        return createBridge(id, name, operation, createBridgeReadyConditions());
     }
 
     public static Bridge createAcceptedBridge(String id, String name) {
@@ -44,7 +44,15 @@ public class Fixtures {
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createBridge(id, name, operation, createAcceptedConditions());
+        return createBridge(id, name, operation, createBridgeAcceptedConditions());
+    }
+
+    public static Bridge createDeprovisionBridge(String id, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.DELETE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createBridge(id, name, operation, createBridgeDeprovisionConditions());
     }
 
     private static Bridge createBridge(String id, String name, Operation operation, List<Condition> conditions) {
@@ -95,42 +103,38 @@ public class Fixtures {
         return p;
     }
 
-    public static List<Condition> createAcceptedConditions() {
+    public static List<Condition> createBridgeAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
-    public static List<Condition> createReadyConditions() {
+    public static List<Condition> createBridgeReadyConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createBridgeDeprovisionConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createProcessorReadyConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
         return conditions;
     }
 
-    public static List<Condition> createPreparingConditions() {
-        List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
-        return conditions;
-    }
-
-    public static List<Condition> createProvisioningConditions() {
-        List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
-        return conditions;
-    }
-
-    public static List<Condition> createDeprovisioningConditions() {
-        List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
-        return conditions;
-    }
-
-    public static List<Condition> createDeletingConditions() {
+    public static List<Condition> createProcessorProvisioningConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));

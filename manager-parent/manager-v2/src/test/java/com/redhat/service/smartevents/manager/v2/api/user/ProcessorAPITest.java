@@ -34,7 +34,7 @@ import io.restassured.response.Response;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
-import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgeReadyConditions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -150,7 +150,7 @@ public class ProcessorAPITest {
 
     protected BridgeResponse createAndDeployBridge() {
         BridgeResponse bridgeResponse = createBridge();
-        setBridgeStatus(bridgeResponse.getId(), createReadyConditions());
+        setBridgeStatus(bridgeResponse.getId(), createBridgeReadyConditions());
         return bridgeResponse;
     }
 

@@ -7,6 +7,10 @@ public final class DefaultConditions {
     public static final String CP_KAFKA_TOPIC_READY_NAME = "KafkaTopicReady";
     public static final String CP_DNS_RECORD_READY_NAME = "DnsRecordReady";
 
+    public static final String CP_DATA_PLANE_DELETED_NAME = "DataPlaneDeleted";
+    public static final String CP_KAFKA_TOPIC_DELETED_NAME = "KafkaTopicDeleted";
+    public static final String CP_DNS_RECORD_DELETED_NAME = "DnsRecordDeleted";
+
     public static final String DP_SECRET_READY_NAME = "SecretReady";
     public static final String DP_IMAGE_READY_NAME = "ImageReady";
     public static final String DP_DEPLOYMENT_READY_NAME = "DeploymentReady";

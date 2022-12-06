@@ -80,11 +80,11 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         // If this call throws an exception the Bridge's dependencies will be left in DELETING state...
         Callable<Void> deleteTopicCallable = () -> rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-        executeWithFailureRecording("DELETE_TOPIC_READY", bridge, deleteTopicCallable);
+        executeWithFailureRecording(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, bridge, deleteTopicCallable);
 
         // Delete DNS entry
         Callable<Boolean> deleteDNSEntryCallable = () -> dnsService.deleteDnsRecord(bridge.getId());
-        executeWithFailureRecording("DELETE_DNS_ENTRY_READY", bridge, deleteDNSEntryCallable);
+        executeWithFailureRecording(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, bridge, deleteDNSEntryCallable);
 
         return persist(bridge);
     }
