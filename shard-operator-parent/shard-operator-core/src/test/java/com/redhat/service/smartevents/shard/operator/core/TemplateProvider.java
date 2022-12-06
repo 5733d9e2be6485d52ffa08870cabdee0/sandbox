@@ -1,18 +1,17 @@
 package com.redhat.service.smartevents.shard.operator.core;
 
-import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.client.utils.Serialization;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.client.utils.Serialization;
 
 public class TemplateProvider {
 
     private static final String TEMPLATES_DIR = "/templates";
     private static final String TEST_DEPLOYMENT_PATH = TEMPLATES_DIR + "/test_deployment.yaml";
 
-    public static Deployment loadTestDeployment(){
+    public static Deployment loadTestDeployment() {
         return loadYaml(Deployment.class, TEST_DEPLOYMENT_PATH);
     }
 
