@@ -1,27 +1,37 @@
 package com.redhat.service.smartevents.shard.operator.core.utils;
 
-import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 public class StringUtilsTest {
 
     @Test
-    public void TestStringIsNullOrEmpty() {
+    public void TestStringIsNullOrEmpty(){
 
         boolean result = StringUtils.stringIsNullOrEmpty(null);
-        Assertions.assertThat(Boolean.parseBoolean(String.valueOf(result))).isTrue();
+        Assert.assertTrue(result);
+
 
         result = StringUtils.stringIsNullOrEmpty("");
-        Assertions.assertThat(Boolean.parseBoolean(String.valueOf(result))).isTrue();
+        Assert.assertTrue(result);
+
 
     }
-
     @Test
-    public void TestemptyToNull() {
+    public void TestemptyToNull(){
         String testString = null;
         testString = StringUtils.emptyToNull(null);
-        Assertions.assertThat(Boolean.parseBoolean(testString)).isFalse();
+         Assert.assertFalse(Boolean.parseBoolean(testString));
+
+//        boolean testString1 =StringUtils.stringIsNullOrEmpty("");
+//        Assert.assertTrue(testString1);
+//
+//        boolean testString2 = StringUtils.stringIsNullOrEmpty("abc");
+//        Assert.assertFalse(testString2);
+
 
     }
 
 }
+
+
