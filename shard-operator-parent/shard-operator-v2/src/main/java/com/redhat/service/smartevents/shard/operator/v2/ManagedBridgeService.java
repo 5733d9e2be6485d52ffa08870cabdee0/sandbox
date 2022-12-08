@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
@@ -18,4 +19,6 @@ public interface ManagedBridgeService {
     ConfigMap fetchOrCreateBridgeConfigMap(ManagedBridge managedBridge, Secret secret);
 
     KnativeBroker fetchOrCreateKnativeBroker(ManagedBridge managedBridge, ConfigMap configMap);
+
+    AuthorizationPolicy fetchOrCreateBridgeAuthorizationPolicy(ManagedBridge managedBridge, String path);
 }
