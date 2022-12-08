@@ -100,4 +100,10 @@ public class StatusUtilities {
                 .map(c -> "[" + c.getErrorCode() + "] " + c.getMessage())
                 .collect(Collectors.joining(", "));
     }
+
+    public static boolean isActionable(ManagedResourceV2 resource) {
+        ManagedResourceStatus status = getManagedResourceStatus(resource);
+        return (status == ManagedResourceStatus.READY || status == ManagedResourceStatus.FAILED);
+    }
+
 }

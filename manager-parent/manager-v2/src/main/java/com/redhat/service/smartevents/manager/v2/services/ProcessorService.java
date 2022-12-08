@@ -14,5 +14,7 @@ public interface ProcessorService {
 
     Processor createProcessor(String bridgeId, String customerId, String owner, String organisationId, ProcessorRequest processorRequest);
 
+    Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
+
     ProcessorResponse toResponse(Processor processor);
 }
