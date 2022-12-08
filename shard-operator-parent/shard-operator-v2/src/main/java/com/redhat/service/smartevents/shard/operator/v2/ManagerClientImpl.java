@@ -16,6 +16,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.core.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.core.metrics.ManagerRequestStatus;
@@ -52,7 +53,20 @@ public class ManagerClientImpl implements ManagerClient {
                 .onItem().transform(this::getBridges);
     }
 
+    @Override
+    public Uni<List<ProcessorDTO>> fetchProcessorsToDeployOrDelete() {
+        return getAuthenticatedRequest(webClientManager.get(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))
+                .onItem().transform(this::getProcessors);
+    }
+
     private List<BridgeDTO> getBridges(HttpResponse<Buffer> httpResponse) {
+        return deserializeResponseBody(httpResponse, new TypeReference<>() {
+        });
+    }
+
+    private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
         return deserializeResponseBody(httpResponse, new TypeReference<>() {
         });
     }

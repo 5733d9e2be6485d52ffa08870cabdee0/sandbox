@@ -16,6 +16,8 @@ public class ManagerSyncServiceTest {
     @InjectMock
     ManagedBridgeSyncService managedBridgeSyncService;
 
+    @InjectMock
+    ManagedProcessorSyncService managedProcessorSyncService;
     @Inject
     ManagerSyncService managerSyncService;
 
@@ -23,11 +25,13 @@ public class ManagerSyncServiceTest {
     public void TestSyncUpdatesFromManager() {
         // setup
         Mockito.doNothing().when(managedBridgeSyncService).syncManagedBridgeWithManager();
+        Mockito.doNothing().when(managedProcessorSyncService).syncManagedProcessorWithManager();
 
         // test
         managerSyncService.syncUpdatesFromManager();
 
         // assert
         Mockito.verify(managedBridgeSyncService).syncManagedBridgeWithManager();
+        Mockito.verify(managedProcessorSyncService).syncManagedProcessorWithManager();
     }
 }

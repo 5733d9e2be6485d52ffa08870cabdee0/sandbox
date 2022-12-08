@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 
@@ -53,17 +52,6 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
         return new Builder();
     }
 
-    public static ManagedProcessor fromDTO(ProcessorDTO processorDTO, String namespace) {
-        return new Builder()
-                .withNamespace(namespace)
-                .withProcessorId(processorDTO.getId())
-                .withBridgeId(processorDTO.getBridgeId())
-                .withCustomerId(processorDTO.getCustomerId())
-                .withDefinition(processorDTO.getFlows())
-                .withProcessorName(processorDTO.getName())
-                .build();
-    }
-
     public static String resolveResourceName(String id) {
         return OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
     }
@@ -77,7 +65,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
         private String processorName;
         private JsonNode processorDefinition;
 
-        private Builder() {
+        public Builder() {
 
         }
 
