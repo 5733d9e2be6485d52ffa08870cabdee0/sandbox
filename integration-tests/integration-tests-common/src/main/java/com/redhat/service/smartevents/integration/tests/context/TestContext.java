@@ -9,6 +9,8 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.cucumber.java.Scenario;
+import io.fabric8.openshift.client.DefaultOpenShiftClient;
+import io.fabric8.openshift.client.OpenShiftClient;
 
 /**
  * Shared scenario context
@@ -30,7 +32,12 @@ public class TestContext {
     @JsonIgnore
     private Scenario scenario;
 
+    private String namespace;
+    private OpenShiftClient oc;
+
     public TestContext() {
+        namespace = GlobalContext.getUniqueNamespaceName();
+        oc = new DefaultOpenShiftClient();
     }
 
     public String getSqsQueue(String queueName) {
@@ -155,5 +162,13 @@ public class TestContext {
             map.put(name, uniqueName);
         }
         return map.get(name);
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public OpenShiftClient getClient() {
+        return oc;
     }
 }
