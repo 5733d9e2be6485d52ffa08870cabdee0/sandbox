@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.cucumber.steps;
+package com.redhat.service.smartevents.shard.operator.v2.cucumber.steps;
 
 import java.io.IOException;
 
