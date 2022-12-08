@@ -40,4 +40,10 @@ INTEGRATION_TESTS_DIR=${SCRIPT_DIR_PATH}
 
 cd ${INTEGRATION_TESTS_DIR}
 
-mvn clean verify -Pcucumber $ARGS
+mvn clean verify -Pcucumber $ARGS \
+  -Dit.shard.kafka.bootstrap.servers=$IT_SHARD_KAFKA_BOOTSTRAP_SERVERS \
+  -Dit.shard.kafka.user=$IT_SHARD_KAFKA_USER \
+  -Dit.shard.kafka.password=$IT_SHARD_KAFKA_PASSWORD \
+  -Dit.shard.kafka.topic.name=$IT_SHARD_KAFKA_TOPIC_NAME \
+  -Dit.shard.kafka.protocol=SASL_SSL \
+  -Dit.shard.kafka.sasl.mechanism=PLAIN
