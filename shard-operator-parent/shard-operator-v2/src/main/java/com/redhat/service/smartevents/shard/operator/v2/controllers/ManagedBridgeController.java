@@ -82,6 +82,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         ManagedBridgeStatus status = managedBridge.getStatus();
 
         if (!status.isReady() && isTimedOut(status)) {
+            //TODO - Callback to Manager will be added in https://issues.redhat.com/browse/MGDOBR-1267
             //            notifyManagerOfFailure(bridgeIngress,
             //                                   new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
             //                                                                                  bridgeIngress.getClass().getSimpleName(),
