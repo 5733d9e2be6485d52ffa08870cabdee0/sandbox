@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
@@ -77,6 +78,7 @@ public class ProcessorAPITest {
     @Inject
     BridgeDAO bridgeDAO;
 
+    @V1
     @Inject
     WorkManager workManager;
 

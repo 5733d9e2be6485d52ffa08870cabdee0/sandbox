@@ -23,14 +23,13 @@ import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
-import com.redhat.service.smartevents.manager.core.workers.Worker;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConditionDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ManagedResourceV2DAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
-public abstract class AbstractWorker<T extends ManagedResourceV2> implements Worker<T> {
+public abstract class AbstractWorker<T extends ManagedResourceV2> implements WorkerV2<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
@@ -183,7 +182,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
      */
     @Transactional(dontRollbackOn = { Exception.class })
     protected <R> R execute(String conditionType, T managedResource, Callable<R> function, BiFunction<R, Condition, Condition> onResult,
-                            BiFunction<Exception, Condition, Condition> onException) {
+            BiFunction<Exception, Condition, Condition> onException) {
         Condition condition = findConditionByType(conditionType, managedResource);
         Condition conditionRef = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
         try {

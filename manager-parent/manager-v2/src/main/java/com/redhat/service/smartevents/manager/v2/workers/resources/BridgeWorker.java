@@ -17,7 +17,6 @@ import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ManagedResourceV2DAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v2.services.BridgeService;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
 @ApplicationScoped

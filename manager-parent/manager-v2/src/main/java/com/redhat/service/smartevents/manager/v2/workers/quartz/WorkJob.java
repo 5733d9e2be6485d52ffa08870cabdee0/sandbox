@@ -12,8 +12,7 @@ import org.quartz.JobExecutionContext;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v2.workers.resources.BridgeWorker;
+import com.redhat.service.smartevents.manager.v2.workers.resources.WorkerV2;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.convertFromJobData;
 
@@ -23,7 +22,7 @@ import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzW
 public class WorkJob implements Job {
 
     @Inject
-    Instance<Worker<?>> workers;
+    Instance<WorkerV2<?>> workers;
 
     @Override
     public void execute(JobExecutionContext context) {
@@ -35,7 +34,7 @@ public class WorkJob implements Job {
     // Find the Worker that can handle this item of Work.
     // A bit clunky, but should be fine given that we only have two Workers at the minute.
     private Worker<?> findWorker(Work work) {
-        Optional<Worker<?>> worker = workers.stream().filter(x -> x.accept(work)).findFirst();
+        Optional<WorkerV2<?>> worker = workers.stream().filter(x -> x.accept(work)).findFirst();
         if (worker.isPresent()) {
             return worker.get();
         }

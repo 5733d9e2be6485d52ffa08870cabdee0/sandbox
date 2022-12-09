@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +23,7 @@ import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
@@ -163,7 +163,7 @@ class BridgeWorkerTest {
     }
 
     @Test
-    void testBridgeWorkerType(){
+    void testBridgeWorkerType() {
         ManagedResourceV2 managedResourceV2 = Fixtures.createBridge();
         Work work = Work.forResource(managedResourceV2);
         BridgeWorker bridgeWorker = new BridgeWorker();

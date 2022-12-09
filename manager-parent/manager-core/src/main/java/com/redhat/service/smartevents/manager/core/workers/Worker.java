@@ -16,12 +16,4 @@ public interface Worker<T extends ManagedResource> {
      * @return The updated resource.
      */
     T handleWork(Work work);
-
-    /**
-     * Checks if the worker accepts a {@link Work}.
-     *
-     * @param work The {@link Work} to execute.
-     * @return <code>true</code> if the worker accepts the {@link Work}, <code>false</code> otherwise.
-     */
-    boolean accept(Work work);
 }

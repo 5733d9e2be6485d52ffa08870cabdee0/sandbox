@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.v2.workers.quartz;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import javax.enterprise.inject.Instance;
 
@@ -20,12 +21,14 @@ import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.workers.resources.BridgeWorker;
+import com.redhat.service.smartevents.manager.v2.workers.resources.WorkerV2;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,8 +50,14 @@ public class WorkJobTest {
     @BeforeEach
     public void setup() {
         workJob = new WorkJob();
-        Instance<Worker<?>> workers = mock(Instance.class);
-        when() // TODO COMPLETE
+        Instance<WorkerV2<?>> workers = mock(Instance.class);
+
+        // To be changed when more workers are added.
+        when(bridgeWorker.accept(any(Work.class))).thenReturn(true);
+
+        List<Worker<?>> workersList = List.of(bridgeWorker);
+        when(workers.stream()).thenAnswer(invocation -> workersList.stream());
+        workJob.workers = workers;
     }
 
     @Test
