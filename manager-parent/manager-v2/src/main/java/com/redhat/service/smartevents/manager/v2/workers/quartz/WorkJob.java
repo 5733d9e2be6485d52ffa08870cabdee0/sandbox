@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.manager.v2.workers.quartz;
 
+import java.util.Optional;
+
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.quartz.Job;
@@ -19,10 +22,8 @@ import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzW
  */
 public class WorkJob implements Job {
 
-    private static final String BRIDGE_WORKER_CLASSNAME = Bridge.class.getName();
-
     @Inject
-    BridgeWorker bridgeWorker;
+    Instance<Worker<?>> workers;
 
     @Override
     public void execute(JobExecutionContext context) {
@@ -34,13 +35,10 @@ public class WorkJob implements Job {
     // Find the Worker that can handle this item of Work.
     // A bit clunky, but should be fine given that we only have two Workers at the minute.
     private Worker<?> findWorker(Work work) {
-        if (isWorkForBridge(work)) {
-            return bridgeWorker;
+        Optional<Worker<?>> worker = workers.stream().filter(x -> x.accept(work)).findFirst();
+        if (worker.isPresent()) {
+            return worker.get();
         }
         throw new InternalPlatformException("Unable to locate worker for resource of type '" + work.getType() + "', with id '" + work.getManagedResourceId() + "'");
-    }
-
-    private boolean isWorkForBridge(Work work) {
-        return BRIDGE_WORKER_CLASSNAME.equals(work.getType());
     }
 }

@@ -144,6 +144,22 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
 
     protected abstract T createDependencies(Work work, T managedResource);
 
+    protected abstract T deleteDependencies(Work work, T managedResource);
+
+    // When Work is "complete" the Work is removed from the Work Queue acted on by WorkManager.
+    // For simple two-step chains (e.g. our existing Processor->Connector resource) it does not matter
+    // a great deal if either Processor or Connector decide the work is complete. However, consider a three-step
+    // chain: A->B->C where A is the primary work, B a dependency on A and C a dependency on B. We would not want
+    // the work for A to be removed from the Work Queue until B and C are complete. Therefore, neither B nor C should
+    // flag that work is complete. B would check on the status of C and A on B. These methods allow for this.
+    public boolean isProvisioningComplete(T managedResource) {
+        return StatusUtilities.managerDependenciesCompleted(managedResource);
+    }
+
+    public boolean isDeprovisioningComplete(T managedResource) {
+        return StatusUtilities.managerDependenciesCompleted(managedResource);
+    }
+
     /**
      * Deploys/Removes a dependency from a worker.
      * The <code>onResult</code> callback is meant to contain the logic to transition the <code>Condition</code> accordingly.
@@ -167,7 +183,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
      */
     @Transactional(dontRollbackOn = { Exception.class })
     protected <R> R execute(String conditionType, T managedResource, Callable<R> function, BiFunction<R, Condition, Condition> onResult,
-            BiFunction<Exception, Condition, Condition> onException) {
+                            BiFunction<Exception, Condition, Condition> onException) {
         Condition condition = findConditionByType(conditionType, managedResource);
         Condition conditionRef = conditionDAO.getEntityManager().getReference(Condition.class, condition.getId());
         try {
@@ -207,7 +223,6 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
      * Don't use this default implementation in case you have to handle exceptions in a custom way: with this default implementation,
      * in case of an exception the condition is marked as FALSE.
      *
-     * @param <R> Generic for the returned object of the <code>function</code>.
      * @return The modified condition.
      */
     protected BiFunction<Exception, Condition, Condition> defaultOnException() {
@@ -233,22 +248,6 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
                 // Don't overwrite the message and the reason to keep track of the original failures (if it was recorded).
             }
         }
-    }
-
-    protected abstract T deleteDependencies(Work work, T managedResource);
-
-    // When Work is "complete" the Work is removed from the Work Queue acted on by WorkManager.
-    // For simple two-step chains (e.g. our existing Processor->Connector resource) it does not matter
-    // a great deal if either Processor or Connector decide the work is complete. However, consider a three-step
-    // chain: A->B->C where A is the primary work, B a dependency on A and C a dependency on B. We would not want
-    // the work for A to be removed from the Work Queue until B and C are complete. Therefore, neither B nor C should
-    // flag that work is complete. B would check on the status of C and A on B. These methods allow for this.
-    public boolean isProvisioningComplete(T managedResource) {
-        return StatusUtilities.managerDependenciesCompleted(managedResource);
-    }
-
-    public boolean isDeprovisioningComplete(T managedResource) {
-        return StatusUtilities.managerDependenciesCompleted(managedResource);
     }
 
     private Condition findConditionByType(String conditionType, T managedResource) {

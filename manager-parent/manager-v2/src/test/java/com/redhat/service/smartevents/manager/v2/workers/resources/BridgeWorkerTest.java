@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -89,7 +90,6 @@ class BridgeWorkerTest {
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
-    // TODO: refactor
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
     void testProvisionWorkWithKnownResource(
@@ -134,7 +134,6 @@ class BridgeWorkerTest {
                 Arguments.of(PREPARING, true, true, false));
     }
 
-    // TODO: refacto
     @Transactional
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParams")
@@ -161,6 +160,15 @@ class BridgeWorkerTest {
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).deleteDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(work);
+    }
+
+    @Test
+    void testBridgeWorkerType(){
+        ManagedResourceV2 managedResourceV2 = Fixtures.createBridge();
+        Work work = Work.forResource(managedResourceV2);
+        BridgeWorker bridgeWorker = new BridgeWorker();
+
+        assertThat(bridgeWorker.accept(work)).isTrue();
     }
 
     @Transactional

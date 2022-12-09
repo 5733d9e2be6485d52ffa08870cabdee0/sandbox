@@ -25,6 +25,8 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeWorker.class);
 
+    private static final String BRIDGE_WORKER_CLASSNAME = Bridge.class.getName();
+
     @Inject
     BridgeDAO bridgeDAO;
 
@@ -33,9 +35,6 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     @Inject
     ResourceNamesProvider resourceNamesProvider;
-
-    @Inject
-    BridgeService bridgeService;
 
     @Inject
     DnsService dnsService;
@@ -99,5 +98,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
                 defaultOnException());
 
         return persist(bridge);
+    }
+
+    @Override
+    public boolean accept(Work work) {
+        return BRIDGE_WORKER_CLASSNAME.equals(work.getType());
     }
 }

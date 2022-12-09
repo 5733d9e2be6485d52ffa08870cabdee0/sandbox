@@ -3,6 +3,8 @@ package com.redhat.service.smartevents.manager.v2.workers.quartz;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import javax.enterprise.inject.Instance;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +26,7 @@ import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzW
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,7 +47,8 @@ public class WorkJobTest {
     @BeforeEach
     public void setup() {
         workJob = new WorkJob();
-        workJob.bridgeWorker = bridgeWorker;
+        Instance<Worker<?>> workers = mock(Instance.class);
+        when() // TODO COMPLETE
     }
 
     @Test
