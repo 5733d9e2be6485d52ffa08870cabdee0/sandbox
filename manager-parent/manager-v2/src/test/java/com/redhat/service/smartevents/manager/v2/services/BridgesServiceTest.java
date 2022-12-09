@@ -10,6 +10,8 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
@@ -27,6 +29,7 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -35,6 +38,7 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_RE
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
@@ -121,5 +125,39 @@ public class BridgesServiceTest {
         bridgeDAO.persist(b);
 
         return b;
+    }
+
+    @Test
+    public void testGetBridge_Found() {
+        Bridge bridge = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThat(bridgesService.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isEqualTo(bridge);
+    }
+
+    @Test
+    public void testGetBridge_NotFound() {
+        assertThatThrownBy(() -> bridgesService.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isInstanceOf(ItemNotFoundException.class);
+    }
+
+    @Test
+    public void testGetReadyBridge_FoundReady() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThat(bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isEqualTo(bridge);
+    }
+
+    @Test
+    public void testGetReadyBridge_FoundNotReady() {
+        Bridge bridge = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    public void testGetReadyBridge_NotFound() {
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
     }
 }
