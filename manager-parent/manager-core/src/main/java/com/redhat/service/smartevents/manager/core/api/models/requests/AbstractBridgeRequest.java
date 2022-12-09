@@ -28,7 +28,7 @@ public abstract class AbstractBridgeRequest {
     @JsonProperty("region")
     @Schema(
             description = "The cloud provider region where the bridge resides",
-            example = "us-east")
+            example = "us-east-1")
     protected String region;
 
     public String getCloudProvider() {
