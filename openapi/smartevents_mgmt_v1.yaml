@@ -983,16 +983,22 @@ components:
       type: object
       properties:
         name:
+          description: The name of the bridge
           minLength: 1
           type: string
+          example: bridge1
           nullable: false
         cloud_provider:
+          description: The cloud provider where the bridge resides
           minLength: 1
           type: string
+          example: aws
           nullable: false
         region:
+          description: The cloud provider region where the bridge resides
           minLength: 1
           type: string
+          example: us-east
           nullable: false
         error_handler:
           $ref: '#/components/schemas/Action'
@@ -1007,15 +1013,21 @@ components:
       type: object
       properties:
         kind:
+          description: The kind (type) of this resource
           type: string
           nullable: false
         id:
+          description: The unique identifier of this resource
           type: string
           nullable: false
         name:
+          description: The name of this resource
           type: string
+          example: resourceName1
         href:
+          description: "The URL of this resource, without the protocol"
           type: string
+          example: example.com/resource
           nullable: false
         submitted_at:
           format: date-time
@@ -1030,9 +1042,13 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/ManagedResourceStatus'
-          - nullable: false
+          - description: The status of this resource
+            example: ready
+            nullable: false
         owner:
+          description: The user that owns this resource
           type: string
+          example: userName
           nullable: false
         endpoint:
           type: string
@@ -1081,15 +1097,21 @@ components:
       type: object
       properties:
         kind:
+          description: The kind (type) of this resource
           type: string
           nullable: false
         id:
+          description: The unique identifier of this resource
           type: string
           nullable: false
         name:
+          description: The name of this resource
           type: string
+          example: resourceName1
         href:
+          description: "The URL of this resource, without the protocol"
           type: string
+          example: example.com/resource
           nullable: false
         display_name:
           type: string
@@ -1153,10 +1175,13 @@ components:
       type: object
       properties:
         kind:
+          description: The kind (type) of this resource
           type: string
           nullable: false
         name:
+          description: The name of this resource
           type: string
+          example: resourceName1
         code:
           type: string
         reason:
@@ -1259,15 +1284,21 @@ components:
       type: object
       properties:
         kind:
+          description: The kind (type) of this resource
           type: string
           nullable: false
         id:
+          description: The unique identifier of this resource
           type: string
           nullable: false
         name:
+          description: The name of this resource
           type: string
+          example: resourceName1
         href:
+          description: "The URL of this resource, without the protocol"
           type: string
+          example: example.com/resource
           nullable: false
     ProcessingErrorListResponse:
       required:
@@ -1379,15 +1410,21 @@ components:
       type: object
       properties:
         kind:
+          description: The kind (type) of this resource
           type: string
           nullable: false
         id:
+          description: The unique identifier of this resource
           type: string
           nullable: false
         name:
+          description: The name of this resource
           type: string
+          example: resourceName1
         href:
+          description: "The URL of this resource, without the protocol"
           type: string
+          example: example.com/resource
           nullable: false
         submitted_at:
           format: date-time
@@ -1402,9 +1439,13 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/ManagedResourceStatus'
-          - nullable: false
+          - description: The status of this resource
+            example: ready
+            nullable: false
         owner:
+          description: The user that owns this resource
           type: string
+          example: userName
           nullable: false
         type:
           allOf:

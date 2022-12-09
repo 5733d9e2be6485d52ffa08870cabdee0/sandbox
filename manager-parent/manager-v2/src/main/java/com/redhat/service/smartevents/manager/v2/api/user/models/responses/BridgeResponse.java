@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.api.user.models.responses;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.manager.core.api.models.responses.BaseManagedResourceResponse;
@@ -7,16 +9,34 @@ import com.redhat.service.smartevents.manager.core.api.models.responses.BaseMana
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BridgeResponse extends BaseManagedResourceResponse {
 
+    @JsonProperty("name")
+    @NotNull
+    @Schema(
+            description = "The name of the bridge",
+            example = "bridge1")
+    protected String name;
+
     @JsonProperty("endpoint")
+    @Schema(
+            description = "The HTTPS endpoint on which the bridge accepts events",
+            example = "https://example.com/bridge")
     private String endpoint;
 
     @JsonProperty("cloud_provider")
+    @Schema(
+            description = "The cloud provider where the bridge resides",
+            example = "aws")
     private String cloudProvider;
 
     @JsonProperty("region")
+    @Schema(
+            description = "The cloud provider region where the bridge resides",
+            example = "us-east")
     private String region;
 
     @JsonProperty("status_message")
+    @Schema(
+            description = "A detailed status message in case there is a problem with the bridge")
     private String statusMessage;
 
     public BridgeResponse() {
@@ -54,4 +74,6 @@ public class BridgeResponse extends BaseManagedResourceResponse {
     public void setStatusMessage(String statusMessage) {
         this.statusMessage = statusMessage;
     }
+
+
 }
