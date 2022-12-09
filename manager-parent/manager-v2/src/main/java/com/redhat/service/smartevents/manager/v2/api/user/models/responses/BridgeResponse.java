@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.api.user.models.responses;
 
+import javax.validation.constraints.NotNull;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -74,6 +76,5 @@ public class BridgeResponse extends BaseManagedResourceResponse {
     public void setStatusMessage(String statusMessage) {
         this.statusMessage = statusMessage;
     }
-
 
 }

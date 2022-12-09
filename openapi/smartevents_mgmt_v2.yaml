@@ -860,7 +860,7 @@ components:
           description: The cloud provider region where the bridge resides
           minLength: 1
           type: string
-          example: us-east
+          example: us-east-1
           nullable: false
     BridgeResponse:
       required:
@@ -870,6 +870,7 @@ components:
       - submitted_at
       - status
       - owner
+      - name
       type: object
       properties:
         kind:
@@ -880,10 +881,6 @@ components:
           description: The unique identifier of this resource
           type: string
           nullable: false
-        name:
-          description: The name of this resource
-          type: string
-          example: resourceName1
         href:
           description: "The URL of this resource, without the protocol"
           type: string
@@ -909,6 +906,11 @@ components:
           description: The user that owns this resource
           type: string
           example: userName
+          nullable: false
+        name:
+          description: The name of the bridge
+          type: string
+          example: bridge1
           nullable: false
         endpoint:
           description: The HTTPS endpoint on which the bridge accepts events
