@@ -7,7 +7,6 @@ import javax.transaction.Transactional;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
 
 @ApplicationScoped
