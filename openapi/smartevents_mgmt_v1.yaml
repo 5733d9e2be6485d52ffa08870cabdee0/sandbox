@@ -998,7 +998,7 @@ components:
           description: The cloud provider region where the bridge resides
           minLength: 1
           type: string
-          example: us-east
+          example: us-east-1
           nullable: false
         error_handler:
           $ref: '#/components/schemas/Action'
