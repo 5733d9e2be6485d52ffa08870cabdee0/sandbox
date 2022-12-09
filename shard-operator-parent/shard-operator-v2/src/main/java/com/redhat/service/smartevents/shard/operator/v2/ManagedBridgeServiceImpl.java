@@ -1,14 +1,23 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
+import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
@@ -24,6 +33,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 @ApplicationScoped
 public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagedBridgeServiceImpl.class);
+
     @Inject
     NamespaceProvider namespaceProvider;
 
@@ -32,6 +43,12 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
     @Inject
     TemplateProvider templateProvider;
+
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
+
+    @Inject
+    GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Override
     public void createManagedBridge(BridgeDTO bridgeDTO) {
@@ -54,12 +71,11 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                     .withName(expected.getMetadata().getName())
                     .createOrReplace(expected);
 
-            //TODO - Any reason to not move this to the controller?
             createOrUpdateBridgeSecret(expected);
         }
 
         /*
-         * Send callback to Control Plane for initial creation with initial conditions
+         * TODO - Callback to Control Plane will be added in https://issues.redhat.com/browse/MGDOBR-1267
          */
 
     }
@@ -94,6 +110,8 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                     .inNamespace(managedBridge.getMetadata().getNamespace())
                     .withName(managedBridge.getMetadata().getName())
                     .createOrReplace(expected);
+            LOGGER.info("Create/Update Secret with name '{}' for ManagedBridge with id '{}' in namespace '{}'.", expected.getMetadata().getName(), managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
         }
     }
 
@@ -137,6 +155,8 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                 .get();
 
         if (existing == null || !expected.getData().equals(existing.getData())) {
+            LOGGER.info("Create/Update ConfigMap with name '{}' in namespace '{}' for ManagedBridge with id '{}'", expected.getMetadata().getName(), expected.getMetadata().getNamespace(),
+                    managedBridge.getMetadata().getName());
             return kubernetesClient
                     .configMaps()
                     .inNamespace(managedBridge.getMetadata().getNamespace())
@@ -163,6 +183,8 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                 .get();
 
         if (existing == null) {
+            LOGGER.info("Create KnativeBroker with name '{}' in namespace '{}' for ManagedBridge with id '{}'", expected.getMetadata().getName(), expected.getMetadata().getNamespace(),
+                    managedBridge.getMetadata().getName());
             return kubernetesClient
                     .resources(KnativeBroker.class)
                     .inNamespace(managedBridge.getMetadata().getNamespace())
@@ -178,6 +200,46 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                     .withName(managedBridge.getMetadata().getName())
                     .delete();
             return null;
+        }
+
+        return existing;
+    }
+
+    @Override
+    public AuthorizationPolicy fetchOrCreateBridgeAuthorizationPolicy(ManagedBridge managedBridge, String path) {
+        AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(managedBridge,
+                new TemplateImportConfig(LabelsBuilder.V2_OPERATOR_NAME).withNameFromParent()
+                        .withPrimaryResourceFromParent());
+        /**
+         * https://github.com/istio/istio/issues/37221
+         * In addition to that, we can not set the owner references as it is not in the same namespace of the bridgeIngress.
+         */
+        expected.getMetadata().setNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+
+        expected.getSpec().setAction("ALLOW");
+        expected.getSpec().getRules().forEach(x -> x.getTo().get(0).getOperation().getPaths().set(0, path));
+
+        AuthorizationPolicySpecRuleWhen userAuthPolicy = new AuthorizationPolicySpecRuleWhen("request.auth.claims[account_id]", Collections.singletonList(managedBridge.getSpec().getCustomerId()));
+        AuthorizationPolicySpecRuleWhen serviceAccountsAuthPolicy = new AuthorizationPolicySpecRuleWhen("request.auth.claims[rh-user-id]",
+                Arrays.asList(managedBridge.getSpec().getCustomerId(),
+                        globalConfigurationsProvider.getSsoWebhookClientAccountId()));
+
+        expected.getSpec().getRules().get(0).setWhen(Collections.singletonList(userAuthPolicy));
+        expected.getSpec().getRules().get(1).setWhen(Collections.singletonList(serviceAccountsAuthPolicy));
+
+        AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
+                .withName(managedBridge.getMetadata().getName())
+                .get();
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            LOGGER.info("Create/Update AuthorizationPolicy with name '{}' in namespace '{}' for ManagedBridge with id '{}'", expected.getMetadata().getName(), expected.getMetadata().getNamespace(),
+                    managedBridge.getMetadata().getName());
+            return kubernetesClient
+                    .resources(AuthorizationPolicy.class)
+                    .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
+                    .withName(managedBridge.getMetadata().getName())
+                    .createOrReplace(expected);
         }
 
         return existing;
