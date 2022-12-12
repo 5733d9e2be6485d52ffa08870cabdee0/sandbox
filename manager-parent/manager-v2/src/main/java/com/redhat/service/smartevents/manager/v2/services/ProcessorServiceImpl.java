@@ -29,6 +29,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
@@ -102,12 +103,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         return doCreateProcessor(bridge, customerId, owner, processorRequest);
     }
 
-    @Transactional
-    @Override
-    public Long getProcessorsCount(String bridgeId, String customerId) {
-        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
-    }
-
     private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorRequest processorRequest) {
         String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
@@ -150,6 +145,12 @@ public class ProcessorServiceImpl implements ProcessorService {
         conditions.add(new Condition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;
+    }
+
+    @Transactional
+    @Override
+    public Long getProcessorsCount(String bridgeId, String customerId) {
+        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
     }
 
     @Override
@@ -253,6 +254,25 @@ public class ProcessorServiceImpl implements ProcessorService {
         conditions.add(new Condition(DefaultConditions.CP_CONTROL_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;
+    }
+
+    @Override
+    public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
+        return processorDAO.findByShardIdToDeployOrDelete(shardId);
+    }
+
+    @Override
+    public ProcessorDTO toDTO(Processor processor) {
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setId(processor.getId());
+        dto.setBridgeId(processor.getBridge().getId());
+        dto.setCustomerId(processor.getBridge().getCustomerId());
+        dto.setOwner(processor.getOwner());
+        dto.setName(processor.getName());
+        dto.setFlows(processor.getDefinition().getFlows());
+        dto.setOperationType(processor.getOperation().getType());
+        dto.setGeneration(processor.getGeneration());
+        return dto;
     }
 
     @Override
