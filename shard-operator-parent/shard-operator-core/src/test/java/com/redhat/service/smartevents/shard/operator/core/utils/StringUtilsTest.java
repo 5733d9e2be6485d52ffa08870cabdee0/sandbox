@@ -1,8 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.core.utils;
 
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.assertj.core.api.Assertions;
 
 public class StringUtilsTest {
 
