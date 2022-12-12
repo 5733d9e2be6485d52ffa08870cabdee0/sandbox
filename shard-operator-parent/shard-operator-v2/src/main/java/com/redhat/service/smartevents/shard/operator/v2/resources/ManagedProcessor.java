@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
 
@@ -50,6 +51,17 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
      */
     public static Builder fromBuilder() {
         return new Builder();
+    }
+
+    public static ManagedProcessor fromDTO(ProcessorDTO processorDTO, String namespace) {
+        return new Builder()
+                .withNamespace(namespace)
+                .withProcessorId(processorDTO.getId())
+                .withBridgeId(processorDTO.getBridgeId())
+                .withCustomerId(processorDTO.getCustomerId())
+                .withDefinition(processorDTO.getFlows())
+                .withProcessorName(processorDTO.getName())
+                .build();
     }
 
     public static String resolveResourceName(String id) {

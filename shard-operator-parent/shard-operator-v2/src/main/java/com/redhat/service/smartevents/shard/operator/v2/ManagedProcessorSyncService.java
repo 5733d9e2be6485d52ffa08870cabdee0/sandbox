@@ -36,7 +36,7 @@ public class ManagedProcessorSyncService {
             if (processorDTO.getOperationType() == OperationType.DELETE) {
                 managedProcessorService.deleteManagedProcessor(processorDTO);
             } else {
-                managedProcessorService.createManagedProcessor(processorDTO);
+                managedProcessorService.createManagedProcessor(processorDTO, "namespace");
             }
         }
     }

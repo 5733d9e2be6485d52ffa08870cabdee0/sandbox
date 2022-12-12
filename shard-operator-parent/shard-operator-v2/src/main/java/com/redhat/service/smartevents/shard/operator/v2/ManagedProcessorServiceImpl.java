@@ -3,7 +3,12 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
@@ -69,5 +74,10 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
         }
 
         return integration;
+    }
+
+    @Override
+    public void deleteManagedProcessor(ProcessorDTO processorDTO) {
+        // TBD
     }
 }

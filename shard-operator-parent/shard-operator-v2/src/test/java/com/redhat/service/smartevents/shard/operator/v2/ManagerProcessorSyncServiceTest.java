@@ -19,6 +19,8 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import io.smallrye.mutiny.Uni;
 
+import static org.mockito.ArgumentMatchers.anyString;
+
 @QuarkusTest
 @WithOpenShiftTestServer
 public class ManagerProcessorSyncServiceTest {
@@ -45,7 +47,7 @@ public class ManagerProcessorSyncServiceTest {
         processorDTO2.setId("2");
         processorDTOList.add(processorDTO2);
 
-        Mockito.doNothing().when(managedProcessorService).createManagedProcessor(processorDTO1);
+        Mockito.doNothing().when(managedProcessorService).createManagedProcessor(processorDTO1, anyString());
         Mockito.doNothing().when(managedProcessorService).deleteManagedProcessor(processorDTO2);
         Mockito.when(managerClient.fetchProcessorsToDeployOrDelete()).thenReturn(Uni.createFrom().item(processorDTOList));
 
@@ -53,7 +55,7 @@ public class ManagerProcessorSyncServiceTest {
         managedProcessorSyncService.syncManagedProcessorWithManager();
 
         ArgumentCaptor<ProcessorDTO> createProcessorArgumentCaptor = ArgumentCaptor.forClass(ProcessorDTO.class);
-        Mockito.verify(managedProcessorService).createManagedProcessor(createProcessorArgumentCaptor.capture());
+        Mockito.verify(managedProcessorService).createManagedProcessor(createProcessorArgumentCaptor.capture(), anyString());
         ProcessorDTO creationRequest = createProcessorArgumentCaptor.getValue();
         Assertions.assertThat(creationRequest.getId()).isEqualTo(processorDTO1.getId());
 
