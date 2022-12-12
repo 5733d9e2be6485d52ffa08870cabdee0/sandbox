@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
@@ -140,6 +142,74 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
+    @Transactional
+    public Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
+        // Attempt to load the Bridge. We cannot update a Processor if the Bridge is not available.
+        bridgeService.getReadyBridge(bridgeId, customerId);
+        Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
+        long nextGeneration = existingProcessor.getGeneration() + 1;
+
+        return doUpdateProcessor(bridgeId,
+                processorId,
+                customerId,
+                processorRequest,
+                nextGeneration);
+    }
+
+    private Processor doUpdateProcessor(String bridgeId,
+            String processorId,
+            String customerId,
+            ProcessorRequest processorRequest,
+            long nextGeneration) {
+        Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
+
+        if (!StatusUtilities.isActionable(existingProcessor)) {
+            throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
+                    processorId,
+                    customerId));
+        }
+        ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
+        ObjectNode existingFlows = existingDefinition.getFlows();
+
+        // Validate update.
+        // Name cannot be updated.
+        if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
+            throw new BadRequestException("It is not possible to update the Processor's name.");
+        }
+
+        // Construct updated definition
+        ObjectNode updatedFlows = processorRequest.getFlows();
+
+        // No need to update CRD if the definition is unchanged
+        if (Objects.equals(existingFlows, updatedFlows)) {
+            return existingProcessor;
+        }
+
+        ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFlows);
+
+        // Create new definition copying existing properties
+        Operation operation = new Operation();
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        operation.setType(OperationType.UPDATE);
+
+        existingProcessor.setOperation(operation);
+        existingProcessor.setConditions(createAcceptedConditions());
+        existingProcessor.setDefinition(updatedDefinition);
+        existingProcessor.setGeneration(nextGeneration);
+
+        // TODO: schedule work for dependencies
+
+        // TODO: record metrics with MetricsService
+
+        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
+                existingProcessor.getId(),
+                existingProcessor.getBridge().getCustomerId(),
+                existingProcessor.getBridge().getId());
+
+        return existingProcessor;
+    }
+
+    @Override
     public ProcessorResponse toResponse(Processor processor) {
         ProcessorResponse processorResponse = new ProcessorResponse();
 
@@ -152,6 +222,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorResponse.setOwner(processor.getOwner());
         processorResponse.setHref(getBridgeHref(processor));
         processorResponse.setStatusMessage(getStatusMessage(processor));
+        processorResponse.setFlows(processor.getDefinition().getFlows());
 
         return processorResponse;
     }

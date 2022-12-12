@@ -13,13 +13,18 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
@@ -27,6 +32,8 @@ import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -127,6 +134,7 @@ public class ProcessorServiceImplTest {
         when(processorDAO.findById(PROVISIONING_PROCESSOR_ID)).thenReturn(provisioningProcessor);
         when(processorDAO.findByBridgeIdAndName(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_NAME)).thenReturn(processor);
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID)).thenReturn(processor);
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, PROVISIONING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID)).thenReturn(provisioningProcessor);
 
         when(processorDAO.findByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(List.of(processor, provisioningProcessor, failedProcessor), 0, 3));
@@ -286,12 +294,98 @@ public class ProcessorServiceImplTest {
     }
 
     @Test
+    void testUpdateProcessorWhenBridgeNotExists() {
+        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME);
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.updateProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
+    }
+
+    @Test
+    void testUpdateProcessorWhenBridgeNotInReadyState() {
+        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME);
+        assertThatExceptionOfType(BridgeLifecycleException.class)
+                .isThrownBy(() -> processorService.updateProcessor(NOT_READY_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
+    }
+
+    @Test
+    void testUpdateProcessorWhenProcessorNotExists() {
+        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME);
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, NON_EXISTING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
+    }
+
+    @Test
+    void testUpdateProcessorWhenProcessorNotInReadyState() {
+        ProcessorRequest request = new ProcessorRequest(PROVISIONING_PROCESSOR_NAME);
+        assertThatExceptionOfType(ProcessorLifecycleException.class)
+                .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, PROVISIONING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
+    }
+
+    @Test
+    void testUpdateProcessorWithName() {
+        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME);
+        Processor existingProcessor = createReadyProcessorFromRequest(request);
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(existingProcessor);
+
+        request.setName(request.getName() + "-updated");
+        assertThatExceptionOfType(BadRequestException.class)
+                .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
+    }
+
+    @Test
+    void testUpdateProcessorWithFlows() {
+        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME);
+        Processor existingProcessor = createReadyProcessorFromRequest(request);
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID)).thenReturn(existingProcessor);
+
+        ObjectNode newFlows = new ObjectNode(JsonNodeFactory.instance);
+        newFlows.set("flow", JsonNodeFactory.instance.textNode("Flow"));
+        request.setFlows(newFlows);
+
+        Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request);
+        ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
+        assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
+
+        assertThat(updatedResponse.getFlows()).isNotNull();
+        ObjectNode updatedFlows = updatedResponse.getFlows();
+        assertThat(updatedFlows.asText()).isEqualTo(newFlows.asText());
+    }
+
+    @Test
+    void testUpdateProcessorWithNoChange() {
+        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME);
+
+        Processor existingProcessor = createReadyProcessorFromRequest(request);
+
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID)).thenReturn(existingProcessor);
+
+        Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request);
+
+        assertThat(StatusUtilities.getManagedResourceStatus(updatedProcessor)).isEqualTo(READY);
+        assertThat(updatedProcessor).isEqualTo(existingProcessor);
+    }
+
+    private static Processor createReadyProcessorFromRequest(ProcessorRequest request) {
+        ProcessorDefinition definition = new ProcessorDefinition(request.getFlows());
+
+        Processor processor = Fixtures.createReadyProcessor(createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME));
+        processor.setId(DEFAULT_PROCESSOR_ID);
+        processor.setName(request.getName());
+        processor.setDefinition(definition);
+        return processor;
+    }
+
+    @Test
     public void testToResponse() {
         Bridge bridge = createBridge();
         Processor processor = createProcessor(bridge);
         processor.setOwner("Owner");
-
         processor.setConditions(createFailedConditions());
+
+        ObjectNode flows = new ObjectNode(JsonNodeFactory.instance);
+        flows.set("flow", JsonNodeFactory.instance.textNode("Flow"));
+        processor.setDefinition(new ProcessorDefinition(flows));
 
         ProcessorResponse response = processorService.toResponse(processor);
 
@@ -304,5 +398,6 @@ public class ProcessorServiceImplTest {
         assertThat(response.getOwner()).isEqualTo("Owner");
         assertThat(response.getHref()).contains(V2APIConstants.V2_USER_API_BASE_PATH, bridge.getId());
         assertThat(response.getStatusMessage()).contains(TestConstants.FAILED_CONDITION_ERROR_CODE, TestConstants.FAILED_CONDITION_ERROR_MESSAGE);
+        assertThat(response.getFlows().asText()).isEqualTo(flows.asText());
     }
 }

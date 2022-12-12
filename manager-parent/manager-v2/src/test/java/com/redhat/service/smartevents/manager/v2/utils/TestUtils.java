@@ -108,4 +108,10 @@ public class TestUtils {
                 .post(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/");
     }
 
+    public static Response updateProcessor(String bridgeId, String processorId, ProcessorRequest p) {
+        return jsonRequest()
+                .body(p)
+                .put(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+    }
+
 }

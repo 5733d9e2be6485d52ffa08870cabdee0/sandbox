@@ -10,6 +10,8 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
@@ -25,6 +27,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
+import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 import com.redhat.service.smartevents.manager.v2.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -35,6 +38,8 @@ import io.restassured.response.Response;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgeReadyConditions;
@@ -310,6 +315,104 @@ public class ProcessorAPITest {
     @Test
     public void listProcessorsNoAuthentication() {
         assertThat(TestUtils.listProcessors("any-id", 0, 100).getStatusCode()).isEqualTo(401);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenBridgeNotExists() {
+        Response response = TestUtils.updateProcessor("non-existing", "anything", new ProcessorRequest("myProcessor"));
+        assertThat(response.getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenBridgeNotInReadyState() {
+        Bridge bridge = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(), "anything", new ProcessorRequest("myProcessor"));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenProcessorNotExists() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(), "non-existing", new ProcessorRequest("myProcessor"));
+        assertThat(response.getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenProcessorNotInReadyState() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        Processor processor = Fixtures.createProvisioningProcessor(bridge);
+        processorDAO.persist(processor);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(), processor.getId(), new ProcessorRequest(processor.getName()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithName() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        ObjectNode flows = new ObjectNode(JsonNodeFactory.instance);
+        flows.set("flow", JsonNodeFactory.instance.textNode("Flow"));
+        Response createResponse = TestUtils.addProcessorToBridge(bridge.getId(), new ProcessorRequest("myProcessor", flows));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorStatus(processor.getId(), createProcessorReadyConditions());
+
+        Response response = TestUtils.updateProcessor(bridge.getId(), processor.getId(), new ProcessorRequest(processor.getName() + "-updated", flows));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithFlows() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        ObjectNode flows = new ObjectNode(JsonNodeFactory.instance);
+        flows.set("flow", JsonNodeFactory.instance.textNode("Flow"));
+        Response createResponse = TestUtils.addProcessorToBridge(bridge.getId(), new ProcessorRequest("myProcessor", flows));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorStatus(processor.getId(), createProcessorReadyConditions());
+
+        ObjectNode updatedFlows = new ObjectNode(JsonNodeFactory.instance);
+        updatedFlows.set("flow", JsonNodeFactory.instance.textNode("FlowUpdated"));
+        Response updateResponse = TestUtils.updateProcessor(bridge.getId(), processor.getId(), new ProcessorRequest(processor.getName(), flows));
+        assertThat(updateResponse.getStatusCode()).isEqualTo(202);
+
+        ProcessorResponse updated = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+
+        assertThat(updated.getName()).isEqualTo("myProcessor");
+        assertThat(updated.getFlows().asText()).isEqualTo(updatedFlows.asText());
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithMalformedFlows() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        ObjectNode flows = new ObjectNode(JsonNodeFactory.instance);
+        flows.set("flow", JsonNodeFactory.instance.textNode("Flow"));
+        Response createResponse = TestUtils.addProcessorToBridge(bridge.getId(), new ProcessorRequest("myProcessor", flows));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorStatus(processor.getId(), createProcessorReadyConditions());
+
+        Response response = TestUtils.updateProcessor(bridge.getId(), processor.getId(), new ProcessorRequest(processor.getName(), null));
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     private BridgeResponse createBridge() {

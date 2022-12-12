@@ -138,7 +138,9 @@ public class ProcessorsAPI {
     @Path("{bridgeId}/processors/{processorId}")
     public Response updateProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId,
             @Valid ProcessorRequest processorRequest) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        Processor processor = processorService.updateProcessor(bridgeId, processorId, customerId, processorRequest);
+        return Response.accepted(processorService.toResponse(processor)).build();
     }
 
     @APIResponses(value = {
