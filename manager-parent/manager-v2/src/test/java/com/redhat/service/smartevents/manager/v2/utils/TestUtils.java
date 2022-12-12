@@ -54,6 +54,11 @@ public class TestUtils {
         return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
     }
 
+    public static Response getBridge(String id) {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + id);
+    }
+
     public static Response createBridge(BridgeRequest request) {
         return jsonRequest()
                 .body(request)
