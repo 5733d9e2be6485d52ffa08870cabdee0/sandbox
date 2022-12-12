@@ -172,29 +172,29 @@ public class Fixtures {
 
     public static List<Condition> createProcessorAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
     public static List<Condition> createProcessorReadyConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
         return conditions;
     }
 
     public static List<Condition> createProcessorPreparingConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.FALSE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.FALSE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
     public static List<Condition> createProcessorProvisioningConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
