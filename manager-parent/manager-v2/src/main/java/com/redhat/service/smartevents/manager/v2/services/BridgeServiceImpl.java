@@ -150,6 +150,10 @@ public class BridgeServiceImpl implements BridgeService {
         }
 
         Bridge bridge = bridgeDAO.findByIdAndCustomerIdWithConditions(id, customerId);
+        if (bridge == null) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", id, customerId));
+        }
+
         if (!StatusUtilities.isActionable(bridge)) {
             throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
         }
