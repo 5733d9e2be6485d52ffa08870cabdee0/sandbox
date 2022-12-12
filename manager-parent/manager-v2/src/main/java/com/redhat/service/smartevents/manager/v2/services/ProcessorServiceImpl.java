@@ -65,6 +65,12 @@ public class ProcessorServiceImpl implements ProcessorService {
         return doCreateProcessor(bridge, customerId, owner, processorRequest);
     }
 
+    @Transactional
+    @Override
+    public Long getProcessorsCount(String bridgeId, String customerId) {
+        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
+    }
+
     private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorRequest processorRequest) {
         String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {

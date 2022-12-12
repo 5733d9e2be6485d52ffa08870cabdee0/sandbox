@@ -143,6 +143,7 @@ public class BridgesAPI {
     @DELETE
     @Path("{bridgeId}")
     public Response deleteBridge(@PathParam("bridgeId") String bridgeId) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        bridgeService.deleteBridge(bridgeId, identityResolver.resolve(jwt));
+        return Response.accepted().build();
     }
 }

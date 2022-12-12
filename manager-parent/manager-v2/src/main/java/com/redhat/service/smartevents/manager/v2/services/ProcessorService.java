@@ -8,5 +8,7 @@ public interface ProcessorService {
 
     Processor createProcessor(String bridgeId, String customerId, String owner, String organisationId, ProcessorRequest processorRequest);
 
+    Long getProcessorsCount(String bridgeId, String customerId);
+
     ProcessorResponse toResponse(Processor processor);
 }

@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -328,6 +330,50 @@ public class BridgesAPITest {
         assertThat(bridgeListResponse.getItems().size()).isEqualTo(5);
         assertThat(bridgeListResponse.getTotal()).isEqualTo(totalBridges);
         assertThat(bridgeListResponse.getPage()).isEqualTo(0);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testDeleteBridge() {
+        Bridge bridge = Fixtures.createBridge();
+        bridge.setStatus(READY);
+        bridgeDAO.persist(bridge);
+
+        TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
+        BridgeResponse response = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
+    public void testDeleteBridgeNoAuthentication() {
+        TestUtils.deleteBridge("any-id").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testDeleteNotExistingBridge() {
+        TestUtils.deleteBridge("not-the-id").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testDeleteBridgeWithActiveProcessors() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
+        TestUtils.updateBridge(
+                new BridgeDTO(bridgeResponse.getId(),
+                              bridgeResponse.getName(),
+                              bridgeResponse.getEndpoint(),
+                              null,
+                              null,
+                              DEFAULT_CUSTOMER_ID,
+                              DEFAULT_USER_NAME,
+                              READY,
+                              new KafkaConnectionDTO()));
+
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createKafkaAction())).then().statusCode(202);
+
+        TestUtils.deleteBridge(bridgeResponse.getId()).then().statusCode(400);
     }
 
     private void assertErrorResponses(ErrorsResponse errorsResponse, Set<Class<? extends RuntimeException>> exceptions) {

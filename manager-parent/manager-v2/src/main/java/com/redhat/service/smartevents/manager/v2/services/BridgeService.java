@@ -16,5 +16,7 @@ public interface BridgeService {
 
     ListResult<Bridge> getBridges(String customerId, QueryResourceInfo queryInfo);
 
+    void deleteBridge(String id, String customerId);
+
     BridgeResponse toResponse(Bridge bridge);
 }
