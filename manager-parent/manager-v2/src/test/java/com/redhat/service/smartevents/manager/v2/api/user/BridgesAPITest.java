@@ -146,6 +146,41 @@ public class BridgesAPITest {
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void getBridge() {
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+        bridgeCreateResponse.then().statusCode(202);
+
+        BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
+
+        BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(retrievedBridge).isNotNull();
+        assertThat(retrievedBridge.getId()).isEqualTo(bridge.getId());
+        assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
+        assertThat(retrievedBridge.getEndpoint()).isEqualTo(bridge.getEndpoint());
+        assertThat(retrievedBridge.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(retrievedBridge.getRegion()).isEqualTo(DEFAULT_REGION);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void getNonExistingBridge() {
+        ErrorsResponse response = TestUtils.getBridge("not-the-id").then().statusCode(404).extract().as(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
+
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("4");
+        assertThat(error.getCode()).endsWith("4");
+        assertThat(error.getReason()).isNotBlank();
+        assertThat(error.getHref()).contains(V2APIConstants.V2_ERROR_API_BASE_PATH);
+    }
+
+    @Test
+    public void getBridgeNoAuthentication() {
+        TestUtils.getBridge("any-id").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testCreateAndGetBridge() {
         TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);

@@ -101,8 +101,8 @@ public class StatusUtilities {
                 .collect(Collectors.joining(", "));
     }
 
-    public static boolean isActionable(ManagedResourceV2 resourceV2){
-        ManagedResourceStatus status = getManagedResourceStatus(resourceV2);
-        return ManagedResourceStatus.READY.equals(status) || ManagedResourceStatus.FAILED.equals(status);
+    public static boolean isActionable(ManagedResourceV2 resource) {
+        ManagedResourceStatus status = getManagedResourceStatus(resource);
+        return (status == ManagedResourceStatus.READY || status == ManagedResourceStatus.FAILED);
     }
 }

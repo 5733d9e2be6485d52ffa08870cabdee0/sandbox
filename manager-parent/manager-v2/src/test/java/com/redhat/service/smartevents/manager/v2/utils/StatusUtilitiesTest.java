@@ -44,6 +44,19 @@ public class StatusUtilitiesTest {
         return Stream.of(arguments).map(Arguments::of);
     }
 
+    private static Stream<Arguments> getIsActionableParameters() {
+        Object[][] arguments = {
+                { Fixtures.createProcessorAcceptedConditions(), false },
+                { Fixtures.createProcessorPreparingConditions(), false },
+                { Fixtures.createProcessorProvisioningConditions(), false },
+                { Fixtures.createProcessorReadyConditions(), true },
+                { Fixtures.createProcessorDeprovisionConditions(), false },
+                { Fixtures.createProcessorDeletingConditions(), false },
+                { Fixtures.createFailedConditions(), true }
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
     private static Stream<Arguments> getManagerDependenciesCompletedParameters() {
         Object[][] arguments = {
                 { null, false },
@@ -310,6 +323,17 @@ public class StatusUtilitiesTest {
 
         boolean result = StatusUtilities.managerDependenciesCompleted(resource);
         assertThat(result).isEqualTo(expectedResult);
+    }
+
+    @ParameterizedTest
+    @MethodSource("getIsActionableParameters")
+    public void testGetIsActionableParameters(List<Condition> conditions, boolean isActionable) {
+        Bridge resource = new Bridge();
+        Operation operation = new Operation(OperationType.CREATE, ZonedDateTime.now(ZoneOffset.UTC));
+        resource.setOperation(operation);
+        resource.setConditions(conditions);
+
+        assertThat(StatusUtilities.isActionable(resource)).isEqualTo(isActionable);
     }
 
     private static Condition createComponentConditionWithStatus(ComponentType componentType, ConditionStatus conditionStatus) {
