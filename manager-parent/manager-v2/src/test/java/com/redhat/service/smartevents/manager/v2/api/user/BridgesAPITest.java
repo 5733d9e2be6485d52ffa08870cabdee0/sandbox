@@ -374,8 +374,6 @@ public class BridgesAPITest {
         Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        TestUtils.getBridge(bridge.getId()).prettyPrint();
-
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
         BridgeResponse response = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
 
