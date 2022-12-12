@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -24,11 +25,13 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
+import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
@@ -159,5 +162,37 @@ public class BridgesServiceTest {
     @Test
     public void testGetReadyBridge_NotFound() {
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    public void testDeleteBridge() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        assertThat(StatusUtilities.getManagedResourceStatus(retrievedBridge)).isEqualTo(DEPROVISION);
+        assertThat(retrievedBridge.getOperation().getType()).isEqualTo(OperationType.DELETE);
+    }
+
+    @Test
+    public void testDeleteBridge_whenStatusIsFailed() {
+        Bridge bridge = Fixtures.createFailedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        assertThat(StatusUtilities.getManagedResourceStatus(retrievedBridge)).isEqualTo(DEPROVISION);
+        assertThat(retrievedBridge.getOperation().getType()).isEqualTo(OperationType.DELETE);
+    }
+
+    @Test
+    public void testDeleteBridge_whenStatusIsNotReady() {
+        Bridge bridge = Fixtures.createProvisionBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId()));
     }
 }

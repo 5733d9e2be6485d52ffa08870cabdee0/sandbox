@@ -5,8 +5,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +14,13 @@ import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorDAO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -41,6 +41,7 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BR
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -370,9 +371,10 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridge() {
-        Bridge bridge = Fixtures.createBridge();
-        bridge.setStatus(READY);
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
+
+        TestUtils.getBridge(bridge.getId()).prettyPrint();
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
         BridgeResponse response = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
@@ -394,21 +396,12 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveProcessors() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
-        TestUtils.updateBridge(
-                new BridgeDTO(bridgeResponse.getId(),
-                              bridgeResponse.getName(),
-                              bridgeResponse.getEndpoint(),
-                              null,
-                              null,
-                              DEFAULT_CUSTOMER_ID,
-                              DEFAULT_USER_NAME,
-                              READY,
-                              new KafkaConnectionDTO()));
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
 
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createKafkaAction())).then().statusCode(202);
+        TestUtils.addProcessorToBridge(bridge.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME)).then().statusCode(202);
 
-        TestUtils.deleteBridge(bridgeResponse.getId()).then().statusCode(400);
+        TestUtils.deleteBridge(bridge.getId()).then().statusCode(400);
     }
 
     private void assertErrorResponses(ErrorsResponse errorsResponse, Set<Class<? extends RuntimeException>> exceptions) {

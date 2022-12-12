@@ -6,13 +6,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +150,7 @@ public class BridgeServiceImpl implements BridgeService {
         }
 
         Bridge bridge = bridgeDAO.findByIdAndCustomerIdWithConditions(id, customerId);
-        if (StatusUtilities.isActionable(bridge)) {
+        if (!StatusUtilities.isActionable(bridge)) {
             throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
         }
 

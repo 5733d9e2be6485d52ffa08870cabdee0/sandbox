@@ -49,6 +49,14 @@ public class Fixtures {
         return createBridge(id, name, operation, createBridgeAcceptedConditions());
     }
 
+    public static Bridge createProvisionBridge(String id, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.DELETE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createBridge(id, name, operation, createBridgeDeprovisionConditions());
+    }
+
     public static Bridge createDeprovisionBridge(String id, String name) {
         Operation operation = new Operation();
         operation.setType(OperationType.DELETE);
@@ -159,6 +167,14 @@ public class Fixtures {
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createBridgeProvisionConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
