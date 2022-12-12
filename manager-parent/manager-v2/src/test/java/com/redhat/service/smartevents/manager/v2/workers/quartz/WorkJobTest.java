@@ -1,7 +1,10 @@
-package com.redhat.service.smartevents.manager.v1.workers.quartz;
+package com.redhat.service.smartevents.manager.v2.workers.quartz;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
+
+import javax.enterprise.inject.Instance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,30 +16,25 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.Worker;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.workers.resources.BridgeWorker;
-import com.redhat.service.smartevents.manager.v1.workers.resources.ProcessorWorker;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.workers.resources.BridgeWorker;
+import com.redhat.service.smartevents.manager.v2.workers.resources.WorkerV2;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class WorkJobTest {
-
-    @Mock
-    ProcessorWorker processorWorker;
 
     @Mock
     BridgeWorker bridgeWorker;
@@ -52,26 +50,19 @@ public class WorkJobTest {
     @BeforeEach
     public void setup() {
         workJob = new WorkJob();
-        workJob.bridgeWorker = bridgeWorker;
-        workJob.processorWorker = processorWorker;
+        Instance<WorkerV2<?>> workers = mock(Instance.class);
+
+        // To be changed when more workers are added.
+        when(bridgeWorker.accept(any(Work.class))).thenReturn(true);
+
+        List<Worker<?>> workersList = List.of(bridgeWorker);
+        when(workers.stream()).thenAnswer(invocation -> workersList.stream());
+        workJob.workers = workers;
     }
 
     @Test
     void testExecutesBridge() {
         assertExecutes(Bridge.class, bridgeWorker);
-    }
-
-    @Test
-    void testExecutesProcessor() {
-        assertExecutes(Processor.class, processorWorker);
-    }
-
-    @Test
-    void testExecutesConnector() {
-        JobDataMap jobDataMap = stubJobDataMap(ConnectorEntity.class);
-        when(context.getMergedJobDataMap()).thenReturn(jobDataMap);
-
-        assertThatThrownBy(() -> workJob.execute(context)).isInstanceOf(InternalPlatformException.class);
     }
 
     void assertExecutes(Class<? extends ManagedResource> managedResourceClass, Worker<?> worker) {
@@ -100,5 +91,4 @@ public class WorkJobTest {
 
         return jobDataMap;
     }
-
 }

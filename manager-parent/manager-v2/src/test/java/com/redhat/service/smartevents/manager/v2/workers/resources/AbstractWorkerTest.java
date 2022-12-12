@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers.resources;
+package com.redhat.service.smartevents.manager.v2.workers.resources;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -13,10 +13,12 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
-import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
-import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
+import com.redhat.service.smartevents.manager.v2.TestConstants;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
+import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -57,7 +59,7 @@ public class AbstractWorkerTest {
     @Test
     @Transactional
     void workIsCompletedWhenMaxRetriesExceeded() {
-        Bridge bridge = Fixtures.createBridge();
+        Bridge bridge = Fixtures.createAcceptedBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         // Persist Bridge so that it can be found by the Worker
         bridgeDAO.persist(bridge);
 
@@ -65,15 +67,13 @@ public class AbstractWorkerTest {
 
         worker.handleWork(work);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
-        assertThat(bridge.getErrorId()).isNotNull();
-        assertThat(bridge.getErrorUUID()).isNotNull();
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.FAILED);
     }
 
     @Test
     @Transactional
     void workIsCompletedWhenTimedOut() {
-        Bridge bridge = Fixtures.createBridge();
+        Bridge bridge = Fixtures.createAcceptedBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         // Persist Bridge so that it can be found by the Worker
         bridgeDAO.persist(bridge);
 
@@ -81,9 +81,7 @@ public class AbstractWorkerTest {
 
         worker.handleWork(work);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
-        assertThat(bridge.getErrorId()).isNotNull();
-        assertThat(bridge.getErrorUUID()).isNotNull();
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.FAILED);
     }
 
 }

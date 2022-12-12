@@ -7,12 +7,18 @@ import javax.transaction.Transactional;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
-@Transactional
 @ApplicationScoped
-public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
+@Transactional
+public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
+
+    @Override
+    public Processor findByIdWithConditions(String id) {
+        Parameters params = Parameters
+                .with("id", id);
+        return find("#PROCESSOR_V2.findByIdWithConditions", params).firstResult();
+    }
 
     public Processor findByBridgeIdAndName(String bridgeId, String name) {
         Parameters params = Parameters.with(Processor.NAME_PARAM, name).and(Processor.BRIDGE_ID_PARAM, bridgeId);
@@ -25,5 +31,4 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         namedQuery.setParameter(Bridge.CUSTOMER_ID_PARAM, customerId);
         return namedQuery.getSingleResult();
     }
-
 }

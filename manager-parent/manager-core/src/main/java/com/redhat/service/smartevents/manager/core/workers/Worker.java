@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers;
+package com.redhat.service.smartevents.manager.core.workers;
 
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 
@@ -16,5 +16,4 @@ public interface Worker<T extends ManagedResource> {
      * @return The updated resource.
      */
     T handleWork(Work work);
-
 }

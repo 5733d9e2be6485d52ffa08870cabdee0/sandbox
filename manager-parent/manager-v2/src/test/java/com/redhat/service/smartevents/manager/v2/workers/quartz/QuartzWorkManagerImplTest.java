@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers.quartz;
+package com.redhat.service.smartevents.manager.v2.workers.quartz;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,9 +14,9 @@ import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 
 import com.redhat.service.smartevents.manager.core.workers.Work;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
 import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
@@ -124,5 +124,4 @@ public class QuartzWorkManagerImplTest {
         assertThat(data.getLong(STATE_FIELD_ATTEMPTS)).isEqualTo(attempts);
         assertThat(data.get(STATE_FIELD_SUBMITTED_AT)).isNotNull();
     }
-
 }

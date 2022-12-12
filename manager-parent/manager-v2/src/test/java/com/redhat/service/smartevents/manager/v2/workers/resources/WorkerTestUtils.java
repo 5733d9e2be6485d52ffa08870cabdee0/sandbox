@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.v1.workers.resources;
+package com.redhat.service.smartevents.manager.v2.workers.resources;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;

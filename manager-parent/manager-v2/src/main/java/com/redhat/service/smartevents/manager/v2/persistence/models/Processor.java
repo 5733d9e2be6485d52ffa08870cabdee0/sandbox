@@ -17,6 +17,8 @@ import javax.persistence.UniqueConstraint;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 
 @NamedQueries({
+        @NamedQuery(name = "PROCESSOR_V2.findByIdWithConditions",
+                query = "from Processor_V2 p left join fetch p.conditions where p.id=:id"),
         @NamedQuery(name = "PROCESSOR_V2.findByBridgeIdAndName",
                 query = "from Processor_V2 p where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR_V2.countByBridgeIdAndCustomerId",

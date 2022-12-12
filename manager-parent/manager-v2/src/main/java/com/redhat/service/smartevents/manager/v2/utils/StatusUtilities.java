@@ -84,6 +84,13 @@ public class StatusUtilities {
         return null;
     }
 
+    public static boolean managerDependenciesCompleted(ManagedResourceV2 managedResourceV2) {
+        if (Objects.isNull(managedResourceV2) || Objects.isNull(managedResourceV2.getConditions())) {
+            return false;
+        }
+        return managedResourceV2.getConditions().stream().filter(c -> c.getComponent() == ComponentType.MANAGER).allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE));
+    }
+
     public static String getStatusMessage(ManagedResourceV2 resource) {
         if (Objects.isNull(resource) || Objects.isNull(resource.getConditions())) {
             return null;
