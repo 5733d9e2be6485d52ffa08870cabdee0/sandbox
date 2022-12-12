@@ -23,12 +23,14 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Pro
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
@@ -56,6 +58,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     QuotaConfigurationProvider quotaConfigurationProvider;
+
+    @V2
+    @Inject
+    WorkManager workManager;
 
     @Override
     @Transactional
@@ -119,10 +125,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         ProcessorDefinition definition = new ProcessorDefinition(requestedFlows);
         processor.setDefinition(definition);
 
-        // Processor, Connector and Work should always be created in the same transaction
+        // Processor and Work should always be created in the same transaction
         processorDAO.persist(processor);
-
-        // TODO: schedule work for dependencies
+        workManager.schedule(processor);
 
         // TODO: record metrics with MetricsService
 

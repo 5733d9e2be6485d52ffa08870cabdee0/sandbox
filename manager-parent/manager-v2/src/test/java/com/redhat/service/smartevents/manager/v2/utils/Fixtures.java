@@ -92,6 +92,14 @@ public class Fixtures {
         return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, null);
     }
 
+    public static Processor createAcceptedProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorAcceptedConditions());
+    }
+
     public static Processor createReadyProcessor(Bridge b) {
         Operation operation = new Operation();
         operation.setType(OperationType.CREATE);
@@ -106,6 +114,14 @@ public class Fixtures {
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorProvisioningConditions());
+    }
+
+    public static Processor createDeprovisionProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.DELETE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorDeprovisionConditions());
     }
 
     public static Processor createFailedProcessor(Bridge b) {
