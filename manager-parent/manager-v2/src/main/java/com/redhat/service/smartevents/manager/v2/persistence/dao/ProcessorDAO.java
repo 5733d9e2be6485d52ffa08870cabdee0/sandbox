@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
@@ -76,4 +78,13 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
         namedQuery.setParameter(Bridge.CUSTOMER_ID_PARAM, customerId);
         return namedQuery.getSingleResult();
     }
+
+    @SuppressWarnings("unchecked")
+    public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
+        EntityManager em = getEntityManager();
+        Query q = em.createNamedQuery("PROCESSOR_V2.findByShardIdToDeployOrDelete", Processor.class);
+        q.setParameter("shardId", shardId);
+        return (List<Processor>) q.getResultList();
+    }
+
 }

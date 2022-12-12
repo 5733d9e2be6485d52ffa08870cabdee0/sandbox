@@ -29,6 +29,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
@@ -212,6 +213,23 @@ public class ProcessorServiceImpl implements ProcessorService {
                 existingProcessor.getBridge().getId());
 
         return existingProcessor;
+    }
+
+    @Override
+    public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
+        return processorDAO.findByShardIdToDeployOrDelete(shardId);
+    }
+
+    @Override
+    public ProcessorDTO toDTO(Processor processor) {
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setId(processor.getId());
+        dto.setName(processor.getName());
+        dto.setFlows(processor.getDefinition().getFlows());
+        dto.setBridgeId(processor.getBridge().getId());
+        dto.setCustomerId(processor.getBridge().getCustomerId());
+        dto.setOwner(processor.getOwner());
+        return dto;
     }
 
     @Override

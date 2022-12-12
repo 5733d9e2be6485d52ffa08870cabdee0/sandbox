@@ -8,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -33,6 +35,22 @@ import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDe
                 query = "from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.id=:id and p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR_V2.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor_V2 p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId")
+})
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "PROCESSOR_V2.findByShardIdToDeployOrDelete",
+                resultClass = Processor.class,
+                query = "select p.* " +
+                        "from Processor_V2 p " +
+                        "left join Bridge_V2 b on p.bridge_id = b.id " +
+                        "left join (" +
+                        "  select processor_id, count(*) as conditions_count from Condition c where component='MANAGER' group by c.processor_id" +
+                        ") cp_counts on cp_counts.processor_id=p.id " +
+                        "left join (" +
+                        "  select processor_id, count(*)  as conditions_count from Condition c where component='MANAGER' and status='TRUE' group by c.processor_id" +
+                        "    ) cp_ready_counts on cp_ready_counts.processor_id=p.id " +
+                        "where " +
+                        "b.shard_id = :shardId and " +
+                        "cp_counts.conditions_count = cp_ready_counts.conditions_count")
 })
 @Entity(name = "Processor_V2")
 @FilterDefs({
