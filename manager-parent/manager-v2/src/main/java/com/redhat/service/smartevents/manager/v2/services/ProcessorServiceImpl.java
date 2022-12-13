@@ -208,7 +208,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setDefinition(updatedDefinition);
         existingProcessor.setGeneration(nextGeneration);
 
-        // TODO: schedule work for dependencies
+        workManager.schedule(existingProcessor);
 
         // TODO: record metrics with MetricsService
 
@@ -237,7 +237,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processor.setOperation(operation);
         processor.setConditions(createDeletedConditions());
 
-        // TODO: schedule work for dependencies
+        workManager.schedule(processor);
 
         // TODO: record metrics with MetricsService
 
