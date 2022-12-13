@@ -19,7 +19,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorWorker.class);
 
-    private static final String PROCESSOR_WORKER_CLASSNAME = Processor.class.getName();
+    private static final String PROCESSOR_RESOURCE_CLASSNAME = Processor.class.getName();
 
     @Inject
     ProcessorDAO processorDAO;
@@ -69,6 +69,6 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     @Override
     public boolean accept(Work work) {
-        return PROCESSOR_WORKER_CLASSNAME.equals(work.getType());
+        return PROCESSOR_RESOURCE_CLASSNAME.equals(work.getType());
     }
 }
