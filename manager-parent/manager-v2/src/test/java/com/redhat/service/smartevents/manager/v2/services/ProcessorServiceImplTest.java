@@ -23,8 +23,10 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQ
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
@@ -100,6 +102,10 @@ public class ProcessorServiceImplTest {
 
     @InjectMock
     BridgeService bridgeServiceMock;
+
+    @V2
+    @InjectMock
+    WorkManager workManager;
 
     @BeforeEach
     public void cleanUp() {
@@ -196,6 +202,10 @@ public class ProcessorServiceImplTest {
         ArgumentCaptor<Processor> processorCaptor1 = ArgumentCaptor.forClass(Processor.class);
         verify(processorDAO, times(1)).persist(processorCaptor1.capture());
         assertThat(processorCaptor1.getValue()).isEqualTo(processor);
+
+        ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
+        verify(workManager, times(1)).schedule(processorCaptor2.capture());
+        assertThat(processorCaptor2.getValue()).isEqualTo(processor);
     }
 
     @Test
