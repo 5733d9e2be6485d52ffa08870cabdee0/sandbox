@@ -88,3 +88,4 @@ public class ConfigurationLoaderTest {
         assertThatExceptionOfType(ConfigurationLoadException.class).isThrownBy(() -> configurationLoader.getConfigurationFileAsStream("foo.txt"));
     }
 }
+

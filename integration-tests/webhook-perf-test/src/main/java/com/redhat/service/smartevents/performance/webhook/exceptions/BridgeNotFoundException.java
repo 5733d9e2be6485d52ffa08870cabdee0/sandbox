@@ -14,3 +14,4 @@ public class BridgeNotFoundException extends Exception {
         return String.format("Bridge not found with id %s", bridgeId);
     }
 }
+

@@ -128,3 +128,4 @@ public class AbstractOidcClientTest {
         verify(oidcClient, times(2)).getTokens();
     }
 }
+

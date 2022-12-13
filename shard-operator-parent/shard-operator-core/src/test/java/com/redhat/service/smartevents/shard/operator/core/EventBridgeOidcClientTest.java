@@ -25,3 +25,4 @@ public class EventBridgeOidcClientTest {
         assertThat(eventBridgeOidcClient.getToken()).isNotBlank();
     }
 }
+

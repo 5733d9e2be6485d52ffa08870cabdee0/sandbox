@@ -66,3 +66,4 @@ public class AccountManagementServiceImpl implements AccountManagementService {
         return organisationConsumption + 1 > organisationQuota;
     }
 }
+

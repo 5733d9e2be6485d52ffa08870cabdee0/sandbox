@@ -32,3 +32,4 @@ public class BridgeUtils {
         return bridgeContext.getEndPoint();
     }
 }
+

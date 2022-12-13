@@ -40,3 +40,4 @@ public class ProcessorManagedResourceStatusUpdateDTO extends ManagedResourceStat
         this.bridgeId = bridgeId;
     }
 }
+

@@ -96,3 +96,4 @@ public class AccountManagementServiceImplTest {
         assertThat(accountManagementService.organizationHasAvailableQuota(accountInfo, "TODO", "TODO").await().atMost(Duration.ofSeconds(5))).isFalse();
     }
 }
+

@@ -136,3 +136,4 @@ class GatewayConfiguratorImplTest {
         return expected;
     }
 }
+

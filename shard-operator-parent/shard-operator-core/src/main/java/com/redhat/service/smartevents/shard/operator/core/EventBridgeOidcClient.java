@@ -43,3 +43,4 @@ public class EventBridgeOidcClient extends AbstractOidcClient {
         return oidcClientConfig;
     }
 }
+

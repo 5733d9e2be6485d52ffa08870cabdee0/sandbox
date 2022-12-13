@@ -22,3 +22,4 @@ public interface AnsibleTowerClient {
     Response launchJobTemplate(@PathParam Integer jobTemplateId);
 
 }
+

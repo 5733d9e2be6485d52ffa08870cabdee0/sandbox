@@ -37,3 +37,4 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
                         .withBody(objectMapper.writeValueAsString(processorDTOS))));
     }
 }
+

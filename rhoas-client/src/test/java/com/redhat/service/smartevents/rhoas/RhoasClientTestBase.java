@@ -64,3 +64,4 @@ abstract class RhoasClientTestBase extends RhoasTestBase {
         wireMockServer.verify(expectedDeleteACLs, WireMock.deleteRequestedFor(WireMock.urlMatching(kafkaInstanceConfigurator.pathOf("/acls?.*"))));
     }
 }
+
