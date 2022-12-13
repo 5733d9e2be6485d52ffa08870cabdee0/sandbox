@@ -61,6 +61,9 @@ public class BridgeServiceImpl implements BridgeService {
     ShardService shardService;
 
     @Inject
+    ProcessorService processorService;
+
+    @Inject
     DnsService dnsService;
 
     @V2
@@ -137,6 +140,41 @@ public class BridgeServiceImpl implements BridgeService {
     }
 
     @Override
+    @Transactional
+    public void deleteBridge(String id, String customerId) {
+        Long processorsCount = processorService.getProcessorsCount(id, customerId);
+
+        if (processorsCount > 0) {
+            // See https://issues.redhat.com/browse/MGDOBR-43
+            throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
+        }
+
+        Bridge bridge = bridgeDAO.findByIdAndCustomerIdWithConditions(id, customerId);
+        if (bridge == null) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", id, customerId));
+        }
+
+        if (!StatusUtilities.isActionable(bridge)) {
+            throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
+        }
+
+        Operation operation = new Operation();
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        operation.setType(OperationType.DELETE);
+        bridge.setOperation(operation);
+        bridge.setConditions(createDeletedConditions());
+
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+
+        // Bridge deletion and related Work creation should always be in the same transaction
+        workManager.schedule(bridge);
+
+        // TODO: record metrics with MetricsService.
+
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+    }
+
+    @Override
     public BridgeResponse toResponse(Bridge bridge) {
         BridgeResponse response = new BridgeResponse();
         response.setId(bridge.getId());
@@ -192,6 +230,14 @@ public class BridgeServiceImpl implements BridgeService {
             LOGGER.warn("An error occurred with AMS for the organisation '{}'", organisationId, e);
             throw new AMSFailException("Could not check if organization has quota to create the resource.");
         }
+    }
+
+    private List<Condition> createDeletedConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
+        return conditions;
     }
 
     private List<Condition> createAcceptedConditions() {

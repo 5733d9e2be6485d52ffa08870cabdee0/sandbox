@@ -105,5 +105,4 @@ public class StatusUtilities {
         ManagedResourceStatus status = getManagedResourceStatus(resource);
         return (status == ManagedResourceStatus.READY || status == ManagedResourceStatus.FAILED);
     }
-
 }

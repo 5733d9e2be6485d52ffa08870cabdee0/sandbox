@@ -70,6 +70,11 @@ public class TestUtils {
                 .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
     }
 
+    public static Response deleteBridge(String id) {
+        return jsonRequest()
+                .delete(V2APIConstants.V2_USER_API_BASE_PATH + id);
+    }
+
     public static Response listProcessors(String bridgeId, int page, int size) {
         return jsonRequest()
                 .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?size=" + size + "&page=" + page);
