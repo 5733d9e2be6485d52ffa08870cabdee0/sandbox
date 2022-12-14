@@ -14,11 +14,13 @@ import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorDAO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -39,6 +41,7 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BR
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -363,6 +366,40 @@ public class BridgesAPITest {
         assertThat(bridgeListResponse.getItems().size()).isEqualTo(5);
         assertThat(bridgeListResponse.getTotal()).isEqualTo(totalBridges);
         assertThat(bridgeListResponse.getPage()).isEqualTo(0);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testDeleteBridge() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
+        BridgeResponse response = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
+    public void testDeleteBridgeNoAuthentication() {
+        TestUtils.deleteBridge("any-id").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testDeleteNotExistingBridge() {
+        TestUtils.deleteBridge("not-the-id").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testDeleteBridgeWithActiveProcessors() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        TestUtils.addProcessorToBridge(bridge.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME)).then().statusCode(202);
+
+        TestUtils.deleteBridge(bridge.getId()).then().statusCode(400);
     }
 
     private void assertErrorResponses(ErrorsResponse errorsResponse, Set<Class<? extends RuntimeException>> exceptions) {

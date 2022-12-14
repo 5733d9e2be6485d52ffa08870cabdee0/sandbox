@@ -24,7 +24,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeWorker.class);
 
-    private static final String BRIDGE_WORKER_CLASSNAME = Bridge.class.getName();
+    private static final String BRIDGE_RESOURCE_CLASSNAME = Bridge.class.getName();
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -101,6 +101,6 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     @Override
     public boolean accept(Work work) {
-        return BRIDGE_WORKER_CLASSNAME.equals(work.getType());
+        return BRIDGE_RESOURCE_CLASSNAME.equals(work.getType());
     }
 }

@@ -19,6 +19,8 @@ public interface BridgeService {
 
     ListResult<Bridge> getBridges(String customerId, QueryResourceInfo queryInfo);
 
+    void deleteBridge(String id, String customerId);
+
     List<Bridge> findByShardIdToDeployOrDelete(String shardId);
 
     BridgeDTO toDTO(Bridge processor);
