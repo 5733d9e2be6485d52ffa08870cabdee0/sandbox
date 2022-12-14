@@ -4,9 +4,8 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -37,6 +36,7 @@ import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
+import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -44,14 +44,15 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
@@ -60,7 +61,9 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
-        EventSourceInitializer<BridgeExecutor>, ErrorStatusHandler<BridgeExecutor> {
+        EventSourceInitializer<BridgeExecutor>,
+        ErrorStatusHandler<BridgeExecutor>,
+        Cleaner<BridgeExecutor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorController.class);
 
@@ -89,15 +92,11 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     OperatorMetricsService metricsService;
 
     @Override
-    public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
-
-        List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
-
-        return eventSources;
+    public Map<String, EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
+        return EventSourceInitializer.nameEventSources(EventSourceFactory.buildSecretsInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+                EventSourceFactory.buildDeploymentsInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+                EventSourceFactory.buildServicesInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+                EventSourceFactory.buildServicesMonitorInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
     }
 
     @Override
@@ -266,13 +265,13 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     }
 
     @Override
-    public Optional<BridgeExecutor> updateErrorStatus(BridgeExecutor bridgeExecutor, RetryInfo retryInfo, RuntimeException e) {
-        if (retryInfo.isLastAttempt()) {
+    public ErrorStatusUpdateControl<BridgeExecutor> updateErrorStatus(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context, Exception e) {
+        if (context.getRetryInfo().isPresent() && context.getRetryInfo().get().isLastAttempt()) {
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeExecutor.getStatus().setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeExecutor, bei);
         }
-        return Optional.of(bridgeExecutor);
+        return ErrorStatusUpdateControl.updateStatus(bridgeExecutor);
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
@@ -309,5 +308,4 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                         success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
     }
-
 }

@@ -52,7 +52,8 @@
     <version.org.keycloak>15.1.0</version.org.keycloak>
     <version.io.quarkiverse.hibernatetypes>0.2.0</version.io.quarkiverse.hibernatetypes>
     <version.io.quarkiverse.loggingjson.quarkiverse-logging-json>1.1.1</version.io.quarkiverse.loggingjson.quarkiverse-logging-json>
-    <version.io.quarkiverse.operatorsdk>3.0.6</version.io.quarkiverse.operatorsdk>
+    <version.io.quarkiverse.operatorsdk>4.0.5</version.io.quarkiverse.operatorsdk>
+    <version.io.quarkiverse.operatorsdk-csv-generator>3.0.9</version.io.quarkiverse.operatorsdk-csv-generator>
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.26.0</version.com.redhat.cloud>
     <version.json-schema-validator>1.0.69</version.json-schema-validator>
@@ -140,7 +141,7 @@
       <dependency>
         <groupId>io.quarkiverse.operatorsdk</groupId>
         <artifactId>quarkus-operator-sdk-csv-generator</artifactId>
-        <version>${version.io.quarkiverse.operatorsdk}</version>
+        <version>${version.io.quarkiverse.operatorsdk-csv-generator}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.cloud</groupId>

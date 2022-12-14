@@ -6,9 +6,8 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -35,14 +34,15 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeS
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
@@ -50,7 +50,8 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 @ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
 public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         EventSourceInitializer<ManagedBridge>,
-        ErrorStatusHandler<ManagedBridge> {
+        ErrorStatusHandler<ManagedBridge>,
+        Cleaner<ManagedBridge> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedBridgeController.class);
 
@@ -175,16 +176,12 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
     }
 
     @Override
-    public List<EventSource> prepareEventSources(EventSourceContext<ManagedBridge> context) {
-
-        List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
-        eventSources.add(networkingService.buildInformerEventSource(LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
-
-        return eventSources;
+    public Map<String, EventSource> prepareEventSources(EventSourceContext<ManagedBridge> eventSourceContext) {
+        return EventSourceInitializer.nameEventSources(EventSourceFactory.buildSecretsInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
+                EventSourceFactory.buildConfigMapsInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
+                EventSourceFactory.buildBrokerInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
+                EventSourceFactory.buildAuthorizationPolicyInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
+                networkingService.buildInformerEventSource(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
     }
 
     private boolean isTimedOut(ManagedBridgeStatus status) {
@@ -204,8 +201,8 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
     }
 
     @Override
-    public Optional<ManagedBridge> updateErrorStatus(ManagedBridge resource, RetryInfo retryInfo, RuntimeException e) {
-        return Optional.empty();
+    public ErrorStatusUpdateControl<ManagedBridge> updateErrorStatus(ManagedBridge managedBridge, Context<ManagedBridge> context, Exception e) {
+        return ErrorStatusUpdateControl.noStatusUpdate();
     }
 
     private String extractBrokerPath(KnativeBroker broker) {

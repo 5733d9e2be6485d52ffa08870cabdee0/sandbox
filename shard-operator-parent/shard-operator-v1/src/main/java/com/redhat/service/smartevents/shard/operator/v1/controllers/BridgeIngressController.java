@@ -6,9 +6,8 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -43,14 +42,15 @@ import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressS
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
@@ -60,7 +60,8 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 @ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
         EventSourceInitializer<BridgeIngress>,
-        ErrorStatusHandler<BridgeIngress> {
+        ErrorStatusHandler<BridgeIngress>,
+        Cleaner<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -92,16 +93,12 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     OperatorMetricsService metricsService;
 
     @Override
-    public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
-
-        List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(networkingService.buildInformerEventSource(LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-
-        return eventSources;
+    public Map<String, EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
+        return EventSourceInitializer.nameEventSources(EventSourceFactory.buildSecretsInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+                EventSourceFactory.buildConfigMapsInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+                EventSourceFactory.buildBrokerInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+                EventSourceFactory.buildAuthorizationPolicyInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+                networkingService.buildInformerEventSource(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
     }
 
     @Override
@@ -239,9 +236,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     @Override
-    public Optional<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, RetryInfo retryInfo, RuntimeException e) {
-        if (retryInfo.isLastAttempt()) {
-
+    public ErrorStatusUpdateControl<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, Context<BridgeIngress> context, Exception e) {
+        if (context.getRetryInfo().isPresent() && context.getRetryInfo().get().isLastAttempt()) {
             BridgeIngressStatus status = bridgeIngress.getStatus();
             status.markConditionFalse(ConditionTypeConstants.READY);
 
@@ -253,7 +249,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             bridgeIngress.getStatus().setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeIngress, bei);
         }
-        return Optional.of(bridgeIngress);
+        return ErrorStatusUpdateControl.updateStatus(bridgeIngress);
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
@@ -302,4 +298,5 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return null;
         }
     }
+
 }

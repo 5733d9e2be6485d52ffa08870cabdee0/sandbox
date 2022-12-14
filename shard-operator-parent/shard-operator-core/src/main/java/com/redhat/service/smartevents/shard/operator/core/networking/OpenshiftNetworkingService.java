@@ -20,6 +20,7 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RoutePortBuilder;
 import io.fabric8.openshift.api.model.RouteTargetReferenceBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 import static com.redhat.service.smartevents.shard.operator.core.networking.OpenshiftRouteSpecMatchesHelper.matches;
@@ -40,8 +41,8 @@ public class OpenshiftNetworkingService implements NetworkingService {
     }
 
     @Override
-    public EventSource buildInformerEventSource(String operatorName, String component) {
-        return EventSourceFactory.buildRoutesInformer(client, operatorName, component);
+    public EventSource buildInformerEventSource(EventSourceContext<?> eventSourceContext, String operatorName, String component) {
+        return EventSourceFactory.buildRoutesInformer(eventSourceContext, operatorName, component);
     }
 
     @Override
