@@ -7,6 +7,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -30,6 +32,21 @@ import org.hibernate.annotations.ParamDef;
                 query = "select count(*) from Bridge_V2 where organisation_id=:organisationId"),
         @NamedQuery(name = "BRIDGE_V2.findByCustomerId",
                 query = "select distinct (b) from Bridge_V2 b left join fetch b.conditions where customer_id=:customerId order by submitted_at desc")
+})
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "BRIDGE_V2.findByShardIdToDeployOrDelete",
+                resultClass = Bridge.class,
+                query = "select b.* " +
+                        "from Bridge_V2 b " +
+                        "left join (" +
+                        "  select bridge_id, count(*) as conditions_count from Condition c where component='MANAGER' group by c.bridge_id" +
+                        ") cp_counts on cp_counts.bridge_id=b.id " +
+                        "left join (" +
+                        "  select bridge_id, count(*)  as conditions_count from Condition c where component='MANAGER' and status='TRUE' group by c.bridge_id" +
+                        "    ) cp_ready_counts on cp_ready_counts.bridge_id=b.id " +
+                        "where " +
+                        "b.shard_id = :shardId and " +
+                        "cp_counts.conditions_count = cp_ready_counts.conditions_count")
 })
 @FilterDefs({
         @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),

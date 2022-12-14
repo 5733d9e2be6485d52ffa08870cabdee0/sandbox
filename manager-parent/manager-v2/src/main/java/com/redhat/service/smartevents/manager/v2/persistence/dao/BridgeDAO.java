@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
@@ -72,5 +74,14 @@ public class BridgeDAO implements ManagedResourceV2DAO<Bridge> {
 
         List<Bridge> bridges = startIndex >= total ? new ArrayList<>() : filtered.subList(startIndex, (int) Math.min(total, endIndex));
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Bridge> findByShardIdToDeployOrDelete(String shardId) {
+        EntityManager em = getEntityManager();
+        Query q = em.createNamedQuery("BRIDGE_V2.findByShardIdToDeployOrDelete", Bridge.class);
+        q.setParameter("shardId", shardId);
+        return (List<Bridge>) q.getResultList();
     }
 }

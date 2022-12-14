@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -29,8 +30,11 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ENDPOINT;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_TLS_CERTIFICATE;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_TLS_KEY;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
@@ -159,5 +163,23 @@ public class BridgesServiceTest {
     @Test
     public void testGetReadyBridge_NotFound() {
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    public void testToDTO() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_ENDPOINT);
+        bridgeDAO.persist(bridge);
+
+        BridgeDTO bridgeDTO = bridgesService.toDTO(bridge);
+
+        assertThat(bridgeDTO.getId()).hasSizeGreaterThan(0);
+        assertThat(bridgeDTO.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+        assertThat(bridgeDTO.getEndpoint()).isEqualTo(DEFAULT_BRIDGE_ENDPOINT);
+        assertThat(bridgeDTO.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(bridgeDTO.getOwner()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(bridgeDTO.getTlsCertificate()).isEqualTo(DEFAULT_BRIDGE_TLS_CERTIFICATE);
+        assertThat(bridgeDTO.getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
+        assertThat(bridgeDTO.getGeneration()).isEqualTo(bridge.getGeneration());
+        assertThat(bridgeDTO.getOperationType()).isEqualTo(bridge.getOperation().getType());
     }
 }

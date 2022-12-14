@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
@@ -370,6 +371,37 @@ public class BridgeDAOTest {
     @Test
     public void testFindByIdAndCustomerIdWithConditions_NotFound() {
         assertThat(bridgeDAO.findByIdAndCustomerIdWithConditions(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isNull();
+    }
+
+    @Test
+    @Transactional
+    public void findByShardIdToDeployOrDelete_WhenControlPlaneIsComplete() {
+        Bridge b = createBridge();
+        Condition condition1 = createCondition();
+        Condition condition2 = createCondition();
+
+        b.setConditions(List.of(condition1, condition2));
+        bridgeDAO.persist(b);
+
+        List<Bridge> bridges = bridgeDAO.findByShardIdToDeployOrDelete(b.getShardId());
+        assertThat(bridges).isNotNull();
+        assertThat(bridges).hasSize(1);
+        assertThat(bridges.get(0).getId()).isEqualTo(b.getId());
+    }
+
+    @Test
+    @Transactional
+    public void findByShardIdToDeployOrDelete_WhenControlPlaneIsIncomplete() {
+        Bridge b = createBridge();
+        Condition condition1 = createCondition();
+        Condition condition2 = createCondition();
+        condition2.setStatus(ConditionStatus.UNKNOWN);
+        b.setConditions(List.of(condition1, condition2));
+        bridgeDAO.persist(b);
+
+        List<Bridge> processors = bridgeDAO.findByShardIdToDeployOrDelete(b.getShardId());
+        assertThat(processors).isNotNull();
+        assertThat(processors).isEmpty();
     }
 
     private Bridge buildBridge(String id, String name) {

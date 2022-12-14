@@ -32,6 +32,7 @@ import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.services.BridgeService;
 import com.redhat.service.smartevents.manager.v2.services.ProcessorService;
@@ -84,7 +85,16 @@ public class ShardAPI {
     @Operation(hidden = true, summary = "Get Bridge instances to be processed by a shard.", description = "Get Bridge instances to be processed by a shard.")
     @GET
     public Response getBridges() {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        String shardId = identityResolver.resolve(jwt);
+        failIfNotAuthorized(shardId);
+        LOGGER.debug("Request from Shard for Bridges to deploy or delete.");
+        List<Bridge> bridges = bridgesService.findByShardIdToDeployOrDelete(shardId);
+        LOGGER.debug("Found {} bridge(s) to deploy or delete", bridges.size());
+        return Response.ok(bridges
+                .stream()
+                .map(bridgesService::toDTO)
+                .collect(toList()))
+                .build();
     }
 
     @APIResponses(value = {
