@@ -3,3 +3,4 @@ resources:
   - resources/knative-kafka.yaml
   - resources/webhook-network-policy.yaml
   - resources/broker-network-policy.yaml
+  - resources/kafka-webhook-eventing-policy.yaml
