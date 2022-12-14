@@ -8,7 +8,7 @@
 # - MINIKUBE_DRIVER: minikube driver (optional, default=auto detected by minikube itself)
 # - MINIKUBE_CPUS: number of CPUs for minikube cluster (optional, default=4)
 # - MINIKUBE_MEMORY: MB of RAM assigned to minikube cluster (optional, default=8192)
-# - MINIKUBE_KUBERNETES_VERSION: Kubernetes version to use (optional, default="v1.20.0")
+# - MINIKUBE_KUBERNETES_VERSION: Kubernetes version to use (optional, default="v1.23.12")
 ########
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
