@@ -12,7 +12,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.CustomResour
 import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.client.readiness.Readiness;
+import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 
 public class BridgeExecutorStatus extends CustomResourceStatus {
 
