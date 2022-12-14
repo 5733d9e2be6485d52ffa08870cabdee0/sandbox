@@ -31,7 +31,7 @@ class BridgeErrorServiceTest {
     private static Collection<Class<?>> platformExceptionClasses;
 
     @BeforeAll
-    private static void init() {
+    static void init() {
         userExceptionClasses = ExceptionHelper.getUserExceptions();
         platformExceptionClasses = ExceptionHelper.getPlatformExceptions();
     }
