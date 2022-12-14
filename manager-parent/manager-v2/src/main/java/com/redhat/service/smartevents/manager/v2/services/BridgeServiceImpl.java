@@ -236,6 +236,7 @@ public class BridgeServiceImpl implements BridgeService {
         dto.setTlsCertificate(tlsCertificate);
         dto.setTlsKey(tlsKey);
         return dto;
+    }
 
     @Override
     public BridgeResponse toResponse(Bridge bridge) {
