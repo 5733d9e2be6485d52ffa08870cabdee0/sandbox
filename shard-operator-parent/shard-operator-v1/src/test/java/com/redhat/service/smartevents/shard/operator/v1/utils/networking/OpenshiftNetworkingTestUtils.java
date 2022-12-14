@@ -4,15 +4,15 @@ import com.redhat.service.smartevents.shard.operator.core.networking.OpenshiftNe
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.openshift.api.model.Ingress;
-import io.fabric8.openshift.api.model.IngressBuilder;
-import io.fabric8.openshift.api.model.IngressSpecBuilder;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteIngress;
 import io.fabric8.openshift.api.model.RouteIngressBuilder;
 import io.fabric8.openshift.api.model.RouteIngressConditionBuilder;
 import io.fabric8.openshift.api.model.RouteStatus;
 import io.fabric8.openshift.api.model.RouteStatusBuilder;
+import io.fabric8.openshift.api.model.config.v1.Ingress;
+import io.fabric8.openshift.api.model.config.v1.IngressBuilder;
+import io.fabric8.openshift.api.model.config.v1.IngressSpecBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 public class OpenshiftNetworkingTestUtils implements NetworkingTestUtils {
