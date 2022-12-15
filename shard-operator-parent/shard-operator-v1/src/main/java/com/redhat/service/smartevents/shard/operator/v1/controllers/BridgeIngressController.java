@@ -248,8 +248,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeIngress.getStatus().setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeIngress, bei);
+            return ErrorStatusUpdateControl.updateStatus(bridgeIngress);
         }
-        return ErrorStatusUpdateControl.updateStatus(bridgeIngress);
+        return ErrorStatusUpdateControl.noStatusUpdate();
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {

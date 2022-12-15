@@ -270,8 +270,9 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeExecutor.getStatus().setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeExecutor, bei);
+            return ErrorStatusUpdateControl.updateStatus(bridgeExecutor);
         }
-        return ErrorStatusUpdateControl.updateStatus(bridgeExecutor);
+        return ErrorStatusUpdateControl.noStatusUpdate();
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
