@@ -34,6 +34,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQ
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
@@ -120,6 +121,8 @@ class ProcessorServiceTest {
     BridgesService bridgesServiceMock;
     @InjectMock
     ConnectorsService connectorServiceMock;
+
+    @V1
     @InjectMock
     WorkManager workManagerMock;
 
