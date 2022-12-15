@@ -101,6 +101,6 @@ public class EventSourceFactory {
     }
 
     private static String buildSelectorLabel(String operatorName, String componentName) {
-        return LabelsBuilder.MANAGED_BY_LABEL + "=" + operatorName + " && " + LabelsBuilder.COMPONENT_LABEL + "=" + componentName;
+        return LabelsBuilder.MANAGED_BY_LABEL + "=" + operatorName + "," + LabelsBuilder.COMPONENT_LABEL + "=" + componentName;
     }
 }
