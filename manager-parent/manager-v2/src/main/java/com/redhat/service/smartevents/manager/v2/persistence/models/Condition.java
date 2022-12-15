@@ -13,6 +13,7 @@ import javax.persistence.Table;
 
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 
 @Entity
 @Table(name = "CONDITION")
@@ -146,5 +147,28 @@ public class Condition {
         c2.setReason(c1.getReason());
         c2.setErrorCode(c1.getErrorCode());
         c2.setLastTransitionTime(c1.getLastTransitionTime());
+    }
+
+    public static Condition from(ConditionDTO dto, ComponentType component) {
+        Condition c = new Condition();
+        c.setStatus(dto.getStatus());
+        c.setType(dto.getType());
+        c.setComponent(component);
+        c.setMessage(dto.getMessage());
+        c.setReason(dto.getReason());
+        c.setErrorCode(dto.getErrorCode());
+        c.setLastTransitionTime(dto.getLastTransitionTime());
+        return c;
+    }
+
+    public static ConditionDTO to(Condition condition) {
+        ConditionDTO dto = new ConditionDTO();
+        dto.setStatus(condition.getStatus());
+        dto.setType(condition.getType());
+        dto.setMessage(condition.getMessage());
+        dto.setReason(condition.getReason());
+        dto.setErrorCode(condition.getErrorCode());
+        dto.setLastTransitionTime(condition.getLastTransitionTime());
+        return dto;
     }
 }

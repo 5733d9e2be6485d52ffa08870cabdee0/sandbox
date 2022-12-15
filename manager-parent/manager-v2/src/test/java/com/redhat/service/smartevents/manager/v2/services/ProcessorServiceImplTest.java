@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.services;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -7,6 +9,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,8 +28,12 @@ import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
@@ -35,6 +42,7 @@ import com.redhat.service.smartevents.manager.v2.api.user.models.responses.Proce
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
@@ -57,6 +65,7 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PR
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createDeprovisionProcessor;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createFailedBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createFailedConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createFailedProcessor;
@@ -75,6 +84,7 @@ import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -443,6 +453,123 @@ public class ProcessorServiceImplTest {
         processorService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
 
         verify(processorDAO).findByShardIdToDeployOrDelete(eq(TestConstants.SHARD_ID));
+    }
+
+    @Test
+    void testUpdateProcessorStatus_Create() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createProvisioningProcessor(bridge);
+
+        assertThat(processor.getPublishedAt()).isNull();
+
+        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        processorService.updateProcessorStatus(statusDTO);
+
+        assertThat(processor.getPublishedAt()).isNotNull();
+    }
+
+    @Test
+    void testUpdateProcessorStatus_CreateWithSuccessiveUpdate() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createProvisioningProcessor(bridge);
+
+        assertThat(processor.getPublishedAt()).isNull();
+
+        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        Processor updated = processorService.updateProcessorStatus(statusDTO);
+
+        assertThat(updated.getPublishedAt()).isNotNull();
+
+        Processor updated2 = processorService.updateProcessorStatus(statusDTO);
+
+        assertThat(updated2.getPublishedAt()).isEqualTo(updated.getPublishedAt());
+    }
+
+    @Test
+    void testUpdateProcessorStatus_CreateWhenIncomplete() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createProvisioningProcessor(bridge);
+
+        assertThat(processor.getPublishedAt()).isNull();
+
+        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        processorService.updateProcessorStatus(statusDTO);
+
+        assertThat(processor.getPublishedAt()).isNull();
+    }
+
+    @Test
+    @Disabled("Nothing to assert until Metrics are added back. See MGDOBR-1340.")
+    void testUpdateProcessorStatus_Update() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createReadyProcessor(bridge);
+        Operation operation = new Operation();
+        operation.setType(OperationType.UPDATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        processor.setOperation(operation);
+
+        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        processorService.updateProcessorStatus(statusDTO);
+
+        assertThat(processor.getPublishedAt()).isNotNull();
+    }
+
+    @Test
+    void testUpdateProcessorStatus_Delete() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createDeprovisionProcessor(bridge);
+
+        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        processorService.updateProcessorStatus(statusDTO);
+
+        verify(processorDAO, never()).deleteById(eq(processor.getId()));
+    }
+
+    @Test
+    void testUpdateProcessorStatus_DeleteWhenIncomplete() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createDeprovisionProcessor(bridge);
+
+        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        processorService.updateProcessorStatus(statusDTO);
+
+        verify(processorDAO).deleteById(eq(processor.getId()));
     }
 
     @Test
