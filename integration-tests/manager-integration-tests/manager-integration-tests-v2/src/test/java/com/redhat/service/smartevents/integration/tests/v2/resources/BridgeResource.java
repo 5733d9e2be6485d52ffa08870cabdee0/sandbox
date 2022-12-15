@@ -95,7 +95,7 @@ public class BridgeResource {
         deleteBridgeResponse(token, bridgeId)
                 .then()
                 .log().ifValidationFails()
-                .statusCode(202);
+                .statusCode(400);
     }
 
     public static Response deleteBridgeResponse(String token, String bridgeId) {

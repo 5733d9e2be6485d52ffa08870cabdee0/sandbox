@@ -19,7 +19,6 @@ import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
-import com.redhat.service.smartevents.integration.tests.v2.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.v2.resources.BridgeResource;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
@@ -162,9 +161,7 @@ public class BridgeSteps {
                                 .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
                                 .then()
                                 .body("status", Matchers.equalTo(status))
-                                .body("endpoint", Matchers.containsString(bridgeContext.getId())));
-
-        BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
+                );
     }
 
     @When("^delete the Bridge \"([^\"]*)\"$")
