@@ -13,14 +13,14 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 
+import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
 
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

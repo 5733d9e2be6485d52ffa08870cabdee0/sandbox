@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
@@ -45,6 +47,9 @@ public class ManagedBridgeServiceImplTest {
 
     @Inject
     V2KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
 
     Base64.Encoder encoder = Base64.getEncoder();
 
@@ -97,7 +102,7 @@ public class ManagedBridgeServiceImplTest {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
-                .until(() -> {
+                .untilAsserted(() -> {
                     Secret secret = fetchBridgeSecret(bridgeDTO);
                     assertThat(secret).isNotNull();
 
@@ -116,25 +121,33 @@ public class ManagedBridgeServiceImplTest {
                     assertThat(knativeBroker.getSpec().getConfig().getNamespace().length()).isGreaterThan(0);
                     assertThat(knativeBroker.getSpec().getConfig().getApiVersion().length()).isGreaterThan(0);
                     kubernetesResourcePatcher.patchReadyKnativeBroker(knativeBroker.getMetadata().getName(), knativeBroker.getMetadata().getNamespace());
-                    return true;
-                    //TODO - will be re-added in https://issues.redhat.com/browse/MGDOBR-1244
-                    //                    AuthorizationPolicy authorizationPolicy = fetchBridgeIngressAuthorizationPolicy(dto);
-                    //                    assertThat(authorizationPolicy).isNotNull();
-                    //                    assertThat(authorizationPolicy.getSpec().getAction().length()).isGreaterThan(0);
-                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().size()).isGreaterThan(0);
-                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().get(0).length()).isGreaterThan(0);
-                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getMethods().get(0).length()).isGreaterThan(0);
-                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().size()).isGreaterThan(0);
-                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getKey().length()).isGreaterThan(0);
-                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().size()).isGreaterThan(0);
-                    //                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0).length()).isGreaterThan(0);
+
+                    AuthorizationPolicy authorizationPolicy = fetchBridgeIngressAuthorizationPolicy(bridgeDTO);
+                    assertThat(authorizationPolicy).isNotNull();
+                    assertThat(authorizationPolicy.getSpec().getAction().length()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().size()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().get(0).length()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getMethods().get(0).length()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().size()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getKey().length()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().size()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0).length()).isGreaterThan(0);
                 });
     }
 
     private <T extends HasMetadata> T assertV2Labels(T hasMetaData) {
+        assertThat(hasMetaData).isNotNull();
         assertThat(hasMetaData.getMetadata().getLabels()).containsEntry(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.V2_OPERATOR_NAME);
         assertThat(hasMetaData.getMetadata().getLabels()).containsEntry(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.V2_OPERATOR_NAME);
         return hasMetaData;
+    }
+
+    private AuthorizationPolicy fetchBridgeIngressAuthorizationPolicy(BridgeDTO dto) {
+        return assertV2Labels(kubernetesClient
+                .resources(AuthorizationPolicy.class)
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace())
+                .withName(dto.getId())
+                .get());
     }
 
     private Secret fetchBridgeSecret(BridgeDTO dto) {

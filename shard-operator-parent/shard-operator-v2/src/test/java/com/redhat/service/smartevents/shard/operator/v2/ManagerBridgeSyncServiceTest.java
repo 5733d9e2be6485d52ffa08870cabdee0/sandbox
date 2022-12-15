@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -37,23 +37,12 @@ public class ManagerBridgeSyncServiceTest {
 
         // setup
         List<BridgeDTO> bridgeDTOList = new ArrayList<>();
-        BridgeDTO bridgeDTO1 = new BridgeDTO();
+        BridgeDTO bridgeDTO1 = Fixtures.createBridge(OperationType.CREATE);
         bridgeDTO1.setId("1");
-        bridgeDTO1.setName("bridge1");
-        bridgeDTO1.setCustomerId("cust1");
-        bridgeDTO1.setEndpoint("http://testendpoint.com/test");
-        bridgeDTO1.setKafkaConnection(new KafkaConnectionDTO());
-        bridgeDTO1.setOwner("testOwner");
         bridgeDTOList.add(bridgeDTO1);
 
-        BridgeDTO bridgeDTO2 = new BridgeDTO();
+        BridgeDTO bridgeDTO2 = Fixtures.createBridge(OperationType.DELETE);
         bridgeDTO2.setId("2");
-        bridgeDTO2.setName("bridge2");
-        bridgeDTO2.setCustomerId("cust2");
-        bridgeDTO2.setEndpoint("http://testendpoint.com/test");
-        bridgeDTO2.setOperationType(OperationType.DELETE);
-        bridgeDTO2.setKafkaConnection(new KafkaConnectionDTO());
-        bridgeDTO2.setOwner("testOwner");
         bridgeDTOList.add(bridgeDTO2);
 
         Mockito.doNothing().when(managedBridgeService).createManagedBridge(bridgeDTO1);

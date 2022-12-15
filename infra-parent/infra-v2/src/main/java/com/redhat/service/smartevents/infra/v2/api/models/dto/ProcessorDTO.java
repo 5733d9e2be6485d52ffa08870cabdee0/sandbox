@@ -31,6 +31,9 @@ public class ProcessorDTO {
     @JsonProperty("operation")
     private OperationType operationType;
 
+    @JsonProperty("generation")
+    private long generation;
+
     public ProcessorDTO() {
     }
 
@@ -98,6 +101,14 @@ public class ProcessorDTO {
 
     public void setOperationType(OperationType operationType) {
         this.operationType = operationType;
+    }
+
+    public long getGeneration() {
+        return generation;
+    }
+
+    public void setGeneration(long generation) {
+        this.generation = generation;
     }
 
     @Override

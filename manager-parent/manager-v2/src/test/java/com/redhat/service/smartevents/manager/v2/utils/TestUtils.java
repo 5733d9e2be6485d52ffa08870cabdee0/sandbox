@@ -54,6 +54,11 @@ public class TestUtils {
         return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
     }
 
+    public static Response getBridge(String id) {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + id);
+    }
+
     public static Response createBridge(BridgeRequest request) {
         return jsonRequest()
                 .body(request)
@@ -63,6 +68,37 @@ public class TestUtils {
     public static Response getProcessor(String bridgeId, String processorId) {
         return jsonRequest()
                 .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+    }
+
+    public static Response deleteBridge(String id) {
+        return jsonRequest()
+                .delete(V2APIConstants.V2_USER_API_BASE_PATH + id);
+    }
+
+    public static Response listProcessors(String bridgeId, int page, int size) {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?size=" + size + "&page=" + page);
+    }
+
+    public static Response listProcessorsFilterByName(String bridgeId, String name) {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?name=" + name);
+    }
+
+    public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?" + queryString);
+    }
+
+    public static Response listProcessorsFilterByStatusWithAnyValue(String bridgeId, String... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/?" + queryString);
+    }
+
+    public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&" + queryString);
     }
 
     public static Response addProcessorToBridge(String bridgeId, ProcessorRequest p) {
@@ -76,4 +112,16 @@ public class TestUtils {
                 .body(processorRequest)
                 .post(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/");
     }
+
+    public static Response updateProcessor(String bridgeId, String processorId, ProcessorRequest p) {
+        return jsonRequest()
+                .body(p)
+                .put(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+    }
+
+    public static Response deleteProcessor(String bridgeId, String processorId) {
+        return jsonRequest()
+                .delete(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+    }
+
 }

@@ -16,6 +16,8 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.manager.core.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
@@ -24,8 +26,6 @@ import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEnt
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
-import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;

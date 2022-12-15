@@ -7,14 +7,14 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.manager.core.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.Worker;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
-import com.redhat.service.smartevents.manager.v1.workers.Worker;
 import com.redhat.service.smartevents.manager.v1.workers.resources.BridgeWorker;
 import com.redhat.service.smartevents.manager.v1.workers.resources.ProcessorWorker;
 
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.convertFromJobData;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.convertFromJobData;
 
 /**
  * Single Job implementation that invokes the applicable {@link Worker} based on the {@link JobDataMap} .

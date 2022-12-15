@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
@@ -26,6 +27,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
@@ -40,7 +42,6 @@ import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
 import com.redhat.service.smartevents.manager.v1.utils.TestUtils;
-import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
@@ -77,6 +78,7 @@ public class ProcessorAPITest {
     @Inject
     BridgeDAO bridgeDAO;
 
+    @V1
     @Inject
     WorkManager workManager;
 

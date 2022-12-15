@@ -5,6 +5,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.AMSFailException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
@@ -28,6 +31,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -57,15 +61,37 @@ public class BridgeServiceImpl implements BridgeService {
     ShardService shardService;
 
     @Inject
+    ProcessorService processorService;
+
+    @Inject
     DnsService dnsService;
+
+    @V2
+    @Inject
+    WorkManager workManager;
 
     @V2
     @Inject
     AccountManagementService accountManagementService;
 
     @Override
+    @Transactional
+    public Bridge getBridge(String bridgeId, String customerId) {
+        Bridge bridge = bridgeDAO.findByIdAndCustomerIdWithConditions(bridgeId, customerId);
+        if (Objects.isNull(bridge)) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", bridgeId, customerId));
+        }
+        return bridge;
+    }
+
+    @Override
+    @Transactional
     public Bridge getReadyBridge(String bridgeId, String customerId) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        Bridge bridge = getBridge(bridgeId, customerId);
+        if (StatusUtilities.getManagedResourceStatus(bridge) != ManagedResourceStatus.READY) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.READY));
+        }
+        return bridge;
     }
 
     @Override
@@ -98,8 +124,7 @@ public class BridgeServiceImpl implements BridgeService {
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
-
-        // TODO: schedule work for dependencies
+        workManager.schedule(bridge);
 
         // TODO: record metrics with MetricsService
 
@@ -112,6 +137,41 @@ public class BridgeServiceImpl implements BridgeService {
     @Override
     public ListResult<Bridge> getBridges(String customerId, QueryResourceInfo queryInfo) {
         return bridgeDAO.findByCustomerId(customerId, queryInfo);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBridge(String id, String customerId) {
+        Long processorsCount = processorService.getProcessorsCount(id, customerId);
+
+        if (processorsCount > 0) {
+            // See https://issues.redhat.com/browse/MGDOBR-43
+            throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
+        }
+
+        Bridge bridge = bridgeDAO.findByIdAndCustomerIdWithConditions(id, customerId);
+        if (bridge == null) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", id, customerId));
+        }
+
+        if (!StatusUtilities.isActionable(bridge)) {
+            throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
+        }
+
+        Operation operation = new Operation();
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        operation.setType(OperationType.DELETE);
+        bridge.setOperation(operation);
+        bridge.setConditions(createDeletedConditions());
+
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+
+        // Bridge deletion and related Work creation should always be in the same transaction
+        workManager.schedule(bridge);
+
+        // TODO: record metrics with MetricsService.
+
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
     @Override
@@ -172,10 +232,17 @@ public class BridgeServiceImpl implements BridgeService {
         }
     }
 
+    private List<Condition> createDeletedConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
+        return conditions;
+    }
+
     private List<Condition> createAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
-        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_PERMISSIONS_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;

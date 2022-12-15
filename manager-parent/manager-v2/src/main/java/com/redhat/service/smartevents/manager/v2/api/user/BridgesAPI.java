@@ -128,7 +128,8 @@ public class BridgesAPI {
     @GET
     @Path("{bridgeId}")
     public Response getBridge(@PathParam("bridgeId") @NotEmpty String bridgeId) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        Bridge bridge = bridgeService.getBridge(bridgeId, identityResolver.resolve(jwt));
+        return Response.ok(bridgeService.toResponse(bridge)).build();
     }
 
     @APIResponses(value = {
@@ -143,6 +144,7 @@ public class BridgesAPI {
     @DELETE
     @Path("{bridgeId}")
     public Response deleteBridge(@PathParam("bridgeId") String bridgeId) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        bridgeService.deleteBridge(bridgeId, identityResolver.resolve(jwt));
+        return Response.accepted().build();
     }
 }

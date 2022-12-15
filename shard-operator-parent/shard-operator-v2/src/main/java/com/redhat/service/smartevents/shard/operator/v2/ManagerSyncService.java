@@ -15,9 +15,13 @@ public class  ManagerSyncService {
     @Inject
     ManagedBridgeSyncService managedBridgeSyncService;
 
+    @Inject
+    ManagedProcessorSyncService managedProcessorSyncService;
+
     @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     public void syncUpdatesFromManager() {
         LOGGER.debug("Fetching updates from Manager for Bridges to deploy and delete");
         managedBridgeSyncService.syncManagedBridgeWithManager();
+        managedProcessorSyncService.syncManagedProcessorWithManager();
     }
 }

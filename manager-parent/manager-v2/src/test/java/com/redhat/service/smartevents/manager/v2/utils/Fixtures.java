@@ -20,6 +20,8 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_NAME;
 
 public class Fixtures {
 
@@ -36,7 +38,7 @@ public class Fixtures {
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createBridge(id, name, operation, createReadyConditions());
+        return createBridge(id, name, operation, createBridgeReadyConditions());
     }
 
     public static Bridge createAcceptedBridge(String id, String name) {
@@ -44,7 +46,31 @@ public class Fixtures {
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createBridge(id, name, operation, createAcceptedConditions());
+        return createBridge(id, name, operation, createBridgeAcceptedConditions());
+    }
+
+    public static Bridge createProvisionBridge(String id, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.DELETE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createBridge(id, name, operation, createBridgeDeprovisionConditions());
+    }
+
+    public static Bridge createDeprovisionBridge(String id, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.DELETE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createBridge(id, name, operation, createBridgeDeprovisionConditions());
+    }
+
+    public static Bridge createFailedBridge(String id, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createBridge(id, name, operation, createFailedConditions());
     }
 
     private static Bridge createBridge(String id, String name, Operation operation, List<Condition> conditions) {
@@ -67,23 +93,72 @@ public class Fixtures {
     }
 
     public static Processor createProcessor(Bridge b) {
-        return createProcessor(b, TestConstants.DEFAULT_PROCESSOR_NAME);
-    }
-
-    public static Processor createProcessor(Bridge b, List<Condition> conditions) {
-        return createProcessor(b, TestConstants.DEFAULT_PROCESSOR_NAME, conditions);
-    }
-
-    public static Processor createProcessor(Bridge b, String name) {
-        return createProcessor(b, name, null);
-    }
-
-    public static Processor createProcessor(Bridge b, String name, List<Condition> conditions) {
         Operation operation = new Operation();
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, null);
+    }
+
+    public static Processor createAcceptedProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorAcceptedConditions());
+    }
+
+    public static Processor createReadyProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorReadyConditions());
+    }
+
+    public static Processor createProvisioningProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorProvisioningConditions());
+    }
+
+    public static Processor createDeprovisionProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.DELETE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorDeprovisionConditions());
+    }
+
+    public static Processor createFailedProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createFailedConditions());
+    }
+
+    public static Processor createProcessor(Bridge b, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, name, operation, null);
+    }
+
+    public static Processor createProcessor(String id, Bridge b, String name) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(id, b, name, operation, null);
+    }
+
+    public static Processor createProcessor(String id, Bridge b, String name, Operation operation, List<Condition> conditions) {
         Processor p = new Processor();
+        p.setId(id);
         p.setName(name);
         p.setOperation(operation);
         p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -95,46 +170,77 @@ public class Fixtures {
         return p;
     }
 
-    public static List<Condition> createAcceptedConditions() {
+    public static List<Condition> createBridgeAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
-    public static List<Condition> createReadyConditions() {
+    public static List<Condition> createBridgeReadyConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
         return conditions;
     }
 
-    public static List<Condition> createPreparingConditions() {
+    public static List<Condition> createBridgeProvisionConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_PERMISSIONS_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
-    public static List<Condition> createProvisioningConditions() {
+    public static List<Condition> createBridgeDeprovisionConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
-    public static List<Condition> createDeprovisioningConditions() {
+    public static List<Condition> createProcessorAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
     }
 
-    public static List<Condition> createDeletingConditions() {
+    public static List<Condition> createProcessorReadyConditions() {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createProcessorPreparingConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.FALSE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createProcessorProvisioningConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createProcessorDeprovisionConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createProcessorDeletingConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ComponentType.SHARD));
         return conditions;
     }
 
