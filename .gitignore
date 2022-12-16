@@ -25,3 +25,6 @@ mycert.pem
 
 # Ignore saved test context
 context.json
+
+# minikube/kamel
+kamel-*
