@@ -21,4 +21,6 @@ public interface ManagedBridgeService {
     KnativeBroker fetchOrCreateKnativeBroker(ManagedBridge managedBridge, ConfigMap configMap);
 
     AuthorizationPolicy fetchOrCreateBridgeAuthorizationPolicy(ManagedBridge managedBridge, String path);
+
+    boolean isBridgeStatusChange(ManagedBridge updatedBridge);
 }

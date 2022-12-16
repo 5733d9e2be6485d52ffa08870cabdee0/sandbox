@@ -9,13 +9,15 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
+import com.redhat.service.smartevents.shard.operator.v2.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeStatus;
@@ -28,6 +30,7 @@ import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,9 +51,13 @@ public class ManagedBridgeControllerTest {
     @Inject
     V2KubernetesResourcePatcher kubernetesResourcePatcher;
 
+    @InjectMock
+    ManagerClient managerClient;
+
     @BeforeEach
     public void beforeEach() {
         kubernetesResourcePatcher.cleanUp();
+        Mockito.doNothing().when(managerClient.notifyBridgeStatus(Mockito.any(BridgeStatusDTO.class)));
     }
 
     private ManagedBridge createManagedBridge() {
@@ -65,6 +72,7 @@ public class ManagedBridgeControllerTest {
 
         assertThat(control.isUpdateStatus()).isTrue();
         assertThat(managedBridge.getStatus().isConditionTypeFalse(ManagedBridgeStatus.SECRET_AVAILABLE)).isTrue();
+        Mockito.verify(managerClient).notifyBridgeStatus(Mockito.any(BridgeStatusDTO.class));
     }
 
     private void deployManagedBridgeSecret(ManagedBridge managedBridge) {
@@ -99,10 +107,6 @@ public class ManagedBridgeControllerTest {
         // Then
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(managedBridge.getStatus()).isNotNull();
-        assertThat(managedBridge.getStatus().isReady()).isFalse();
-        assertThat(managedBridge.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-        });
         assertThat(managedBridge.getStatus().getConditionByType(ManagedBridgeStatus.SECRET_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
         });
@@ -118,6 +122,7 @@ public class ManagedBridgeControllerTest {
         assertThat(managedBridge.getStatus().getConditionByType(ManagedBridgeStatus.NETWORK_RESOURCE_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);
         });
+        Mockito.verify(managerClient).notifyBridgeStatus(Mockito.any(BridgeStatusDTO.class));
     }
 
     @Test

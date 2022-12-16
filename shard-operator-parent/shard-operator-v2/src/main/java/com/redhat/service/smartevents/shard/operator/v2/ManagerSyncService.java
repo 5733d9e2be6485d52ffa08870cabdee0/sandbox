@@ -1,14 +1,15 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
-import io.quarkus.scheduler.Scheduled;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.quarkus.scheduler.Scheduled;
+
 @ApplicationScoped
-public class  ManagerSyncService {
+public class ManagerSyncService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncService.class);
 

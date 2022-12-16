@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
@@ -22,19 +23,21 @@ public class ManagedBridgeStatus extends CustomResourceStatus {
     public static final String AUTHORISATION_POLICY_AVAILABLE = "AuthorisationPolicyAvailable";
     public static final String NETWORK_RESOURCE_AVAILABLE = "NetworkResourceAvailable";
 
-    private static final HashSet<Condition> CONDITIONS = new HashSet<>() {
-        {
-            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
-            add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.Unknown));
-            add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.Unknown));
-        }
-    };
+    private static Set<Condition> getInitialConditions() {
+        return new HashSet<>() {
+            {
+                add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
+                add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
+                add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.Unknown));
+                add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.Unknown));
+                add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.Unknown));
+                add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.Unknown));
+            }
+        };
+    }
 
     public ManagedBridgeStatus() {
-        super(CONDITIONS);
+        super(getInitialConditions());
     }
 
     @Override

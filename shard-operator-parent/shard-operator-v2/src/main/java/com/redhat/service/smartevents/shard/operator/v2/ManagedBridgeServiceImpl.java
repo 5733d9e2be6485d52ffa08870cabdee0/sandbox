@@ -3,6 +3,8 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -16,6 +18,7 @@ import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfig
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
@@ -243,5 +246,27 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
         }
 
         return existing;
+    }
+
+    @Override
+    public boolean isBridgeStatusChange(ManagedBridge updatedBridge) {
+        ManagedBridge oldBridge = fetchManagedBridge(updatedBridge.getMetadata().getName(), updatedBridge.getMetadata().getNamespace());
+        Map<String, Condition> oldBridgeConditionMap = oldBridge.getStatus().getConditions().stream().collect(Collectors.toMap(Condition::getType, condition -> condition));
+        Map<String, Condition> updatedBridgeConditionMap = updatedBridge.getStatus().getConditions().stream().collect(Collectors.toMap(Condition::getType, condition -> condition));
+        for (Map.Entry<String, Condition> oldBridgeConditionEntry : oldBridgeConditionMap.entrySet()) {
+            Condition updatedCondition = updatedBridgeConditionMap.get(oldBridgeConditionEntry.getKey());
+            if (isConditionChange(oldBridgeConditionEntry.getValue(), updatedCondition)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ManagedBridge fetchManagedBridge(String name, String namespace) {
+        return kubernetesClient.resources(ManagedBridge.class).inNamespace(namespace).withName(name).get();
+    }
+
+    private boolean isConditionChange(Condition oldCondition, Condition updatedCondition) {
+        return !oldCondition.getStatus().equals(updatedCondition.getStatus());
     }
 }

@@ -13,9 +13,11 @@ import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
@@ -30,6 +32,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
+import static com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeStatus.SECRET_AVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -133,6 +136,20 @@ public class ManagedBridgeServiceImplTest {
                     assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().size()).isGreaterThan(0);
                     assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0).length()).isGreaterThan(0);
                 });
+    }
+
+    @Test
+    public void IsBridgeStatusChange() {
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        managedBridgeService.createManagedBridge(bridgeDTO);
+        ManagedBridge oldManagedBridge = fetchManagedBridge(bridgeDTO);
+
+        BridgeDTO updatedBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        String expectedNamespace = namespaceProvider.getNamespaceName(updatedBridgeDTO.getId());
+        ManagedBridge updatedManagedBridge = ManagedBridgeConverter.fromBridgeDTOToManageBridge(updatedBridgeDTO, expectedNamespace);
+        updatedManagedBridge.getStatus().getConditionByType(SECRET_AVAILABLE).get().setStatus(ConditionStatus.True);
+        boolean status = managedBridgeService.isBridgeStatusChange(updatedManagedBridge);
+        assertThat(status).isTrue();
     }
 
     private <T extends HasMetadata> T assertV2Labels(T hasMetaData) {
