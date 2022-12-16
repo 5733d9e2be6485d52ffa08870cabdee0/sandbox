@@ -12,7 +12,8 @@ public class DeploymentStatusUtilsTest {
 
     @Test
     public void TestIsTimeoutFailure_success() {
-        Deployment deployment = TestResourceLoader.loadTestDeployment();
+        TestResourceLoader tl = new TestResourceLoader();
+        Deployment deployment = tl.loadTestDeployment();
         DeploymentCondition timeoutCondition = new DeploymentCondition();
         timeoutCondition.setType("Progressing");
         timeoutCondition.setStatus("False");
@@ -24,7 +25,8 @@ public class DeploymentStatusUtilsTest {
 
     @Test
     public void TestIsTimeoutFailure_progressing_true() {
-        Deployment deployment = TestResourceLoader.loadTestDeployment();
+        TestResourceLoader tl = new TestResourceLoader();
+        Deployment deployment = tl.loadTestDeployment();
         DeploymentCondition timeoutCondition = new DeploymentCondition();
         timeoutCondition.setType("Progressing");
         timeoutCondition.setStatus("True");
@@ -35,7 +37,9 @@ public class DeploymentStatusUtilsTest {
 
     @Test
     public void TestIsTimeoutFailure_reason_mismatch() {
-        Deployment deployment = TestResourceLoader.loadTestDeployment();
+        TestResourceLoader tl = new TestResourceLoader();
+        Deployment deployment = tl.loadTestDeployment();
+        //        Deployment deployment = TestResourceLoader.loadTestDeployment();
         DeploymentCondition timeoutCondition = new DeploymentCondition();
         timeoutCondition.setType("Progressing");
         timeoutCondition.setStatus("False");
