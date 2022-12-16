@@ -41,6 +41,11 @@
               <goal>generate-code</goal>
               <goal>generate-code-tests</goal>
             </goals>
+            <configuration>
+              <systemProperties>
+                <quarkus.package.type>uber-jar</quarkus.package.type>
+              </systemProperties>
+            </configuration>
           </execution>
         </executions>
       </plugin>
