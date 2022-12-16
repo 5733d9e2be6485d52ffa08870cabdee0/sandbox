@@ -61,7 +61,9 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
         if (isSafeToDelete(namespace)) {
             // deletion can be tricky with finalizers, pending objects, etc.
             // let's start simple and build on top of the constraints and scenarios as we evolve.
-            kubernetesClient.namespaces().withName(namespace.getMetadata().getName()).delete();
+            if (!kubernetesClient.namespaces().withName(namespace.getMetadata().getName()).delete()) {
+                LOGGER.warn("Namespace '{}' hasn't been deleted", namespace.getMetadata().getName());
+            }
         }
     }
 

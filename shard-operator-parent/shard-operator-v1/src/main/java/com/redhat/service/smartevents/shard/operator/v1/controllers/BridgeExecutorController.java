@@ -253,7 +253,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     }
 
     @Override
-    public DeleteControl cleanup(BridgeExecutor bridgeExecutor, Context context) {
+    public DeleteControl cleanup(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
         LOGGER.info("Deleted BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted

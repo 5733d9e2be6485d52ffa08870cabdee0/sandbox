@@ -163,17 +163,20 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     @Override
     public void deleteBridgeExecutor(ProcessorDTO processorDTO) {
         final String namespace = customerNamespaceProvider.resolveName(processorDTO.getCustomerId());
-        kubernetesClient
+        final boolean bridgeExecutor = kubernetesClient
                 .resources(BridgeExecutor.class)
                 .inNamespace(namespace)
-                .withName(processorDTO.getId());
-        // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate asynchronously. Unfortunately the API does not give us a reason.
-        LOGGER.warn("BridgeExecutor '{}' not deleted. Notifying manager that it has been deleted.", processorDTO.getId());
-        ProcessorManagedResourceStatusUpdateDTO updateDTO =
-                new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(), processorDTO.getCustomerId(), processorDTO.getBridgeId(), ManagedResourceStatus.DELETED);
-        managerClient.notifyProcessorStatusChange(updateDTO).subscribe().with(
-                success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
-                failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));
+                .withName(BridgeExecutor.resolveResourceName(processorDTO.getId()))
+                .delete();
+        if (!bridgeExecutor) {
+            // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate asynchronously. Unfortunately the API does not give us a reason.
+            LOGGER.warn("BridgeExecutor '{}' not deleted. Notifying manager that it has been deleted.", processorDTO.getId());
+            ProcessorManagedResourceStatusUpdateDTO updateDTO =
+                    new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(), processorDTO.getCustomerId(), processorDTO.getBridgeId(), ManagedResourceStatus.DELETED);
+            managerClient.notifyProcessorStatusChange(updateDTO).subscribe().with(
+                    success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
+                    failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));
+        }
     }
 
     @Override

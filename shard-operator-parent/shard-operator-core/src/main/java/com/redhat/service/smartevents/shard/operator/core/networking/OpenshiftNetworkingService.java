@@ -69,8 +69,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
     @Override
     public boolean delete(String name, String namespace) {
         try {
-            client.routes().inNamespace(namespace).withName(name).delete();
-            return true;
+            return client.routes().inNamespace(namespace).withName(name).delete();
         } catch (Exception e) {
             LOGGER.debug("Can't delete ingress with name '{}' because it does not exist", name);
             return false;

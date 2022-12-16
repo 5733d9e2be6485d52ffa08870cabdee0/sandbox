@@ -213,7 +213,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     @Override
-    public DeleteControl cleanup(BridgeIngress bridgeIngress, Context context) {
+    public DeleteControl cleanup(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted except for Authorization Policy and the ingress due to https://github.com/istio/istio/issues/37221
