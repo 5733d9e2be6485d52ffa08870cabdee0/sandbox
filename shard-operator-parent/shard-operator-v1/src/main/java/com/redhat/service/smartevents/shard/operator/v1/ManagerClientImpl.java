@@ -15,11 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.core.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.core.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
@@ -36,7 +36,6 @@ public class ManagerClientImpl implements ManagerClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerClientImpl.class);
 
-    @V1
     @Inject
     WebClient webClientManager;
 

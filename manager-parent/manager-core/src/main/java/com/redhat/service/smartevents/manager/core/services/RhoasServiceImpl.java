@@ -55,9 +55,9 @@ public class RhoasServiceImpl implements RhoasService {
     }
 
     @Override
-    public void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType) {
+    public Void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType) {
         try {
-            rhoasClient.deleteTopicAndRevokeAccess(topicName, rhoasOpsAccountClientId, accessType)
+            return rhoasClient.deleteTopicAndRevokeAccess(topicName, rhoasOpsAccountClientId, accessType)
                     .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {

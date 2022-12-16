@@ -35,5 +35,4 @@ class ErrorsAPITest {
             assertThat(item).isEqualTo(given().contentType(ContentType.JSON).when().get(item.getHref()).as(ErrorResponse.class));
         }
     }
-
 }

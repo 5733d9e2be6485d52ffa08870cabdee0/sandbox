@@ -1,0 +1,58 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rhose-stage-prolong-cron
+spec:
+  schedule: "0 8 * * *"
+  concurrencyPolicy: Forbid
+  suspend: false
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: rhose-stage-prolong
+    spec:
+      backoffLimit: 5
+      activeDeadlineSeconds: 1200
+      template:
+        metadata:
+          labels:
+            cronjob: rhose-stage-prolong
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: rhose-stage-prolong
+              image: registry.access.redhat.com/ubi8/ubi
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  # install prerequisites
+                  dnf copr enable -y ocm/tools
+                  dnf install -y ocm-cli jq
+
+                  ocm login --url staging --token $STAGE_TOKEN
+                  
+                  for CLUSTER_NAME in $(echo $CLUSTER_NAMES | sed "s/,/ /g")
+                  do
+                    echo "Getting id of cluster $CLUSTER_NAME"
+                    CLUSTER_ID=`ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER_NAME'" | jq -r '.items[0].id'`
+                    echo "Prolonging cluster $CLUSTER_NAME with ID $CLUSTER_ID"
+                    printf '{\n\t"expiration_timestamp": "%s"\n}\n' "$(date --iso-8601=seconds -d '+7 days')" | ocm patch /api/clusters_mgmt/v1/clusters/$CLUSTER_ID
+                  done
+              env:
+              - name: CLUSTER_NAMES
+                value: "rhose-dp-stage"
+              - name: STAGE_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: stage-cron-job
+                    key: OCM_TOKEN
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 150Mi
+                requests:
+                  cpu: 50m
+                  memory: 1Mi

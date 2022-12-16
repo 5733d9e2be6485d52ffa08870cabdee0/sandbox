@@ -13,17 +13,35 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.FilterDefs;
+import org.hibernate.annotations.Filters;
+import org.hibernate.annotations.ParamDef;
+
 @NamedQueries({
         @NamedQuery(name = "BRIDGE_V2.findByNameAndCustomerId",
                 query = "from Bridge_V2 where name=:name and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE_V2.findByIdWithConditions",
                 query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id"),
+        @NamedQuery(name = "BRIDGE.findByIdAndCustomerIdWithConditions",
+                query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
-                query = "select count(*) from Bridge_V2 where organisation_id=:organisationId")
+                query = "select count(*) from Bridge_V2 where organisation_id=:organisationId"),
+        @NamedQuery(name = "BRIDGE_V2.findByCustomerId",
+                query = "select distinct (b) from Bridge_V2 b left join fetch b.conditions where customer_id=:customerId order by submitted_at desc")
+})
+@FilterDefs({
+        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
+})
+@Filters({
+        @Filter(name = "byName", condition = "name like :name"),
 })
 @Entity(name = "Bridge_V2")
 @Table(name = "BRIDGE_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
 public class Bridge extends ManagedResourceV2 {
+
+    public static final String CUSTOMER_ID_PARAM = "customerId";
 
     @Column(name = "endpoint")
     private String endpoint;
@@ -119,7 +137,15 @@ public class Bridge extends ManagedResourceV2 {
     }
 
     public void setConditions(List<Condition> conditions) {
-        this.conditions = conditions;
+        if (Objects.isNull(this.conditions)) {
+            this.conditions = conditions;
+        } else {
+            // Hibernate manages the underlying collection to handle one-to-many orphan removal.
+            // If we replace the underlying collection Hibernate complains that its managed collection
+            // becomes disconnected. Therefore, clear it and add all.
+            this.conditions.clear();
+            this.conditions.addAll(conditions);
+        }
     }
 
     /*

@@ -16,13 +16,13 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
+import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v1.services.BridgesService;
 import com.redhat.service.smartevents.manager.v1.services.ProcessorService;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;

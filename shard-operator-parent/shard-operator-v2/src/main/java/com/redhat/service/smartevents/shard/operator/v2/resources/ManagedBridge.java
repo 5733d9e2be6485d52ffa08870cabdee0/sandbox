@@ -1,12 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;
-import com.redhat.service.smartevents.shard.operator.v2.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -27,8 +22,7 @@ import static java.util.Objects.requireNonNull;
 @ShortNames("mbi")
 public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBridgeStatus> implements Namespaced {
 
-    public static final String COMPONENT_NAME = "managed-bridge";
-    public static final String SME_RESOURCE_NAME_PREFIX = "brdg-";
+    public static final String COMPONENT_NAME = "ingress";
 
     /**
      * Don't use this default constructor!
@@ -51,23 +45,8 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
         return new Builder();
     }
 
-    public static ManagedBridge fromDTO(BridgeDTO bridgeDTO, String namespace) {
-        try {
-            return new Builder()
-                    .withNamespace(namespace)
-                    .withBridgeName(bridgeDTO.getName())
-                    .withCustomerId(bridgeDTO.getCustomerId())
-                    .withOwner(bridgeDTO.getOwner())
-                    .withBridgeId(bridgeDTO.getId())
-                    .withHost(new URL(bridgeDTO.getEndpoint()).getHost())
-                    .build();
-        } catch (MalformedURLException e) {
-            throw new InvalidURLException("Could not extract host from " + bridgeDTO.getEndpoint());
-        }
-    }
-
     public static String resolveResourceName(String id) {
-        return SME_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
+        return KubernetesResourceUtil.sanitizeName(id);
     }
 
     public static final class Builder {
@@ -77,9 +56,10 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
         private String bridgeName;
         private String customerId;
         private String owner;
-        private String host;
+        private KNativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec;
+        private DNSConfigurationSpec dnsConfigurationSpec;
 
-        private Builder() {
+        public Builder() {
 
         }
 
@@ -108,8 +88,13 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             return this;
         }
 
-        public Builder withHost(final String host) {
-            this.host = host;
+        public Builder withDnsConfigurationSpec(DNSConfigurationSpec dnsConfigurationSpec) {
+            this.dnsConfigurationSpec = dnsConfigurationSpec;
+            return this;
+        }
+
+        public Builder withKnativeBrokerConfigurationSpec(KNativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec) {
+            this.kNativeBrokerConfigurationSpec = kNativeBrokerConfigurationSpec;
             return this;
         }
 
@@ -121,7 +106,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
                     .withLabels(new LabelsBuilder()
                             .withCustomerId(customerId)
                             .withComponent(COMPONENT_NAME)
-                            .buildWithDefaults())
+                            .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
 
             ManagedBridgeSpec managedBridgeSpec = new ManagedBridgeSpec();
@@ -129,7 +114,8 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             managedBridgeSpec.setOwner(owner);
             managedBridgeSpec.setId(bridgeId);
             managedBridgeSpec.setName(bridgeName);
-            managedBridgeSpec.getDnsConfiguration().setHost(host);
+            managedBridgeSpec.setDnsConfiguration(this.dnsConfigurationSpec);
+            managedBridgeSpec.setkNativeBrokerConfiguration(this.kNativeBrokerConfigurationSpec);
 
             ManagedBridge managedBridge = new ManagedBridge();
             managedBridge.setSpec(managedBridgeSpec);
@@ -145,7 +131,8 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             requireNonNull(StringUtils.emptyToNull(this.owner), "[ManagedBridge] Owner can't be null");
             requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[ManagedBridge] Id can't be null");
             requireNonNull(StringUtils.emptyToNull(this.bridgeName), "[ManagedBridge] Name can't be null");
-            requireNonNull(StringUtils.emptyToNull(this.host), "[ManagedBridge] Host can't be null");
+            requireNonNull(this.dnsConfigurationSpec, "[ManagedBridge] DnsConfigurationSpec can't be null");
+            requireNonNull(this.kNativeBrokerConfigurationSpec, "[ManagedBridge] kNativeBrokerConfigurationSpec can't be null");
         }
     }
 }

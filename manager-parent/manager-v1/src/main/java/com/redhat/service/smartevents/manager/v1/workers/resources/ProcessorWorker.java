@@ -9,11 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
