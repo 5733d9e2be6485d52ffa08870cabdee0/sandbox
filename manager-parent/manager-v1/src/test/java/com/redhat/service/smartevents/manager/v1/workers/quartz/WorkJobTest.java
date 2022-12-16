@@ -15,18 +15,18 @@ import org.quartz.JobExecutionContext;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
+import com.redhat.service.smartevents.manager.core.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.Worker;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
-import com.redhat.service.smartevents.manager.v1.workers.Worker;
 import com.redhat.service.smartevents.manager.v1.workers.resources.BridgeWorker;
 import com.redhat.service.smartevents.manager.v1.workers.resources.ProcessorWorker;
 
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
-import static com.redhat.service.smartevents.manager.v1.workers.quartz.QuartzWorkConvertor.STATE_FIELD_TYPE;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ATTEMPTS;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_ID;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_SUBMITTED_AT;
+import static com.redhat.service.smartevents.manager.core.workers.quartz.QuartzWorkConvertor.STATE_FIELD_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;

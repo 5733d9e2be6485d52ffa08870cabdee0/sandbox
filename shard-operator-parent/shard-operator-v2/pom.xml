@@ -163,14 +163,9 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>${project.build.directory}/kubernetes/bridgeexecutors.com.redhat.service.bridge-v2.yml</file>
+                      <file>${project.build.directory}/kubernetes/managedbridges.com.redhat.service.smartevents-v1.yml</file>
                       <type>yml</type>
-                      <classifier>crd-bridgeexecutors</classifier>
-                    </artifact>
-                    <artifact>
-                      <file>${project.build.directory}/kubernetes/bridgeingresses.com.redhat.service.bridge-v2.yml</file>
-                      <type>yml</type>
-                      <classifier>crd-bridgeingresses</classifier>
+                      <classifier>crd-managedbridges</classifier>
                     </artifact>
                   </artifacts>
                 </configuration>

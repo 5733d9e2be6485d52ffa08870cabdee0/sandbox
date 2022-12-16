@@ -1,0 +1,157 @@
+name: Shard Operator - CI - v1
+on:
+  pull_request_target:
+    types: [ opened, labeled, unlabeled, synchronize ]
+    paths:
+      - '.github/workflows/Operator-CI-v1.yaml'
+      - 'shard-operator-parent/**'
+      - 'integration-tests/shard-operator-integration-tests/shard-operator-integration-tests-v1/**'
+jobs:
+  start-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-aws-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-aws-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Check labels
+        # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+        if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
+        run: |
+          echo "Please add the 'safe to test' label in order to run 'Operator - CI' pipeline if it's safe to test this code"
+          exit 1
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Start AWS runner
+        id: start-aws-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ env.GHA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.GHA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.GHA_AWS_REGION }}
+          github-token: ${{ env.GHA_GH_PERSONAL_ACCESS_TOKEN }}
+        env:
+          GHA_AWS_ACCESS_KEY_ID: ${{ secrets.GHA_AWS_ACCESS_KEY_ID }}
+          GHA_AWS_SECRET_ACCESS_KEY: ${{ secrets.GHA_AWS_SECRET_ACCESS_KEY }}
+          GHA_AWS_REGION: ${{ secrets.GHA_AWS_REGION }}
+          GHA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GHA_GH_PERSONAL_ACCESS_TOKEN }}
+  event-bridge-build:
+    needs: start-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+    env:
+      NAMESPACE: mynamespace
+      # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane
+    concurrency:
+      group: event-bridge-operator-pr-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 45
+    name: Build and Test Operator
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
+        uses: actions/checkout@v3
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+      - name: Set up KinD
+        uses: ./.github/actions/kind
+        with:
+          kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
+        # Tests are executed in different PR check, we just need all artifacts in repository
+      - name: Build complete repo
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --no-snapshot-updates --fail-at-end --errors --quiet -Dquickly
+        # Build operator image and generate needed operator resources
+      - name: Build Shard operator image and resources
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --errors --quiet -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=$GITHUB_SHA -Dquarkus.kubernetes.image-pull-policy=if-not-present -Dquickly -Dquarkus.kubernetes.namespace=$NAMESPACE
+          working-directory: shard-operator-parent
+        # Load built image into KinD
+      - name: Load Shard operator image into KinD
+        run: |
+          # KinD needs a specific version to skip external image pull, in case of default 'latest' version KinD would try to fetch the image from external location
+          kind load docker-image openbridge/shard-operator:$GITHUB_SHA
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
+      - name: Install Knative resources and Prometheus ServiceMonitor CRD
+        run: |
+          chmod +x dev/bin/knative-installer.sh
+          ./dev/bin/knative-installer.sh
+
+          # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
+      - name: Install Camel K
+        run: |
+          chmod +x dev/bin/camel-k-installer.sh
+          ./dev/bin/camel-k-installer.sh --registry kind-registry:5000
+      - name: Deploy Shard operator
+        env:
+          DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
+          DEV_EVENT_BRIDGE_SSO_SECRET: ${{ secrets.DEV_EVENT_BRIDGE_SSO_SECRET }}
+        run: |
+          kubectl create namespace $NAMESPACE
+          # Create addon-smart-events-operator-parameters secret
+          kubectl create secret generic addon-smart-events-operator-parameters \
+          --from-literal=EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external \
+          --from-literal=EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID \
+          --from-literal=EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET \
+          -n $NAMESPACE
+          # Deploy operator
+          kubectl apply -f shard-operator-parent/shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator-parent/shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator-parent/shard-operator/target/kubernetes/kubernetes.yml
+          kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
+          kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
+      - name: Run integration tests
+        env:
+          IT_SHARD_KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.IT_SHARD_KAFKA_BOOTSTRAP_SERVERS }}
+          IT_SHARD_KAFKA_USER: ${{ secrets.IT_SHARD_KAFKA_USER }}
+          IT_SHARD_KAFKA_PASSWORD: ${{ secrets.IT_SHARD_KAFKA_PASSWORD }}
+          IT_SHARD_KAFKA_TOPIC_NAME: ${{ secrets.IT_SHARD_KAFKA_TOPIC_NAME }}
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pcucumber -Dparallel -Dit.shard.kafka.bootstrap.servers=$IT_SHARD_KAFKA_BOOTSTRAP_SERVERS -Dit.shard.kafka.user=$IT_SHARD_KAFKA_USER -Dit.shard.kafka.password=$IT_SHARD_KAFKA_PASSWORD -Dit.shard.kafka.topic.name=$IT_SHARD_KAFKA_TOPIC_NAME -Dit.shard.kafka.protocol=SASL_SSL -Dit.shard.kafka.sasl.mechanism=PLAIN
+          working-directory: integration-tests/shard-operator-integration-tests/shard-operator-integration-tests-v1
+      - name: Archive test logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: cucumber-logs
+          path: integration-tests/shard-operator-integration-tests/shard-operator-integration-tests-v1/target/logs/**/*.*
+      - name: Print operator log
+        if: always()
+        run: |
+          kubectl logs deployment/shard-operator -n $NAMESPACE
+  stop-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-runner # required to get output from the start-runner job
+      - event-bridge-build # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Stop AWS runner
+        uses: ./.github/actions/stop-aws-runner
+        with:
+          aws-access-key-id: ${{ env.GHA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.GHA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.GHA_AWS_REGION }}
+          github-token: ${{ env.GHA_GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
+        env:
+          GHA_AWS_ACCESS_KEY_ID: ${{ secrets.GHA_AWS_ACCESS_KEY_ID }}
+          GHA_AWS_SECRET_ACCESS_KEY: ${{ secrets.GHA_AWS_SECRET_ACCESS_KEY }}
+          GHA_AWS_REGION: ${{ secrets.GHA_AWS_REGION }}
+          GHA_GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GHA_GH_PERSONAL_ACCESS_TOKEN }}

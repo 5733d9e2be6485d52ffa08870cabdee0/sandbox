@@ -1,8 +1,13 @@
 package com.redhat.service.smartevents.manager.v1.utils;
 
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
 
 import com.redhat.service.smartevents.manager.core.persistence.dao.ShardDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.Shard;
@@ -33,6 +38,9 @@ public class DatabaseManagerUtils {
     @Inject
     ShardDAO shardDAO;
 
+    @Inject
+    org.quartz.Scheduler quartz;
+
     /**
      * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dynamically, the processor
      * will cascade the removal of filters that belongs to it.
@@ -61,6 +69,7 @@ public class DatabaseManagerUtils {
         deleteAllProcessors();
         deleteAllBridges();
         deleteAllShards();
+        deleteQuartz();
     }
 
     private void deleteAllProcessors() {
@@ -77,6 +86,14 @@ public class DatabaseManagerUtils {
 
     private void deleteAllShards() {
         shardDAO.getEntityManager().createQuery("DELETE FROM Shard").executeUpdate();
+    }
+
+    private void deleteQuartz() {
+        try {
+            quartz.unscheduleJobs(List.copyOf(quartz.getTriggerKeys(GroupMatcher.anyGroup())));
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Failed to cleanup quartz jobs ", e);
+        }
     }
 
     private void registerDefaultShard() {

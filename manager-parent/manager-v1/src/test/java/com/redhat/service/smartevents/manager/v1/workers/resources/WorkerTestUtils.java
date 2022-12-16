@@ -4,7 +4,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.Work;
 
 public class WorkerTestUtils {
 

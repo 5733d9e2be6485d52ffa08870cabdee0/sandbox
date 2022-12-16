@@ -7,5 +7,5 @@ public interface RhoasService {
 
     Topic createTopicAndGrantAccessFor(String topicName, RhoasTopicAccessType accessType);
 
-    void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType);
+    Void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType);
 }

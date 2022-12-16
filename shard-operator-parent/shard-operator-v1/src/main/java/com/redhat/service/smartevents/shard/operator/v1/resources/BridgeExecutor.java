@@ -161,7 +161,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
                     .withLabels(new LabelsBuilder()
                             .withCustomerId(customerId)
                             .withComponent(COMPONENT_NAME)
-                            .buildWithDefaults())
+                            .buildWithDefaults(LabelsBuilder.V1_OPERATOR_NAME))
                     .build();
 
             BridgeExecutorSpec bridgeExecutorSpec = new BridgeExecutorSpec();

@@ -119,6 +119,14 @@
       <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>openshift-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

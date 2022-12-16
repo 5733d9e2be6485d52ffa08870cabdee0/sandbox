@@ -1,26 +1,37 @@
 package com.redhat.service.smartevents.shard.operator.core.utils;
 
+import com.redhat.service.smartevents.shard.operator.core.providers.TestResourceLoader;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import com.redhat.service.smartevents.shard.operator.core.TemplateProvider;
-
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 
 public class DeploymentSpecUtilsTest {
     @Test
     public void TestIsDeploymentEqual() {
-        Deployment expectedDeployment = TemplateProvider.loadTestDeployment();
-        Deployment existingDeployment = TemplateProvider.loadTestDeployment();
+        Deployment expectedDeployment = TestResourceLoader.loadTestDeployment();
+        Deployment existingDeployment = TestResourceLoader.loadTestDeployment();
         boolean result = DeploymentSpecUtils.isDeploymentEqual(expectedDeployment, existingDeployment);
         Assertions.assertThat(result).isTrue();
     }
 
     @Test
-    public void TestIsDeploymentNotEqual() {
-        Deployment expectedDeployment = TemplateProvider.loadTestDeployment();
-        Deployment existingDeployment = TemplateProvider.loadTestDeployment();
+    public void TestIsDeploymentNotEqual_label_differs() {
+        Deployment expectedDeployment = TestResourceLoader.loadTestDeployment();
+        Deployment existingDeployment = TestResourceLoader.loadTestDeployment();
         existingDeployment.getSpec().getSelector().getMatchLabels().remove("labelkey2");
+        boolean result = DeploymentSpecUtils.isDeploymentEqual(expectedDeployment, existingDeployment);
+        Assertions.assertThat(result).isFalse();
+    }
+
+    @Test
+    public void TestIsDeploymentEqual_env_differs() {
+        Deployment expectedDeployment = TestResourceLoader.loadTestDeployment();
+        Deployment existingDeployment = TestResourceLoader.loadTestDeployment();
+        EnvVar envVar = new EnvVar();
+        envVar.setName("key1");
+        envVar.setValue("value1");
+        existingDeployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv().add(envVar);
         boolean result = DeploymentSpecUtils.isDeploymentEqual(expectedDeployment, existingDeployment);
         Assertions.assertThat(result).isFalse();
     }

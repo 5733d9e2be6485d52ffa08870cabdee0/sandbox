@@ -137,4 +137,14 @@ public class Condition {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    public static void copy(Condition c1, Condition c2) {
+        c2.setStatus(c1.getStatus());
+        c2.setType(c1.getType());
+        c2.setComponent(c1.getComponent());
+        c2.setMessage(c1.getMessage());
+        c2.setReason(c1.getReason());
+        c2.setErrorCode(c1.getErrorCode());
+        c2.setLastTransitionTime(c1.getLastTransitionTime());
+    }
 }
