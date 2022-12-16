@@ -18,22 +18,24 @@ public class DeploymentStatusUtilsTest {
         timeoutCondition.setStatus("False");
         timeoutCondition.setReason("ProgressDeadlineExceeded");
         deployment.getStatus().getConditions().add(timeoutCondition);
-        boolean result = DeploymentStatusUtils.isTimeoutFailure(deployment);
-        Assertions.assertThat(result).isTrue();
+        Assertions.assertThat(DeploymentStatusUtils.isTimeoutFailure(deployment))
+                .isTrue();
     }
 
     @Test
     public void TestIsTimeoutFailure_failure() {
         Deployment deployment = TemplateProvider.loadTestDeployment();
-        boolean result = DeploymentStatusUtils.isTimeoutFailure(deployment);
-        Assertions.assertThat(result).isFalse();
+        Assertions.assertThat(DeploymentStatusUtils.isTimeoutFailure(deployment))
+                .isFalse();
     }
 
     @Test
     public void TestGetReasonAndMessageForTimeoutFailure() {
         Deployment deployment = TemplateProvider.loadTestDeployment();
-        boolean result = DeploymentStatusUtils.isTimeoutFailure(deployment);
-        Assertions.assertThat(result).isFalse();
+//        boolean result = DeploymentStatusUtils.isTimeoutFailure(deployment);
+//        Assertions.assertThat(result).isFalse();
+        Assertions.assertThat(DeploymentStatusUtils.isTimeoutFailure(deployment))
+                .isFalse();
 
     }
 
