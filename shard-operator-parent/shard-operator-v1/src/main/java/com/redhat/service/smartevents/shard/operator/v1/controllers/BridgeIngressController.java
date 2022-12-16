@@ -94,10 +94,12 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Override
     public Map<String, EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
-        return EventSourceInitializer.nameEventSources(EventSourceFactory.buildSecretsInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
-                EventSourceFactory.buildConfigMapsInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
-                EventSourceFactory.buildBrokerInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
-                EventSourceFactory.buildAuthorizationPolicyInformer(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME),
+        return EventSourceInitializer.nameEventSources(
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, Secret.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, ConfigMap.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, KnativeBroker.class),
+                // As the authorizationPolicy is not deployed in the same namespace of the CR we have to set the annotations with the primary resource references
+                EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, AuthorizationPolicy.class),
                 networkingService.buildInformerEventSource(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
     }
 

@@ -24,6 +24,7 @@ import com.redhat.service.smartevents.shard.operator.core.networking.NetworkReso
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
@@ -177,10 +178,12 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
 
     @Override
     public Map<String, EventSource> prepareEventSources(EventSourceContext<ManagedBridge> eventSourceContext) {
-        return EventSourceInitializer.nameEventSources(EventSourceFactory.buildSecretsInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
-                EventSourceFactory.buildConfigMapsInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
-                EventSourceFactory.buildBrokerInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
-                EventSourceFactory.buildAuthorizationPolicyInformer(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME),
+        return EventSourceInitializer.nameEventSources(
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, Secret.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, ConfigMap.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, KnativeBroker.class),
+                // As the authorizationPolicy is not deployed in the same namespace of the CR we have to set the annotations with the primary resource references
+                EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, AuthorizationPolicy.class),
                 networkingService.buildInformerEventSource(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
     }
 

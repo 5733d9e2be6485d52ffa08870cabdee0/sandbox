@@ -43,7 +43,8 @@ public class KubernetesNetworkingService implements NetworkingService {
 
     @Override
     public EventSource buildInformerEventSource(EventSourceContext<?> eventSourceContext, String operatorName, String component) {
-        return EventSourceFactory.buildIngressesInformer(eventSourceContext, operatorName, component);
+        // As the Ingress is targeting the istio-gateway and is not deployed in the same namespace of the CR we have to set the annotations with the primary resource references
+        return EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, operatorName, component, Ingress.class);
     }
 
     @Override

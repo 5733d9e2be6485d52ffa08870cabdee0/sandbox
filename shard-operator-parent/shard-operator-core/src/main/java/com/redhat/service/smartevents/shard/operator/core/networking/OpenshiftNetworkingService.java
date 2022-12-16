@@ -42,7 +42,8 @@ public class OpenshiftNetworkingService implements NetworkingService {
 
     @Override
     public EventSource buildInformerEventSource(EventSourceContext<?> eventSourceContext, String operatorName, String component) {
-        return EventSourceFactory.buildRoutesInformer(eventSourceContext, operatorName, component);
+        // As the Route is targeting the istio-gateway and is not deployed in the same namespace of the CR we have to set the annotations with the primary resource references
+        return EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, operatorName, component, Route.class);
     }
 
     @Override
