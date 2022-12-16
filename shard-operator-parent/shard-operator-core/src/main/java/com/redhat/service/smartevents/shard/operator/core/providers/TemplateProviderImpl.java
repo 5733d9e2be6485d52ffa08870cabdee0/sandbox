@@ -1,11 +1,18 @@
 package com.redhat.service.smartevents.shard.operator.core.providers;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
+import javax.enterprise.context.ApplicationScoped;
+
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -17,11 +24,6 @@ import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
-
-import javax.enterprise.context.ApplicationScoped;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
 
 @ApplicationScoped
 public class TemplateProviderImpl implements TemplateProvider {
@@ -131,7 +133,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         return loadYaml(RequestAuthentication.class, JWT_REQUEST_AUTHENTICATION_PATH);
     }
 
-    protected  <T> T loadYaml(Class<T> clazz, String yaml) {
+    protected <T> T loadYaml(Class<T> clazz, String yaml) {
         try (InputStream is = TemplateProviderImpl.class.getResourceAsStream(yaml)) {
             return Serialization.unmarshal(is, clazz);
         } catch (IOException ex) {

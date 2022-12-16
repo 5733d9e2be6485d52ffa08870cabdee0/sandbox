@@ -1,10 +1,12 @@
 package com.redhat.service.smartevents.shard.operator.core.utils;
 
-import com.redhat.service.smartevents.shard.operator.core.providers.TestResourceLoader;
-import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.redhat.service.smartevents.shard.operator.core.providers.TestResourceLoader;
+
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 
 public class DeploymentSpecUtilsTest {
     @Test
@@ -53,9 +55,5 @@ public class DeploymentSpecUtilsTest {
         boolean result = DeploymentSpecUtils.isDeploymentEqual(expectedDeployment, existingDeployment);
         Assertions.assertThat(result).isTrue();
     }
-
-
-
-
 
 }

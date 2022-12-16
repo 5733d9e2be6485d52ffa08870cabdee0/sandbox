@@ -1,10 +1,12 @@
 package com.redhat.service.smartevents.shard.operator.core.utils;
 
-import com.redhat.service.smartevents.shard.operator.core.providers.TestResourceLoader;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.redhat.service.smartevents.shard.operator.core.providers.TestResourceLoader;
+
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
 
 public class DeploymentStatusUtilsTest {
 
@@ -19,6 +21,7 @@ public class DeploymentStatusUtilsTest {
         Assertions.assertThat(DeploymentStatusUtils.isTimeoutFailure(deployment))
                 .isTrue();
     }
+
     @Test
     public void TestIsTimeoutFailure_progressing_true() {
         Deployment deployment = TestResourceLoader.loadTestDeployment();
