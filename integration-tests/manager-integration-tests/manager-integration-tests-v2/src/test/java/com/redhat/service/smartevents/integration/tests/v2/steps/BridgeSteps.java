@@ -160,8 +160,7 @@ public class BridgeSteps {
                         () -> BridgeResource
                                 .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
                                 .then()
-                                .body("status", Matchers.equalTo(status))
-                );
+                                .body("status", Matchers.equalTo(status)));
     }
 
     @When("^delete the Bridge \"([^\"]*)\"$")
