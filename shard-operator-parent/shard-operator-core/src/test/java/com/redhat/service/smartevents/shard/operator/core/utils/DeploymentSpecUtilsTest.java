@@ -36,4 +36,26 @@ public class DeploymentSpecUtilsTest {
         Assertions.assertThat(result).isFalse();
     }
 
+    @Test
+    public void TestIsDeploymentEqual_Image_differs() {
+        Deployment expectedDeployment = TestResourceLoader.loadTestDeployment();
+        Deployment existingDeployment = TestResourceLoader.loadTestDeployment();
+        existingDeployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage("test-image:1.0");
+        boolean result = DeploymentSpecUtils.isDeploymentEqual(expectedDeployment, existingDeployment);
+        Assertions.assertThat(result).isTrue();
+    }
+
+    @Test
+    public void TestIsDeploymentEqual_Progressdeadline_differs() {
+        Deployment expectedDeployment = TestResourceLoader.loadTestDeployment();
+        Deployment existingDeployment = TestResourceLoader.loadTestDeployment();
+        existingDeployment.getSpec().getProgressDeadlineSeconds();
+        boolean result = DeploymentSpecUtils.isDeploymentEqual(expectedDeployment, existingDeployment);
+        Assertions.assertThat(result).isTrue();
+    }
+
+
+
+
+
 }
