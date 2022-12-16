@@ -36,6 +36,15 @@ public class ConditionDTO {
         this.status = status;
     }
 
+    public ConditionDTO(String type, ConditionStatus status, String reason, String message, String errorCode, ZonedDateTime lastTransitionTime) {
+        this.type = type;
+        this.status = status;
+        this.reason = reason;
+        this.message = message;
+        this.errorCode = errorCode;
+        this.lastTransitionTime = lastTransitionTime;
+    }
+
     public String getType() {
         return type;
     }

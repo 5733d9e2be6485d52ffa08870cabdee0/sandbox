@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: "stable"
+          ref: "prod"
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
       - name: Add mask
@@ -49,7 +49,7 @@ jobs:
       - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the stable branch again
         uses: actions/checkout@v3
         with:
-          ref: "stable"
+          ref: "prod"
       - name: Compile sandbox repo
         uses: ./.github/actions/maven
         with:
@@ -80,14 +80,14 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Dgroups=${{ github.event.inputs.groups || ''}} -Devent-bridge.manager.url=$PROD_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$PROD_SSO_CLIENT_ID -Dbridge.client.secret=$PROD_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dfail.cleanup.disable=${{ github.event.inputs.fail-cleanup-disable || 'false'}} -Dcleanup.disable=${{ github.event.inputs.cleanup-disable || 'false'}}
-          working-directory: integration-tests/manager-integration-tests
+          working-directory: integration-tests
       - name: Archive junit test results
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: junit-test-results
           path: |
-            integration-tests/manager-integration-tests/target/failsafe-reports/TEST-*.xml
+            integration-tests/target/failsafe-reports/TEST-*.xml
           retention-days: 7
       - name: Send mail with link to failing job
         uses: dawidd6/action-send-mail@v3
@@ -106,4 +106,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: log
-          path: ./integration-tests/manager-integration-tests/target/cucumber-logs/
+          path: ./integration-tests/target/cucumber-logs/

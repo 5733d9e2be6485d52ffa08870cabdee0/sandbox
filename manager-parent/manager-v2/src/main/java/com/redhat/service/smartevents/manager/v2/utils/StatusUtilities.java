@@ -84,13 +84,32 @@ public class StatusUtilities {
         return null;
     }
 
+    public static boolean managerDependenciesCompleted(ManagedResourceV2 managedResourceV2) {
+        if (Objects.isNull(managedResourceV2) || Objects.isNull(managedResourceV2.getConditions())) {
+            return false;
+        }
+        return managedResourceV2.getConditions().stream().filter(c -> c.getComponent() == ComponentType.MANAGER).allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE));
+    }
+
     public static String getStatusMessage(ManagedResourceV2 resource) {
         if (Objects.isNull(resource) || Objects.isNull(resource.getConditions())) {
             return null;
         }
-        return resource.getConditions()
+        List<Condition> errors = resource.getConditions()
                 .stream()
-                .map(c -> "[" + c.getErrorCode() + "] " + c.getMessage())
+                .filter(c -> Objects.nonNull(c.getErrorCode()))
+                .collect(Collectors.toList());
+        if (errors.isEmpty()) {
+            return null;
+        }
+        return errors
+                .stream()
+                .map(c -> "[" + c.getErrorCode() + "]" + (Objects.nonNull(c.getMessage()) ? " " + c.getMessage() : ""))
                 .collect(Collectors.joining(", "));
+    }
+
+    public static boolean isActionable(ManagedResourceV2 resource) {
+        ManagedResourceStatus status = getManagedResourceStatus(resource);
+        return (status == ManagedResourceStatus.READY || status == ManagedResourceStatus.FAILED);
     }
 }

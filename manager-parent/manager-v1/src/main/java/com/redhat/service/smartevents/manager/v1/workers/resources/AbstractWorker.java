@@ -18,11 +18,12 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
+import com.redhat.service.smartevents.manager.core.workers.Work;
+import com.redhat.service.smartevents.manager.core.workers.WorkManager;
+import com.redhat.service.smartevents.manager.core.workers.Worker;
 import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
-import com.redhat.service.smartevents.manager.v1.workers.Work;
-import com.redhat.service.smartevents.manager.v1.workers.WorkManager;
-import com.redhat.service.smartevents.manager.v1.workers.Worker;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
@@ -52,6 +53,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
     @ConfigProperty(name = "event-bridge.resources.workers.timeout-seconds")
     int timeoutSeconds;
 
+    @V1
     @Inject
     WorkManager workManager;
 

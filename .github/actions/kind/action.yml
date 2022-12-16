@@ -9,7 +9,7 @@ inputs:
   node-image:
     description: "Node image to be used"
     required: false
-    default: kindest/node:v1.22.2
+    default: kindest/node:v1.23.12
   registry:
     description: "Configures an insecure registry on kind-registry:5000 to be used with KinD"
     type: boolean

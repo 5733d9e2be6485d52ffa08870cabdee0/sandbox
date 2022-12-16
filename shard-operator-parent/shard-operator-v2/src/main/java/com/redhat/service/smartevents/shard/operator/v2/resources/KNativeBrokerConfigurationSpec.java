@@ -4,6 +4,14 @@ public class KNativeBrokerConfigurationSpec {
 
     KafkaConfigurationSpec kafkaConfiguration;
 
+    public KNativeBrokerConfigurationSpec() {
+
+    }
+
+    public KNativeBrokerConfigurationSpec(KafkaConfigurationSpec kafkaConfiguration) {
+        this.kafkaConfiguration = kafkaConfiguration;
+    }
+
     public KafkaConfigurationSpec getKafkaConfiguration() {
         return kafkaConfiguration;
     }

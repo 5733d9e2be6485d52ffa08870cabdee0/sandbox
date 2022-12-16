@@ -9,9 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.shard.operator.core.monitoring.ServiceMonitorClient;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProvider;
 
 import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.Service;
@@ -37,7 +37,7 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
             return Optional.empty();
         }
 
-        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource, TemplateImportConfig.withDefaults());
+        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
         if (expected.getSpec().getSelector() == null) {
             expected.getSpec().setSelector(new LabelSelector());
         }
@@ -62,6 +62,6 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
 
     private void ensureLabels(final ServiceMonitor serviceMonitor, final Service service, final String component) {
         serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).build());
-        serviceMonitor.getMetadata().setLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).withComponent(component).buildWithDefaults());
+        serviceMonitor.getMetadata().setLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).withComponent(component).buildWithDefaults(LabelsBuilder.V1_OPERATOR_NAME));
     }
 }

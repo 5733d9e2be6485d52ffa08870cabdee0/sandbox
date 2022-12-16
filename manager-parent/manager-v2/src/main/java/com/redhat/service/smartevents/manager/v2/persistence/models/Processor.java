@@ -4,39 +4,62 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.FilterDefs;
+import org.hibernate.annotations.Filters;
+import org.hibernate.annotations.ParamDef;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 
-import io.quarkiverse.hibernate.types.json.JsonBinaryType;
-import io.quarkiverse.hibernate.types.json.JsonTypes;
-
+@NamedQueries({
+        @NamedQuery(name = "PROCESSOR_V2.findByIdWithConditions",
+                query = "from Processor_V2 p left join fetch p.conditions where p.id=:id"),
+        @NamedQuery(name = "PROCESSOR_V2.findByBridgeIdAndName",
+                query = "from Processor_V2 p where p.name=:name and p.bridge.id=:bridgeId"),
+        @NamedQuery(name = "PROCESSOR_V2.findByBridgeIdAndCustomerId",
+                query = "select distinct (p) from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt desc"),
+        @NamedQuery(name = "PROCESSOR_V2.findByIdBridgeIdAndCustomerId",
+                query = "from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.id=:id and p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
+        @NamedQuery(name = "PROCESSOR_V2.countByBridgeIdAndCustomerId",
+                query = "select count(p.id) from Processor_V2 p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId")
+})
 @Entity(name = "Processor_V2")
-@TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
+@FilterDefs({
+        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") })
+})
+@Filters({
+        @Filter(name = "byName", condition = "name like :name")
+})
 @Table(name = "PROCESSOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id" }) })
-public class Processor extends ManagedResourceV2 {
+public class Processor extends ManagedDefinedResourceV2<ProcessorDefinition> {
+
+    public static final String BRIDGE_ID_PARAM = "bridgeId";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bridge_id")
     private Bridge bridge;
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(name = "flows", columnDefinition = JsonTypes.JSON_BIN, nullable = false)
-    private JsonNode flows;
-
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "processor_id")
     private List<Condition> conditions;
+
+    public Processor() {
+    }
+
+    public Processor(String name) {
+        this.name = name;
+    }
 
     public Bridge getBridge() {
         return bridge;
@@ -46,21 +69,21 @@ public class Processor extends ManagedResourceV2 {
         this.bridge = bridge;
     }
 
-    public JsonNode getFlows() {
-        return flows;
-    }
-
-    public void setFlows(JsonNode flows) {
-        this.flows = flows;
-    }
-
     @Override
     public List<Condition> getConditions() {
         return conditions;
     }
 
     public void setConditions(List<Condition> conditions) {
-        this.conditions = conditions;
+        if (Objects.isNull(this.conditions)) {
+            this.conditions = conditions;
+        } else {
+            // Hibernate manages the underlying collection to handle one-to-many orphan removal.
+            // If we replace the underlying collection Hibernate complains that its managed collection
+            // becomes disconnected. Therefore, clear it and add all.
+            this.conditions.clear();
+            this.conditions.addAll(conditions);
+        }
     }
 
     /*
@@ -87,7 +110,7 @@ public class Processor extends ManagedResourceV2 {
     @Override
     public String toString() {
         return "Processor{" +
-                "flows=" + flows +
+                "definition=" + definition +
                 ", id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", submittedAt=" + submittedAt +
