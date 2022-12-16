@@ -133,7 +133,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         return loadYaml(RequestAuthentication.class, JWT_REQUEST_AUTHENTICATION_PATH);
     }
 
-    protected <T> T loadYaml(Class<T> clazz, String yaml) {
+    private <T> T loadYaml(Class<T> clazz, String yaml) {
         try (InputStream is = TemplateProviderImpl.class.getResourceAsStream(yaml)) {
             return Serialization.unmarshal(is, clazz);
         } catch (IOException ex) {
