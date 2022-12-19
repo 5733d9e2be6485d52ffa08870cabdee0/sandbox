@@ -126,7 +126,7 @@ public class TestUtils {
 
     public static Response getBridgesToDeployOrDelete() {
         return jsonRequest()
-                .get(V2APIConstants.V2_SHARD_API_BASE_PATH + "bridges");
+                .get(V2APIConstants.V2_SHARD_API_BASE_PATH);
     }
 
     public static Response getProcessorsToDeployOrDelete() {

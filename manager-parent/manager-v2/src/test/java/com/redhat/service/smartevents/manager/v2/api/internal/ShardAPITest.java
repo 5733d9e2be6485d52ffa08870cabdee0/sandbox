@@ -90,7 +90,8 @@ public class ShardAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesToDeploy() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
+        mockBridgeControlPlaneActivitiesComplete(bridgeResponse.getId());
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -136,6 +137,12 @@ public class ShardAPITest {
         assertThat(processor.getOwner()).isEqualTo(DEFAULT_USER_NAME);
         assertThat(processor.getOperationType()).isEqualTo(OperationType.CREATE);
         assertThat(processor.getGeneration()).isEqualTo(0);
+    }
+
+    @Transactional
+    protected void mockBridgeControlPlaneActivitiesComplete(String bridgeId) {
+        Bridge bridge = bridgeDAO.findByIdWithConditions(bridgeId);
+        bridge.getConditions().stream().filter(c -> c.getComponent() == ComponentType.MANAGER).forEach(c -> c.setStatus(ConditionStatus.TRUE));
     }
 
     @Transactional
