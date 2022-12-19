@@ -32,7 +32,7 @@ do
 done
 shift "$((OPTIND-1))"
 
-BIN_DIR=${SCRIPT_DIR_PATH}/../dev/bin
+BIN_DIR=${SCRIPT_DIR_PATH}/../../../dev/bin
 INTEGRATION_TESTS_DIR=${SCRIPT_DIR_PATH}
 
 . ${BIN_DIR}/configure.sh minikube-started

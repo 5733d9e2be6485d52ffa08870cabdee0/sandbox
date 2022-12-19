@@ -103,12 +103,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         return doCreateProcessor(bridge, customerId, owner, processorRequest);
     }
 
-    @Transactional
-    @Override
-    public Long getProcessorsCount(String bridgeId, String customerId) {
-        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
-    }
-
     private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorRequest processorRequest) {
         String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
@@ -151,6 +145,12 @@ public class ProcessorServiceImpl implements ProcessorService {
         conditions.add(new Condition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;
+    }
+
+    @Transactional
+    @Override
+    public Long getProcessorsCount(String bridgeId, String customerId) {
+        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
     }
 
     @Override
@@ -209,7 +209,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setDefinition(updatedDefinition);
         existingProcessor.setGeneration(nextGeneration);
 
-        // TODO: schedule work for dependencies
+        workManager.schedule(existingProcessor);
 
         // TODO: record metrics with MetricsService
 
@@ -222,6 +222,41 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
+    @Transactional
+    public void deleteProcessor(String bridgeId, String processorId, String customerId) {
+        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(bridgeId, processorId, customerId);
+        if (Objects.isNull(processor)) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
+        }
+        if (!StatusUtilities.isActionable(processor)) {
+            throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
+        }
+
+        Operation operation = new Operation();
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        operation.setType(OperationType.DELETE);
+
+        processor.setOperation(operation);
+        processor.setConditions(createDeletedConditions());
+
+        workManager.schedule(processor);
+
+        // TODO: record metrics with MetricsService
+
+        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
+                processor.getId(),
+                processor.getBridge().getCustomerId(),
+                processor.getBridge().getId());
+    }
+
+    private List<Condition> createDeletedConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(new Condition(DefaultConditions.CP_CONTROL_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
+        return conditions;
+    }
+
+    @Override
     public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
         return processorDAO.findByShardIdToDeployOrDelete(shardId);
     }
@@ -230,11 +265,13 @@ public class ProcessorServiceImpl implements ProcessorService {
     public ProcessorDTO toDTO(Processor processor) {
         ProcessorDTO dto = new ProcessorDTO();
         dto.setId(processor.getId());
-        dto.setName(processor.getName());
-        dto.setFlows(processor.getDefinition().getFlows());
         dto.setBridgeId(processor.getBridge().getId());
         dto.setCustomerId(processor.getBridge().getCustomerId());
         dto.setOwner(processor.getOwner());
+        dto.setName(processor.getName());
+        dto.setFlows(processor.getDefinition().getFlows());
+        dto.setOperationType(processor.getOperation().getType());
+        dto.setGeneration(processor.getGeneration());
         return dto;
     }
 

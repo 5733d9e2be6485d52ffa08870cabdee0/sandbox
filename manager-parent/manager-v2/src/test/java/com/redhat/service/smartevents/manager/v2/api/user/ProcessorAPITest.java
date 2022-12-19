@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.api.APIConstants;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
@@ -413,6 +414,33 @@ public class ProcessorAPITest {
 
         Response response = TestUtils.updateProcessor(bridge.getId(), processor.getId(), new ProcessorRequest(processor.getName(), null));
         assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void testDeleteProcessor() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        Processor processor = Fixtures.createReadyProcessor(bridge);
+        processorDAO.persist(processor);
+
+        TestUtils.deleteProcessor(bridge.getId(), processor.getId()).then().statusCode(202);
+        ProcessorResponse processorResponse = TestUtils.getProcessor(bridge.getId(), processor.getId()).as(ProcessorResponse.class);
+
+        assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void testDeleteNotExistingProcessor() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+        TestUtils.deleteProcessor(bridgeResponse.getId(), "not-existing").then().statusCode(404);
+    }
+
+    @Test
+    public void testDeleteProcessorNoAuthentication() {
+        TestUtils.deleteProcessor("any-id", "any-id").then().statusCode(401);
     }
 
     private BridgeResponse createBridge() {

@@ -116,6 +116,14 @@ public class Fixtures {
         return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorReadyConditions());
     }
 
+    public static Processor createPreparingProcessor(Bridge b) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorPreparingConditions());
+    }
+
     public static Processor createProvisioningProcessor(Bridge b) {
         Operation operation = new Operation();
         operation.setType(OperationType.CREATE);

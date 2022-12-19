@@ -155,6 +155,7 @@ public class ProcessorsAPI {
     @DELETE
     @Path("{bridgeId}/processors/{processorId}")
     public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+        processorService.deleteProcessor(bridgeId, processorId, identityResolver.resolve(jwt));
+        return Response.accepted().build();
     }
 }

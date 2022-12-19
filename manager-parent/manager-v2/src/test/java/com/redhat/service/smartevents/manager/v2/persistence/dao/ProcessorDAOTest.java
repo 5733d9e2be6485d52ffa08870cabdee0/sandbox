@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
@@ -389,8 +390,11 @@ public class ProcessorDAOTest {
 
         Condition condition1 = createCondition();
         Condition condition2 = createCondition();
+        Condition condition3 = createCondition();
+        condition3.setComponent(ComponentType.SHARD);
+        condition3.setStatus(ConditionStatus.UNKNOWN);
 
-        p.setConditions(List.of(condition1, condition2));
+        p.setConditions(List.of(condition1, condition2, condition3));
         processorDAO.persist(p);
 
         List<Processor> processors = processorDAO.findByShardIdToDeployOrDelete(b.getShardId());
@@ -410,7 +414,11 @@ public class ProcessorDAOTest {
         Condition condition2 = createCondition();
         condition2.setStatus(ConditionStatus.UNKNOWN);
 
-        p.setConditions(List.of(condition1, condition2));
+        Condition condition3 = createCondition();
+        condition3.setComponent(ComponentType.SHARD);
+        condition3.setStatus(ConditionStatus.UNKNOWN);
+
+        p.setConditions(List.of(condition1, condition2, condition3));
         processorDAO.persist(p);
 
         List<Processor> processors = processorDAO.findByShardIdToDeployOrDelete(b.getShardId());

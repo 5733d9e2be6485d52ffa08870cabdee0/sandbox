@@ -21,6 +21,8 @@ public interface ProcessorService {
 
     Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
+    void deleteProcessor(String bridgeId, String processorId, String customerId);
+
     List<Processor> findByShardIdToDeployOrDelete(String shardId);
 
     ProcessorDTO toDTO(Processor processor);

@@ -35,9 +35,18 @@ public class StatusUtilitiesTest {
     private static Stream<Arguments> getStatusMessageParameters() {
         Object[][] arguments = {
                 { null, null },
-                { List.of(), List.of() },
-                { List.of(createConditionWithErrorCodeAndMessage(null, "Failed")), List.of() },
-                { List.of(createConditionWithErrorCodeAndMessage("1", (String) null)), List.of() },
+                { List.of(), null },
+                { Fixtures.createBridgeAcceptedConditions(), null },
+                { Fixtures.createBridgeReadyConditions(), null },
+                { Fixtures.createBridgeDeprovisionConditions(), null },
+                { Fixtures.createProcessorAcceptedConditions(), null },
+                { Fixtures.createProcessorPreparingConditions(), null },
+                { Fixtures.createProcessorProvisioningConditions(), null },
+                { Fixtures.createProcessorReadyConditions(), null },
+                { Fixtures.createProcessorDeprovisionConditions(), null },
+                { Fixtures.createProcessorDeletingConditions(), null },
+                { List.of(createConditionWithErrorCodeAndMessage(null, "Failed")), null },
+                { List.of(createConditionWithErrorCodeAndMessage("1", (String) null)), List.of("[1]") },
                 { List.of(createConditionWithErrorCodeAndMessage("1", "Failed")), List.of("[1] Failed") },
                 { List.of(createConditionWithErrorCodeAndMessage("1", "Failed"), createConditionWithErrorCodeAndMessage("2", "Broken")), List.of("[1] Failed", "[2] Broken") },
         };

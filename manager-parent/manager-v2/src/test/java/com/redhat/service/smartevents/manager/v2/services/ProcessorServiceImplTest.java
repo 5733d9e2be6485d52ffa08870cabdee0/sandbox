@@ -25,6 +25,8 @@ import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
@@ -43,6 +45,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
@@ -195,7 +198,6 @@ public class ProcessorServiceImplTest {
     private void doAssertProcessorCreation(Processor processor, ProcessorRequest request) {
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
         assertThat(processor.getName()).isEqualTo(request.getName());
-        assertThat(getManagedResourceStatus(processor)).isEqualTo(ACCEPTED);
         assertThat(processor.getSubmittedAt()).isNotNull();
         assertThat(processor.getDefinition()).isNotNull();
 
@@ -206,6 +208,10 @@ public class ProcessorServiceImplTest {
         ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
         verify(workManager, times(1)).schedule(processorCaptor2.capture());
         assertThat(processorCaptor2.getValue()).isEqualTo(processor);
+
+        assertThat(StatusUtilities.getManagedResourceStatus(processor)).isEqualTo(ACCEPTED);
+        assertThat(processor.getOperation().getType()).isEqualTo(OperationType.CREATE);
+        assertThat(processor.getOperation().getRequestedAt()).isNotNull();
     }
 
     @Test
@@ -360,6 +366,14 @@ public class ProcessorServiceImplTest {
         assertThat(updatedResponse.getFlows()).isNotNull();
         ObjectNode updatedFlows = updatedResponse.getFlows();
         assertThat(updatedFlows.asText()).isEqualTo(newFlows.asText());
+
+        ArgumentCaptor<Processor> processorCaptor = ArgumentCaptor.forClass(Processor.class);
+        verify(workManager, times(1)).schedule(processorCaptor.capture());
+        assertThat(processorCaptor.getValue()).isEqualTo(existingProcessor);
+
+        assertThat(StatusUtilities.getManagedResourceStatus(existingProcessor)).isEqualTo(ACCEPTED);
+        assertThat(existingProcessor.getOperation().getType()).isEqualTo(OperationType.UPDATE);
+        assertThat(existingProcessor.getOperation().getRequestedAt()).isNotNull();
     }
 
     @Test
@@ -384,6 +398,74 @@ public class ProcessorServiceImplTest {
         processor.setName(request.getName());
         processor.setDefinition(definition);
         return processor;
+    }
+
+    @Test
+    void testDeleteProcessor_processorDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.deleteProcessor(DEFAULT_BRIDGE_ID, NON_EXISTING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    void testDeleteProcess_processorIsNotReady() {
+        assertThatExceptionOfType(ProcessorLifecycleException.class)
+                .isThrownBy(() -> processorService.deleteProcessor(DEFAULT_BRIDGE_ID, PROVISIONING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    void testDeleteProcessor_processorStatusIsReady() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        doTestDeleteProcessor(createReadyProcessor(bridge));
+    }
+
+    @Test
+    void testDeleteProcessor_processorStatusIsFailed() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        doTestDeleteProcessor(createFailedProcessor(bridge));
+    }
+
+    private void doTestDeleteProcessor(Processor processor) {
+        processorService.deleteProcessor(DEFAULT_BRIDGE_ID, processor.getId(), DEFAULT_CUSTOMER_ID);
+
+        ArgumentCaptor<Processor> processorCaptor = ArgumentCaptor.forClass(Processor.class);
+        verify(workManager, times(1)).schedule(processorCaptor.capture());
+
+        Processor parameter = processorCaptor.getValue();
+        assertThat(parameter).isNotNull();
+        assertThat(parameter).isEqualTo(processor);
+        assertThat(StatusUtilities.getManagedResourceStatus(parameter)).isEqualTo(DEPROVISION);
+        assertThat(parameter.getOperation().getType()).isEqualTo(OperationType.DELETE);
+        assertThat(parameter.getOperation().getRequestedAt()).isNotNull();
+    }
+
+    @Test
+    void testFindByShardIdToDeployOrDelete() {
+        processorService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
+
+        verify(processorDAO).findByShardIdToDeployOrDelete(eq(TestConstants.SHARD_ID));
+    }
+
+    @Test
+    public void testToDTO() {
+        Bridge bridge = createBridge();
+        Processor processor = createProcessor(bridge);
+        processor.setOwner("Owner");
+        processor.setConditions(createFailedConditions());
+
+        ObjectNode flows = new ObjectNode(JsonNodeFactory.instance);
+        flows.set("flow", JsonNodeFactory.instance.textNode("Flow"));
+        processor.setDefinition(new ProcessorDefinition(flows));
+
+        ProcessorDTO dto = processorService.toDTO(processor);
+
+        assertThat(dto.getId()).isEqualTo(processor.getId());
+        assertThat(dto.getBridgeId()).isEqualTo(processor.getBridge().getId());
+        assertThat(dto.getCustomerId()).isEqualTo(processor.getBridge().getCustomerId());
+        assertThat(dto.getOwner()).isEqualTo("Owner");
+        assertThat(dto.getName()).isEqualTo(processor.getName());
+        assertThat(dto.getFlows().asText()).isEqualTo(flows.asText());
+        assertThat(dto.getOperationType()).isEqualTo(processor.getOperation().getType());
+        assertThat(dto.getGeneration()).isEqualTo(processor.getGeneration());
     }
 
     @Test

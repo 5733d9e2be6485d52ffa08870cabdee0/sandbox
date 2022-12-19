@@ -119,4 +119,14 @@ public class TestUtils {
                 .put(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
     }
 
+    public static Response deleteProcessor(String bridgeId, String processorId) {
+        return jsonRequest()
+                .delete(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+    }
+
+    public static Response getProcessorsToDeployOrDelete() {
+        return jsonRequest()
+                .get(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors");
+    }
+
 }

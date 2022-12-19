@@ -95,9 +95,16 @@ public class StatusUtilities {
         if (Objects.isNull(resource) || Objects.isNull(resource.getConditions())) {
             return null;
         }
-        return resource.getConditions()
+        List<Condition> errors = resource.getConditions()
                 .stream()
-                .map(c -> "[" + c.getErrorCode() + "] " + c.getMessage())
+                .filter(c -> Objects.nonNull(c.getErrorCode()))
+                .collect(Collectors.toList());
+        if (errors.isEmpty()) {
+            return null;
+        }
+        return errors
+                .stream()
+                .map(c -> "[" + c.getErrorCode() + "]" + (Objects.nonNull(c.getMessage()) ? " " + c.getMessage() : ""))
                 .collect(Collectors.joining(", "));
     }
 
