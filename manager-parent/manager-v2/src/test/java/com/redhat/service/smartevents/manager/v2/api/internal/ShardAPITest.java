@@ -14,6 +14,7 @@ import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -84,6 +85,25 @@ public class ShardAPITest {
         when(jwt.containsClaim(ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
         when(jwt.getClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_USER_NAME);
         when(jwt.containsClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testGetBridgesToDeploy() {
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
+
+        final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridgesToDeployOrDelete.clear();
+            bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
+            }));
+            assertThat(bridgesToDeployOrDelete.size()).isEqualTo(1);
+        });
+
+        BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
+        assertThat(bridge.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+        assertThat(bridge.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(bridge.getEndpoint()).isNotNull();
     }
 
     @Test

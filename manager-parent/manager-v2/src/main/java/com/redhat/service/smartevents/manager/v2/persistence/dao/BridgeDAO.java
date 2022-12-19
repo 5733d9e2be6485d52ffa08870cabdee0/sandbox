@@ -76,12 +76,17 @@ public class BridgeDAO implements ManagedResourceV2DAO<Bridge> {
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     public List<Bridge> findByShardIdToDeployOrDelete(String shardId) {
         EntityManager em = getEntityManager();
-        Query q = em.createNamedQuery("BRIDGE_V2.findByShardIdToDeployOrDelete", Bridge.class);
+        Query q = em.createNamedQuery("BRIDGE_V2.findBridgeIdByShardIdToDeployOrDelete");
         q.setParameter("shardId", shardId);
-        return (List<Bridge>) q.getResultList();
+        // Hibernate does not support Lazy Fetches on NativeQueries.
+        // Therefore, first get the BridgeId's and then the Bridges using a regular query
+        List<String> bridgeIds = (List<String>) q.getResultList();
+        Query getBridges = em.createNamedQuery("BRIDGE_V2.findByIdsWithBridgeAndConditions");
+        getBridges.setParameter("ids", bridgeIds);
+        return (List<Bridge>) getBridges.getResultList();
     }
 }

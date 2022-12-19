@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
@@ -194,10 +195,20 @@ public class BridgesServiceTest {
 
     @Test
     public void testDeleteBridge_whenStatusIsNotReady() {
-        Bridge bridge = Fixtures.createProvisionBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Bridge bridge = Fixtures.createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
         assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId()));
+    }
+
+    @Test
+    void testFindByShardIdToDeployOrDelete() {
+        Bridge bridge = Fixtures.createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        List<Bridge> bridges = bridgesService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
+        assertThat(bridges).hasSize(1);
+        assertThat(bridges.get(0).getId()).isEqualTo(bridge.getId());
     }
 
     @Test
