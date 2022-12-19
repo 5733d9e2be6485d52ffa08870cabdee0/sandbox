@@ -1,10 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.core.providers;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.client.utils.Serialization;
 
 public class TestResourceLoader extends TemplateProviderImpl {
 
@@ -13,13 +9,5 @@ public class TestResourceLoader extends TemplateProviderImpl {
 
     public Deployment loadTestDeployment() {
         return loadYaml(Deployment.class, TEST_DEPLOYMENT_PATH);
-    }
-
-    private static <T> T loadYaml(Class<T> clazz, String yaml) {
-        try (InputStream is = TemplateProviderImpl.class.getResourceAsStream(yaml)) {
-            return Serialization.unmarshal(is, clazz);
-        } catch (IOException ex) {
-            throw new IllegalStateException("Cannot find yaml on classpath: " + yaml);
-        }
     }
 }
