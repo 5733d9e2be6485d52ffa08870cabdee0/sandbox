@@ -13,17 +13,27 @@ public abstract class BaseResponse {
 
     @NotNull
     @JsonProperty("kind")
+    @Schema(
+            description = "The kind (type) of this resource")
     private final String kind;
 
     @NotNull
     @JsonProperty("id")
+    @Schema(
+            description = "The unique identifier of this resource")
     protected String id;
 
     @JsonProperty("name")
+    @Schema(
+            description = "The name of this resource",
+            example = "resourceName1")
     protected String name;
 
     @NotNull
     @JsonProperty("href")
+    @Schema(
+            description = "The URL of this resource, without the protocol",
+            example = "example.com/resource")
     protected String href;
 
     protected BaseResponse(String kind) {
