@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
@@ -43,10 +44,12 @@ import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.v2.metrics.ManagerMetricsServiceV2;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
+import com.redhat.service.smartevents.manager.v2.utils.ConditionUtilities;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import dev.bf2.ffm.ams.core.AccountManagementService;
@@ -100,6 +103,9 @@ public class BridgeServiceImpl implements BridgeService {
     @V2
     @Inject
     AccountManagementService accountManagementService;
+
+    @Inject
+    ManagerMetricsServiceV2 metricsService;
 
     @PostConstruct
     void init() {
@@ -164,7 +170,7 @@ public class BridgeServiceImpl implements BridgeService {
         bridgeDAO.persist(bridge);
         workManager.schedule(bridge);
 
-        // TODO: record metrics with MetricsService
+        metricsService.onOperationStart(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
 
@@ -207,7 +213,7 @@ public class BridgeServiceImpl implements BridgeService {
         // Bridge deletion and related Work creation should always be in the same transaction
         workManager.schedule(bridge);
 
-        // TODO: record metrics with MetricsService.
+        metricsService.onOperationStart(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
@@ -231,52 +237,57 @@ public class BridgeServiceImpl implements BridgeService {
                     statusDTO.getGeneration());
             return bridge;
         }
+
         Operation operation = bridge.getOperation();
         List<Condition> conditions = bridge.getConditions();
+        // Set the updated conditions to the existing Manager conditions to begin; then copy in the new Operator conditions
         List<Condition> updatedConditions = conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).collect(Collectors.toList());
         statusDTO.getConditions().forEach(c -> updatedConditions.add(Condition.from(c, ComponentType.SHARD)));
+
+        // Don't do anything if Conditions are unchanged from our previous state.
+        ManagedResourceStatusV2 status = StatusUtilities.getManagedResourceStatus(operation, conditions);
+        ManagedResourceStatusV2 originalStatus = StatusUtilities.getManagedResourceStatus(operation, updatedConditions);
+        if (Objects.equals(status, originalStatus)) {
+            LOGGER.info("Update for Bridge with id '{}' was discarded. The ManagedResourceStatus reflected by the Conditions is unchanged.", bridge.getId());
+            return bridge;
+        }
+
         bridge.setConditions(updatedConditions);
 
         switch (operation.getType()) {
             case CREATE:
-                if (isOperationComplete(updatedConditions)) {
+                if (ConditionUtilities.isOperationComplete(updatedConditions)) {
                     if (Objects.isNull(bridge.getPublishedAt())) {
                         bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                        // TODO: record metrics with MetricsService
-                        // metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
+                        metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                     }
+                } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    metricsService.onOperationFailed(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                 }
                 break;
 
             case UPDATE:
-                // TODO: record metrics with MetricsService
-                // metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+                if (ConditionUtilities.isOperationComplete(updatedConditions)) {
+                    metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_UPDATE);
+                } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    metricsService.onOperationFailed(bridge, MetricsOperation.MANAGER_RESOURCE_UPDATE);
+                }
                 break;
 
             case DELETE:
-                if (isOperationComplete(updatedConditions)) {
+                if (ConditionUtilities.isOperationComplete(updatedConditions)) {
                     // There is no need to check if the Bridge exists as any subsequent Status Update cycle
                     // would not include the same Bridge if it had been deleted. It would not have existed
                     // on the database and hence would not have been included in the Status Update cycle.
                     bridgeDAO.deleteById(statusDTO.getId());
-                    // TODO: record metrics with MetricsService
-                    // metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
+                    metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
+                } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    metricsService.onOperationFailed(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 }
                 break;
         }
 
-        statusDTO.getConditions().stream().filter(c -> Objects.nonNull(c.getErrorCode())).findFirst().ifPresent(c -> {
-            // TODO: record metrics with MetricsService
-            // metricsService.onOperationFailed(bridge, operation.getMetricsOperation());
-        });
-
         return bridge;
-    }
-
-    private boolean isOperationComplete(List<Condition> conditions) {
-        return conditions
-                .stream()
-                .allMatch(c -> c.getStatus() == ConditionStatus.TRUE);
     }
 
     @Override

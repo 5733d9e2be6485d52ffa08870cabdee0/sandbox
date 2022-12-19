@@ -21,13 +21,13 @@ public final class ManagedResourceOperationMapper {
         // The ManagedResource has been created
         CREATE(MetricsOperation.MANAGER_RESOURCE_PROVISION),
         // The ManagedResource has been modified
-        UPDATE(MetricsOperation.MANAGER_RESOURCE_MODIFY),
+        UPDATE(MetricsOperation.MANAGER_RESOURCE_UPDATE),
         // The ManagedResource has been deleted
         DELETE(MetricsOperation.MANAGER_RESOURCE_DELETE),
         // The ManagedResource failed to be created
         FAILED_CREATE(MetricsOperation.MANAGER_RESOURCE_PROVISION),
         // The ManagedResource failed to be modified
-        FAILED_UPDATE(MetricsOperation.MANAGER_RESOURCE_MODIFY),
+        FAILED_UPDATE(MetricsOperation.MANAGER_RESOURCE_UPDATE),
         // The ManagedResource failed to be deleted
         FAILED_DELETE(MetricsOperation.MANAGER_RESOURCE_DELETE);
 

@@ -7,7 +7,7 @@ import io.micrometer.core.instrument.Tag;
  */
 public enum MetricsOperation {
     MANAGER_RESOURCE_PROVISION("provision"),
-    MANAGER_RESOURCE_MODIFY("modify"),
+    MANAGER_RESOURCE_UPDATE("update"),
     MANAGER_RESOURCE_DELETE("delete"),
     OPERATOR_RESOURCE_PROVISION("operator_provision"),
     OPERATOR_RESOURCE_DELETE("operator_delete"),

@@ -325,7 +325,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Since updates to the Action are unsupported we do not need to update the Connector record.
         connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
-        metricsService.onOperationStart(existingProcessor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+        metricsService.onOperationStart(existingProcessor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
                 existingProcessor.getId(),
@@ -399,7 +399,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                         bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatusV1.PREPARING));
                     }
                 }
-                metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+                metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
                 break;
 
             case DELETE:

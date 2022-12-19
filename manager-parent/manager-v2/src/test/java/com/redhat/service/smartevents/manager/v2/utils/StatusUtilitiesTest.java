@@ -46,7 +46,7 @@ public class StatusUtilitiesTest {
                 { Fixtures.createProcessorDeprovisionConditions(), null },
                 { Fixtures.createProcessorDeletingConditions(), null },
                 { List.of(createConditionWithErrorCodeAndMessage(null, "Failed")), null },
-                { List.of(createConditionWithErrorCodeAndMessage("1", (String) null)), List.of("[1]") },
+                { List.of(createConditionWithErrorCodeAndMessage("1", null)), List.of("[1]") },
                 { List.of(createConditionWithErrorCodeAndMessage("1", "Failed")), List.of("[1] Failed") },
                 { List.of(createConditionWithErrorCodeAndMessage("1", "Failed"), createConditionWithErrorCodeAndMessage("2", "Broken")), List.of("[1] Failed", "[2] Broken") },
         };
@@ -84,6 +84,7 @@ public class StatusUtilitiesTest {
         Condition c = new Condition();
         c.setErrorCode(errorCode);
         c.setMessage(message);
+        c.setStatus(FAILED);
         return c;
     }
 

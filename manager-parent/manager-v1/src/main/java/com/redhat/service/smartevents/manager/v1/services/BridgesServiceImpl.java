@@ -209,7 +209,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Bridge and Work should always be created in the same transaction
         workManager.schedule(existingBridge);
-        metricsService.onOperationStart(existingBridge, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+        metricsService.onOperationStart(existingBridge, MetricsOperation.MANAGER_RESOURCE_UPDATE);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for update",
                 existingBridge.getId(),
@@ -312,7 +312,7 @@ public class BridgesServiceImpl implements BridgesService {
                 break;
 
             case UPDATE:
-                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_UPDATE);
                 break;
 
             case DELETE:
