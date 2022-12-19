@@ -213,7 +213,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testToDTO() {
-        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_ENDPOINT);
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
         BridgeDTO bridgeDTO = bridgesService.toDTO(bridge);
