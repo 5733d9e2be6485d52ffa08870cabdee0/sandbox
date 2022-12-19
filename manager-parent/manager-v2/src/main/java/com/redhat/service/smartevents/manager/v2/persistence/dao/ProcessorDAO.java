@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
@@ -76,4 +78,18 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
         namedQuery.setParameter(Bridge.CUSTOMER_ID_PARAM, customerId);
         return namedQuery.getSingleResult();
     }
+
+    @SuppressWarnings("unchecked")
+    public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
+        EntityManager em = getEntityManager();
+        Query q = em.createNamedQuery("PROCESSOR_V2.findProcessorIdByShardIdToDeployOrDelete");
+        q.setParameter("shardId", shardId);
+        // Hibernate does not support Lazy Fetches on NativeQueries.
+        // Therefore, first get the ProcessorId's and then the Processors using a regular query
+        List<String> processorIds = (List<String>) q.getResultList();
+        Query getProcessors = em.createNamedQuery("PROCESSOR_V2.findByIdsWithBridgeAndConditions");
+        getProcessors.setParameter("ids", processorIds);
+        return (List<Processor>) getProcessors.getResultList();
+    }
+
 }
