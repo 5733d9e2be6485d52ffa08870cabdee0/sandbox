@@ -124,9 +124,9 @@ public class ShardAPI {
     public Response getProcessors() {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
-        LOGGER.info("Request from Shard for Processors to deploy or delete.");
+        LOGGER.debug("Request from Shard for Processors to deploy or delete.");
         List<Processor> processors = processorService.findByShardIdToDeployOrDelete(shardId);
-        LOGGER.info("Found {} processor(s) to deploy or delete", processors.size());
+        LOGGER.debug("Found {} processor(s) to deploy or delete", processors.size());
         return Response.ok(processors
                 .stream()
                 .map(processorService::toDTO)
