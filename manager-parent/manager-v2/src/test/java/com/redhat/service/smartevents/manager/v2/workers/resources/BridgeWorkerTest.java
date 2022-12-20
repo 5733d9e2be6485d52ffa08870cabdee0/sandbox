@@ -173,7 +173,7 @@ class BridgeWorkerTest {
 
     @Transactional
     protected Bridge createAndPersistDefaultDeprovisionBridge() {
-        Bridge bridge = Fixtures.createDeprovisionBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
+        Bridge bridge = Fixtures.createDeprovisioningBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
         return bridge;
     }

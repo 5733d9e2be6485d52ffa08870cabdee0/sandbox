@@ -4,20 +4,31 @@ import java.util.Objects;
 
 import javax.validation.constraints.NotEmpty;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class AbstractBridgeRequest {
 
     @NotEmpty(message = "Bridge name cannot be null or empty")
     @JsonProperty("name")
+    @Schema(
+            description = "The name of the bridge",
+            example = "bridge1")
     protected String name;
 
     @NotEmpty(message = "Cloud Provider cannot be null or empty.")
+    @Schema(
+            description = "The cloud provider where the bridge resides",
+            example = "aws")
     @JsonProperty("cloud_provider")
     protected String cloudProvider;
 
     @NotEmpty(message = "Region cannot be null or empty.")
     @JsonProperty("region")
+    @Schema(
+            description = "The cloud provider region where the bridge resides",
+            example = "us-east-1")
     protected String region;
 
     public String getCloudProvider() {

@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
+import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
@@ -377,6 +379,51 @@ public class ProcessorDAOTest {
 
         // Results are sorted descending by default. The first created is the last to be listed.
         IntStream.range(0, 5).forEach(i -> assertThat(results.getItems().get(4 - i).getId()).isEqualTo(String.format("id%s", i)));
+    }
+
+    @Test
+    @Transactional
+    public void findByShardIdToDeployOrDelete_WhenControlPlaneIsComplete() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        bridgeDAO.persist(b);
+
+        Condition condition1 = createCondition();
+        Condition condition2 = createCondition();
+        Condition condition3 = createCondition();
+        condition3.setComponent(ComponentType.SHARD);
+        condition3.setStatus(ConditionStatus.UNKNOWN);
+
+        p.setConditions(List.of(condition1, condition2, condition3));
+        processorDAO.persist(p);
+
+        List<Processor> processors = processorDAO.findByShardIdToDeployOrDelete(b.getShardId());
+        assertThat(processors).isNotNull();
+        assertThat(processors).hasSize(1);
+        assertThat(processors.get(0).getId()).isEqualTo(p.getId());
+    }
+
+    @Test
+    @Transactional
+    public void findByShardIdToDeployOrDelete_WhenControlPlaneIsIncomplete() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        bridgeDAO.persist(b);
+
+        Condition condition1 = createCondition();
+        Condition condition2 = createCondition();
+        condition2.setStatus(ConditionStatus.UNKNOWN);
+
+        Condition condition3 = createCondition();
+        condition3.setComponent(ComponentType.SHARD);
+        condition3.setStatus(ConditionStatus.UNKNOWN);
+
+        p.setConditions(List.of(condition1, condition2, condition3));
+        processorDAO.persist(p);
+
+        List<Processor> processors = processorDAO.findByShardIdToDeployOrDelete(b.getShardId());
+        assertThat(processors).isNotNull();
+        assertThat(processors).isEmpty();
     }
 
 }
