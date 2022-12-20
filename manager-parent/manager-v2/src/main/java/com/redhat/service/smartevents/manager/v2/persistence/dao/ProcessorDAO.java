@@ -80,6 +80,7 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
         EntityManager em = getEntityManager();
         Query q = em.createNamedQuery("PROCESSOR_V2.findProcessorIdByShardIdToDeployOrDelete");

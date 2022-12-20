@@ -413,6 +413,7 @@ public class ProcessorDAOTest {
         Condition condition1 = createCondition();
         Condition condition2 = createCondition();
         condition2.setStatus(ConditionStatus.UNKNOWN);
+
         Condition condition3 = createCondition();
         condition3.setComponent(ComponentType.SHARD);
         condition3.setStatus(ConditionStatus.UNKNOWN);

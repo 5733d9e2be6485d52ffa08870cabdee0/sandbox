@@ -7,6 +7,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -28,8 +30,26 @@ import org.hibernate.annotations.ParamDef;
                 query = "from Bridge_V2 b left join fetch b.conditions where b.id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE_V2.countByOrganisationId",
                 query = "select count(*) from Bridge_V2 where organisation_id=:organisationId"),
+        @NamedQuery(name = "BRIDGE_V2.findByIdsWithConditions",
+                query = "select distinct (b) from Bridge_V2 b left join fetch b.conditions where b.id in (:ids)"),
         @NamedQuery(name = "BRIDGE_V2.findByCustomerId",
                 query = "select distinct (b) from Bridge_V2 b left join fetch b.conditions where customer_id=:customerId order by submitted_at desc")
+})
+// Hibernate does not support sub-queries in Named Queries. This is therefore written as Native Query.
+// Hibernate however does not support eager fetches with Native Queries without composing a _View_ class model,
+// retrieving a flat ResultSet and then building the object model hierarchy in Java. We therefore split
+// retrieval into two database calls: (1) Get the Processor IDs, (2) Fetch the Processor objects.
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "BRIDGE_V2.findBridgeIdByShardIdToDeployOrDelete",
+                query = "select b.id " +
+                        "from Bridge_V2 b " +
+                        "left join (" +
+                        "  select bridge_id, count(*) as incomplete_count from Condition c where component='MANAGER' and status != 'TRUE' group by c.bridge_id " +
+                        "    ) cp on cp.bridge_id = b.id " +
+                        "where " +
+                        // The LEFT JOIN on the sub-query can return a null if there are no MANAGER records that are NOT complete.
+                        "(cp.incomplete_count = 0 or cp.incomplete_count is null) and " +
+                        "b.shard_id = :shardId")
 })
 @FilterDefs({
         @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
