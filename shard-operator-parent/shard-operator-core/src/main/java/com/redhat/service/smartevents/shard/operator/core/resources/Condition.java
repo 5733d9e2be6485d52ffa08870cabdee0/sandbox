@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.core.resources;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Objects;
 
@@ -53,6 +55,7 @@ public class Condition {
     public Condition(@JsonProperty("type") final String type, @JsonProperty("status") final ConditionStatus status) {
         this.type = type;
         this.status = status;
+        this.lastTransitionTime = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
     }
 
     public Condition(final String type) {

@@ -2,9 +2,11 @@ package com.redhat.service.smartevents.shard.operator.v2;
 
 import java.time.Duration;
 import java.util.Base64;
+import java.util.List;
 
 import javax.inject.Inject;
 
+import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,6 @@ import com.redhat.service.smartevents.shard.operator.core.resources.ConditionSta
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
-import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
@@ -32,7 +33,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
-import static com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeStatus.SECRET_AVAILABLE;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -139,17 +140,44 @@ public class ManagedBridgeServiceImplTest {
     }
 
     @Test
-    public void IsBridgeStatusChange() {
-        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
-        managedBridgeService.createManagedBridge(bridgeDTO);
-        ManagedBridge oldManagedBridge = fetchManagedBridge(bridgeDTO);
+    public void Test_compare_bridges_with_differences() {
+        BridgeDTO newBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        ManagedBridge newManagedBridge = Fixtures.createManagedBridge(newBridgeDTO, namespaceProvider.getNamespaceName(newBridgeDTO.getId()));
 
-        BridgeDTO updatedBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
-        String expectedNamespace = namespaceProvider.getNamespaceName(updatedBridgeDTO.getId());
-        ManagedBridge updatedManagedBridge = ManagedBridgeConverter.fromBridgeDTOToManageBridge(updatedBridgeDTO, expectedNamespace);
-        updatedManagedBridge.getStatus().getConditionByType(SECRET_AVAILABLE).get().setStatus(ConditionStatus.True);
-        boolean status = managedBridgeService.isBridgeStatusChange(updatedManagedBridge);
+        BridgeDTO oldBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        ManagedBridge oldManagedBridge = Fixtures.createManagedBridge(oldBridgeDTO, namespaceProvider.getNamespaceName(oldBridgeDTO.getId()));
+        oldManagedBridge.getStatus().getConditionByType(DP_SECRET_READY_NAME).get().setStatus(ConditionStatus.True);
+        boolean status = managedBridgeService.compareBridgeStatus(newManagedBridge, oldManagedBridge);
+        assertThat(status).isFalse();
+    }
+
+    @Test
+    public void Test_compare_bridges_with_no_differences() {
+        BridgeDTO newBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        ManagedBridge newManagedBridge = Fixtures.createManagedBridge(newBridgeDTO, namespaceProvider.getNamespaceName(newBridgeDTO.getId()));
+
+        BridgeDTO oldBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        ManagedBridge oldManagedBridge = Fixtures.createManagedBridge(oldBridgeDTO, namespaceProvider.getNamespaceName(oldBridgeDTO.getId()));
+        boolean status = managedBridgeService.compareBridgeStatus(newManagedBridge, oldManagedBridge);
         assertThat(status).isTrue();
+    }
+
+    @Test
+    public void TestFetchAllManagedBridges() {
+
+        // setup
+        BridgeDTO bridgeDTO1 = Fixtures.createBridge(OperationType.CREATE);
+        managedBridgeService.createManagedBridge(bridgeDTO1);
+
+        BridgeDTO bridgeDTO2 = Fixtures.createBridge(OperationType.CREATE);
+        bridgeDTO2.setId("2");
+        managedBridgeService.createManagedBridge(bridgeDTO2);
+
+        // test
+        List<ManagedBridge> managedBridges = managedBridgeService.fetchAllManagedBridges();
+
+        // assert
+        Assertions.assertThat(managedBridges.size()).isEqualTo(2);
     }
 
     private <T extends HasMetadata> T assertV2Labels(T hasMetaData) {

@@ -6,8 +6,13 @@ import java.util.Set;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
+
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_AUTHORISATION_POLICY_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_CONFIG_MAP_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_KNATIVE_BROKER_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_NETWORK_RESOURCE_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
 
 /**
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>
@@ -17,27 +22,18 @@ import com.redhat.service.smartevents.shard.operator.core.resources.CustomResour
  */
 public class ManagedBridgeStatus extends CustomResourceStatus {
 
-    public static final String SECRET_AVAILABLE = "SecretAvailable";
-    public static final String CONFIG_MAP_AVAILABLE = "ConfigMapAvailable";
-    public static final String KNATIVE_BROKER_AVAILABLE = "KNativeBrokerAvailable";
-    public static final String AUTHORISATION_POLICY_AVAILABLE = "AuthorisationPolicyAvailable";
-    public static final String NETWORK_RESOURCE_AVAILABLE = "NetworkResourceAvailable";
-
-    private static Set<Condition> getInitialConditions() {
-        return new HashSet<>() {
-            {
-                add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
-                add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
-                add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.Unknown));
-                add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.Unknown));
-                add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.Unknown));
-                add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.Unknown));
-            }
-        };
+    private static Set<Condition> getCreationConditions() {
+        Set<Condition> conditions = new HashSet<>();
+        conditions.add(new Condition(DP_SECRET_READY_NAME, ConditionStatus.Unknown));
+        conditions.add(new Condition(DP_CONFIG_MAP_READY_NAME, ConditionStatus.Unknown));
+        conditions.add(new Condition(DP_KNATIVE_BROKER_READY_NAME, ConditionStatus.Unknown));
+        conditions.add(new Condition(DP_AUTHORISATION_POLICY_READY_NAME, ConditionStatus.Unknown));
+        conditions.add(new Condition(DP_NETWORK_RESOURCE_READY_NAME, ConditionStatus.Unknown));
+        return conditions;
     }
 
     public ManagedBridgeStatus() {
-        super(getInitialConditions());
+        super(getCreationConditions());
     }
 
     @Override

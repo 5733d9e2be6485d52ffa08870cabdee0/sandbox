@@ -18,7 +18,7 @@ public class ConditionConverter {
 
     private static ConditionDTO fromConditionToConditionDTO(Condition condition) {
         return new ConditionDTO(condition.getType(),
-                ConditionStatus.valueOf(condition.getStatus().name()),
+                ConditionStatus.fromString(condition.getStatus().name()),
                 condition.getReason(),
                 condition.getMessage(),
                 condition.getErrorCode(),

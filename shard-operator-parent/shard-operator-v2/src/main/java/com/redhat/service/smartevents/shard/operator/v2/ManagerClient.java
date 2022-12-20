@@ -12,9 +12,9 @@ import io.vertx.mutiny.ext.web.client.HttpResponse;
 
 public interface ManagerClient {
 
-    Uni<List<BridgeDTO>> fetchBridgesToDeployOrDelete();
+    Uni<List<BridgeDTO>> fetchBridgesForDataPlane();
 
-    Uni<HttpResponse<Buffer>> notifyBridgeStatus(BridgeStatusDTO dto);
+    Uni<HttpResponse<Buffer>> notifyBridgeStatus(List<BridgeStatusDTO> bridgeStatusDTOs);
 
-    Uni<List<ProcessorDTO>> fetchProcessorsToDeployOrDelete();
+    Uni<List<ProcessorDTO>> fetchProcessorsForDataPlane();
 }

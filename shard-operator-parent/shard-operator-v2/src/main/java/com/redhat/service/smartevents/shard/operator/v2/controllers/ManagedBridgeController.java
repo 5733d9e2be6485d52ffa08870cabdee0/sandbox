@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
@@ -22,9 +21,6 @@ import com.redhat.service.smartevents.shard.operator.core.resources.knative.Knat
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.ManagedBridgeService;
-import com.redhat.service.smartevents.shard.operator.v2.ManagerClient;
-import com.redhat.service.smartevents.shard.operator.v2.converters.BridgeStatusConverter;
-import com.redhat.service.smartevents.shard.operator.v2.exceptions.ReconciliationException;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeStatus;
 
@@ -41,6 +37,12 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_AUTHORISATION_POLICY_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_CONFIG_MAP_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_KNATIVE_BROKER_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_NETWORK_RESOURCE_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
@@ -65,9 +67,6 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
     @Inject
     OperatorMetricsService metricsService;
 
-    @Inject
-    ManagerClient managerClient;
-
     @Override
     public UpdateControl<ManagedBridge> reconcile(ManagedBridge managedBridge, Context context) {
 
@@ -75,59 +74,53 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
                 managedBridge.getMetadata().getName(),
                 managedBridge.getMetadata().getNamespace());
 
-        try {
-            ManagedBridgeStatus status = managedBridge.getStatus();
+        ManagedBridgeStatus status = managedBridge.getStatus();
 
-            Secret secret = managedBridgeService.fetchBridgeSecret(managedBridge);
-            if (secret == null) {
-                status.markConditionFalse(ManagedBridgeStatus.SECRET_AVAILABLE);
-                throw new ReconciliationException();
-            } else {
-                LOGGER.info("Secret for ManagedBridge with id '{}' has been created.", managedBridge.getSpec().getId());
-                status.markConditionTrue(ManagedBridgeStatus.SECRET_AVAILABLE);
-            }
-
-            // Nothing to check for ConfigMap
-            ConfigMap configMap = managedBridgeService.fetchOrCreateBridgeConfigMap(managedBridge, secret);
-            status.markConditionTrue(ManagedBridgeStatus.CONFIG_MAP_AVAILABLE);
-
-            KnativeBroker knativeBroker = managedBridgeService.fetchOrCreateKnativeBroker(managedBridge, configMap);
-            String path = extractBrokerPath(knativeBroker);
-
-            if (path == null) {
-                LOGGER.info("The Knative Broker Resource for ManagedBridge '{}' in namespace '{}' is not ready",
-                        managedBridge.getMetadata().getName(),
-                        managedBridge.getMetadata().getNamespace());
-                status.markConditionFalse(ManagedBridgeStatus.KNATIVE_BROKER_AVAILABLE);
-                throw new ReconciliationException();
-            } else {
-                status.markConditionTrue(ManagedBridgeStatus.KNATIVE_BROKER_AVAILABLE);
-                LOGGER.info("The Knative Broker Resource for ManagedBridge '{}' in namespace '{}' is ready", managedBridge.getMetadata().getName(), managedBridge.getMetadata().getNamespace());
-            }
-
-            // Nothing to check for Authorization Policy
-            managedBridgeService.fetchOrCreateBridgeAuthorizationPolicy(managedBridge, path);
-            status.markConditionTrue(ManagedBridgeStatus.AUTHORISATION_POLICY_AVAILABLE);
-
-            NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(managedBridge, secret, managedBridge.getSpec().getDnsConfiguration().getHost(), path);
-            if (!networkResource.isReady()) {
-                LOGGER.info("Ingress networking resource for ManagedBridge with id '{}' in namespace '{}' is not ready.",
-                        managedBridge.getMetadata().getName(),
-                        managedBridge.getMetadata().getNamespace());
-                status.markConditionFalse(ManagedBridgeStatus.NETWORK_RESOURCE_AVAILABLE);
-                throw new ReconciliationException();
-            } else {
-                LOGGER.info("Ingress networking resource for ManagedBridge with id '{}' in namespace '{}' is ready.", managedBridge.getMetadata().getName(),
-                        managedBridge.getMetadata().getNamespace());
-                status.markConditionTrue(ManagedBridgeStatus.NETWORK_RESOURCE_AVAILABLE);
-            }
-        } catch (ReconciliationException e) {
-            notifyManager(managedBridge);
-            return UpdateControl.updateStatus(managedBridge).rescheduleAfter(reconcileIntervalMillis);
+        Secret secret = managedBridgeService.fetchBridgeSecret(managedBridge);
+        if (secret == null) {
+            status.markConditionFalse(DP_SECRET_READY_NAME);
+            return handleFailure(managedBridge);
+        } else {
+            LOGGER.info("Secret for ManagedBridge with id '{}' has been created.", managedBridge.getSpec().getId());
+            status.markConditionTrue(DP_SECRET_READY_NAME);
         }
 
-        if (managedBridgeService.isBridgeStatusChange(managedBridge)) {
-            notifyManager(managedBridge);
+        // Nothing to check for ConfigMap
+        ConfigMap configMap = managedBridgeService.fetchOrCreateBridgeConfigMap(managedBridge, secret);
+        status.markConditionTrue(DP_CONFIG_MAP_READY_NAME);
+
+        KnativeBroker knativeBroker = managedBridgeService.fetchOrCreateKnativeBroker(managedBridge, configMap);
+        String path = extractBrokerPath(knativeBroker);
+
+        if (path == null) {
+            LOGGER.info("The Knative Broker Resource for ManagedBridge '{}' in namespace '{}' is not ready",
+                    managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
+            status.markConditionFalse(DP_KNATIVE_BROKER_READY_NAME);
+            return handleFailure(managedBridge);
+        } else {
+            status.markConditionTrue(DP_KNATIVE_BROKER_READY_NAME);
+            LOGGER.info("The Knative Broker Resource for ManagedBridge '{}' in namespace '{}' is ready", managedBridge.getMetadata().getName(), managedBridge.getMetadata().getNamespace());
+        }
+
+        // Nothing to check for Authorization Policy
+        managedBridgeService.fetchOrCreateBridgeAuthorizationPolicy(managedBridge, path);
+        status.markConditionTrue(DP_AUTHORISATION_POLICY_READY_NAME);
+
+        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(managedBridge, secret, managedBridge.getSpec().getDnsConfiguration().getHost(), path);
+        if (!networkResource.isReady()) {
+            LOGGER.info("Ingress networking resource for ManagedBridge with id '{}' in namespace '{}' is not ready.",
+                    managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
+            status.markConditionFalse(DP_NETWORK_RESOURCE_READY_NAME);
+            return handleFailure(managedBridge);
+        } else {
+            LOGGER.info("Ingress networking resource for ManagedBridge with id '{}' in namespace '{}' is ready.", managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
+            status.markConditionTrue(DP_NETWORK_RESOURCE_READY_NAME);
+        }
+
+        if (isBridgeStatusChange(managedBridge)) {
             metricsService.onOperationComplete(managedBridge, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             return UpdateControl.updateStatus(managedBridge);
         }
@@ -169,11 +162,12 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         }
     }
 
-    private void notifyManager(ManagedBridge managedBridge) {
-        BridgeStatusDTO bridgeStatusDTO = BridgeStatusConverter.fromManagedBridgeToBrideStatusDTO(managedBridge);
+    private UpdateControl<ManagedBridge> handleFailure(ManagedBridge managedBridge) {
+        return UpdateControl.updateStatus(managedBridge).rescheduleAfter(reconcileIntervalMillis);
+    }
 
-        managerClient.notifyBridgeStatus(bridgeStatusDTO).subscribe().with(
-                success -> LOGGER.debug("Successfully sends ManagedBridge status"),
-                error -> LOGGER.error("Failed to send ManagedBridge status", error));
+    private boolean isBridgeStatusChange(ManagedBridge updatedBridge) {
+        ManagedBridge oldBridge = managedBridgeService.fetchManagedBridge(updatedBridge.getMetadata().getName(), updatedBridge.getMetadata().getNamespace());
+        return !managedBridgeService.compareBridgeStatus(oldBridge, updatedBridge);
     }
 }

@@ -48,7 +48,7 @@ public class ManagerClientImpl implements ManagerClient {
     ObjectMapper mapper;
 
     @Override
-    public Uni<List<BridgeDTO>> fetchBridgesToDeployOrDelete() {
+    public Uni<List<BridgeDTO>> fetchBridgesForDataPlane() {
         return getAuthenticatedRequest(webClientManager.get(V2APIConstants.V2_SHARD_API_BASE_PATH), HttpRequest::send)
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))
@@ -56,16 +56,16 @@ public class ManagerClientImpl implements ManagerClient {
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyBridgeStatus(BridgeStatusDTO dto) {
-        LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", dto.getId());
-        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_BASE_PATH), request -> request.sendJson(dto))
+    public Uni<HttpResponse<Buffer>> notifyBridgeStatus(List<BridgeStatusDTO> bridgeStatusDTOs) {
+        LOGGER.debug("Notifying manager about the new status of the Bridge");
+        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_BASE_PATH), request -> request.sendJson(bridgeStatusDTOs))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
-    public Uni<List<ProcessorDTO>> fetchProcessorsToDeployOrDelete() {
+    public Uni<List<ProcessorDTO>> fetchProcessorsForDataPlane() {
         return getAuthenticatedRequest(webClientManager.get(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))

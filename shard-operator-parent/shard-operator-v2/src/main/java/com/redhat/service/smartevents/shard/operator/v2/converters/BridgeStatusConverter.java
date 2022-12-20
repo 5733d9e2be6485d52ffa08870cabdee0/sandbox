@@ -8,7 +8,7 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
 public class BridgeStatusConverter {
 
-    public static BridgeStatusDTO fromManagedBridgeToBrideStatusDTO(ManagedBridge managedBridge) {
+    public static BridgeStatusDTO fromManagedBridgeToBridgeStatusDTO(ManagedBridge managedBridge) {
         Set<ConditionDTO> conditionDTOs = ConditionConverter.fromConditionsToConditionDTOs(managedBridge.getStatus().getConditions());
         return new BridgeStatusDTO(
                 managedBridge.getSpec().getId(),

@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -249,24 +250,36 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     }
 
     @Override
-    public boolean isBridgeStatusChange(ManagedBridge updatedBridge) {
-        ManagedBridge oldBridge = fetchManagedBridge(updatedBridge.getMetadata().getName(), updatedBridge.getMetadata().getNamespace());
+    public boolean compareBridgeStatus(ManagedBridge oldBridge, ManagedBridge newBridge) {
         Map<String, Condition> oldBridgeConditionMap = oldBridge.getStatus().getConditions().stream().collect(Collectors.toMap(Condition::getType, condition -> condition));
-        Map<String, Condition> updatedBridgeConditionMap = updatedBridge.getStatus().getConditions().stream().collect(Collectors.toMap(Condition::getType, condition -> condition));
+        Map<String, Condition> newBridgeConditionMap = newBridge.getStatus().getConditions().stream().collect(Collectors.toMap(Condition::getType, condition -> condition));
         for (Map.Entry<String, Condition> oldBridgeConditionEntry : oldBridgeConditionMap.entrySet()) {
-            Condition updatedCondition = updatedBridgeConditionMap.get(oldBridgeConditionEntry.getKey());
-            if (isConditionChange(oldBridgeConditionEntry.getValue(), updatedCondition)) {
-                return true;
+            Condition newCondition = newBridgeConditionMap.get(oldBridgeConditionEntry.getKey());
+            if (!compareCondition(oldBridgeConditionEntry.getValue(), newCondition)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
-    private ManagedBridge fetchManagedBridge(String name, String namespace) {
+    @Override
+    public ManagedBridge fetchManagedBridge(String name, String namespace) {
         return kubernetesClient.resources(ManagedBridge.class).inNamespace(namespace).withName(name).get();
     }
 
-    private boolean isConditionChange(Condition oldCondition, Condition updatedCondition) {
-        return !oldCondition.getStatus().equals(updatedCondition.getStatus());
+    /**
+     * Compare condition on bases of condition equality.
+     * 
+     * @param oldCondition Old condition
+     * @param newCondition New Condition.
+     * @return { {@code @True} } if both conditions are equal else { {@code @False} }
+     */
+    private boolean compareCondition(Condition oldCondition, Condition newCondition) {
+        return oldCondition.getStatus().equals(newCondition.getStatus());
+    }
+
+    @Override
+    public List<ManagedBridge> fetchAllManagedBridges() {
+        return kubernetesClient.resources(ManagedBridge.class).inAnyNamespace().list().getItems();
     }
 }
