@@ -25,6 +25,7 @@ import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvi
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Constants;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -226,6 +227,8 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
         expected.getSpec().getRules().get(0).setWhen(Collections.singletonList(userAuthPolicy));
         expected.getSpec().getRules().get(1).setWhen(Collections.singletonList(serviceAccountsAuthPolicy));
+        expected.getSpec().getSelector().setMatchLabels(Collections.singletonMap(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL,
+                istioGatewayProvider.getIstioGatewayService().getMetadata().getLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL)));
 
         AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
                 .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
