@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 
 import javax.validation.constraints.NotNull;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,10 +30,16 @@ public abstract class BaseManagedResourceResponse extends BaseResponse {
 
     @NotNull
     @JsonProperty("status")
+    @Schema(
+            description = "The status of this resource",
+            example = "ready")
     private ManagedResourceStatus status;
 
     @NotNull
     @JsonProperty("owner")
+    @Schema(
+            description = "The user that owns this resource",
+            example = "userName")
     private String owner;
 
     protected BaseManagedResourceResponse(String kind) {

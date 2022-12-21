@@ -16,12 +16,16 @@ public class ProcessorRequest {
 
     @NotEmpty(message = "Processor name cannot be null or empty")
     @JsonProperty("name")
+    @Schema(
+            description = "The name of the processor",
+            example = "processor1")
     protected String name;
 
     @JsonProperty("flows")
     @NotNull(message = "Processor flows cannot be null")
     // ObjectNode is not rendered properly by swagger
-    @Schema(implementation = Object.class, required = true)
+    @Schema(implementation = Object.class, required = true,
+            description = "The Camel YAML DSL code, formatted as JSON, that defines the flows in the processor")
     private ObjectNode flows;
 
     public ProcessorRequest() {

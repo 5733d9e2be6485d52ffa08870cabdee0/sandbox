@@ -49,15 +49,15 @@ public class Fixtures {
         return createBridge(id, name, operation, createBridgeAcceptedConditions());
     }
 
-    public static Bridge createProvisionBridge(String id, String name) {
+    public static Bridge createProvisioningBridge(String id, String name) {
         Operation operation = new Operation();
-        operation.setType(OperationType.DELETE);
+        operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createBridge(id, name, operation, createBridgeDeprovisionConditions());
+        return createBridge(id, name, operation, createBridgeProvisionConditions());
     }
 
-    public static Bridge createDeprovisionBridge(String id, String name) {
+    public static Bridge createDeprovisioningBridge(String id, String name) {
         Operation operation = new Operation();
         operation.setType(OperationType.DELETE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
