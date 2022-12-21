@@ -50,7 +50,6 @@ if [ "${disable_extra_components}" != 'true' ]; then
   sleep 5
   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
   . "${SCRIPT_DIR_PATH}/knative-installer.sh"
-  istioctl manifest apply --skip-confirmation --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
   sleep 5
   . "${SCRIPT_DIR_PATH}/camel-k-installer.sh"
 fi

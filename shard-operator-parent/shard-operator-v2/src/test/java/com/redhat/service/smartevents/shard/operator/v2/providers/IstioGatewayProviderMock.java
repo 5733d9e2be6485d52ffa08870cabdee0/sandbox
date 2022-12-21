@@ -15,7 +15,7 @@ public class IstioGatewayProviderMock extends IstioGatewayProviderImpl {
     @Override
     public Service getIstioGatewayService() {
         return new ServiceBuilder()
-                .withMetadata(new ObjectMetaBuilder().withName("istio-ingressgateway").withNamespace("istio-system").build())
+                .withMetadata(new ObjectMetaBuilder().withName("rhose-ingressgateway").withNamespace("istio-system").build())
                 .withSpec(new ServiceSpecBuilder().withPorts(new ServicePortBuilder().withName("http2").withPort(15021).build()).build())
                 .build();
     }
