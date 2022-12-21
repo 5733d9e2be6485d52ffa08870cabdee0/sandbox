@@ -25,4 +25,4 @@ runs:
                 label:
                   istio: rhose-ingressgateway
                   app: rhose-ingressgateway
-          EOF
+        EOF
