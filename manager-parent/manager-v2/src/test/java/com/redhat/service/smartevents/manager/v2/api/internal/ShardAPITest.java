@@ -14,6 +14,7 @@ import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -88,6 +89,26 @@ public class ShardAPITest {
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testGetBridgesToDeploy() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
+        mockBridgeControlPlaneActivitiesComplete(bridgeResponse.getId());
+
+        final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridgesToDeployOrDelete.clear();
+            bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
+            }));
+            assertThat(bridgesToDeployOrDelete.size()).isEqualTo(1);
+        });
+
+        BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
+        assertThat(bridge.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+        assertThat(bridge.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(bridge.getEndpoint()).isNotNull();
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
 
@@ -116,6 +137,12 @@ public class ShardAPITest {
         assertThat(processor.getOwner()).isEqualTo(DEFAULT_USER_NAME);
         assertThat(processor.getOperationType()).isEqualTo(OperationType.CREATE);
         assertThat(processor.getGeneration()).isEqualTo(0);
+    }
+
+    @Transactional
+    protected void mockBridgeControlPlaneActivitiesComplete(String bridgeId) {
+        Bridge bridge = bridgeDAO.findByIdWithConditions(bridgeId);
+        bridge.getConditions().stream().filter(c -> c.getComponent() == ComponentType.MANAGER).forEach(c -> c.setStatus(ConditionStatus.TRUE));
     }
 
     @Transactional
