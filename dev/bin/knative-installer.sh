@@ -68,16 +68,3 @@ kubectl apply -f https://github.com/knative-sandbox/eventing-kafka-broker/releas
 
 header_text "Waiting for Knative Eventing Kafka to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
-
-cat <<-EOF | istioctl manifest apply  --skip-confirmation --set values.gateways.istio-ingressgateway.type="ClusterIP" -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-spec:
-  components:
-    ingressGateways:
-      - name: rhose-ingressgateway
-        enabled: true
-        label:
-          istio: rhose-ingressgateway
-          app: rhose-ingressgateway
-EOF
