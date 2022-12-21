@@ -81,43 +81,48 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
     @Override
     public UpdateControl<ManagedProcessor> reconcile(ManagedProcessor managedProcessor, Context context) {
         String managedProcessorName = managedProcessor.getMetadata().getName();
+        String managedProcessorNamespace = managedProcessor.getMetadata().getNamespace();
 
-        LOGGER.info("Create or update ManagedProcessor: '{}' in namespace '{}'",
+        LOGGER.info("Reconciling ManagedProcessor: '{}' in namespace '{}'",
                 managedProcessorName,
-                managedProcessor.getMetadata().getNamespace());
+                managedProcessorNamespace);
 
-        ManagedProcessorStatus status = managedProcessor.getStatus();
+        ManagedProcessorStatus processorStatus = managedProcessor.getStatus();
 
-        if (!status.isReady() && isTimedOut(status)) {
+        if (!processorStatus.isReady() && isTimedOut(processorStatus)) {
             // notifyManagerOfFailure
-            status.markConditionFalse(ConditionTypeConstants.READY);
+            processorStatus.markConditionFalse(ConditionTypeConstants.READY);
             return UpdateControl.updateStatus(managedProcessor);
         }
 
         String integrationName = String.format("integration-%s", managedProcessorName);
         CamelIntegration camelIntegration = managedProcessorService.fetchOrCreateCamelIntegration(managedProcessor, integrationName);
 
-        if (camelIntegration == null) {
-            LOGGER.info("CamelIntegration for the ManagedProcessor '{}' has not been created yet.",
-                    managedProcessorName);
-            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                status.markConditionFalse(ConditionTypeConstants.READY);
+        if (!camelIntegration.isReady()) {
+            LOGGER.info("CamelIntegration for the ManagedProcessor '{}' in namespace '{}' is not ready",
+                    managedProcessorName,
+                    managedProcessorNamespace);
+            if (!processorStatus.isConditionTypeFalse(ConditionTypeConstants.READY)) {
+                processorStatus.markConditionFalse(ConditionTypeConstants.READY);
             }
             return UpdateControl.updateStatus(managedProcessor).rescheduleAfter(executorPollIntervalMilliseconds);
-        } else if (!status.isConditionTypeTrue(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE)) {
-            status.markConditionTrue(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE);
+        } else if (!processorStatus.isConditionTypeTrue(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE)) {
+            LOGGER.info("CamelIntegration for the ManagedProcessor '{}' in namespace '{}' is ready",
+                    managedProcessorName,
+                    managedProcessorNamespace);
+            processorStatus.markConditionTrue(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE);
         }
 
         LOGGER.info("Managed Processor: '{}' in namespace '{}' is ready",
                 managedProcessorName,
-                managedProcessor.getMetadata().getNamespace());
+                managedProcessorNamespace);
 
         // Only issue a Status Update once.
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!managedProcessor.getStatus().isReady()) {
             metricsService.onOperationComplete(managedProcessor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
-            status.markConditionTrue(ConditionTypeConstants.READY);
+            processorStatus.markConditionTrue(ConditionTypeConstants.READY);
             // Notify Manager is Ready
             return UpdateControl.updateStatus(managedProcessor);
         }
