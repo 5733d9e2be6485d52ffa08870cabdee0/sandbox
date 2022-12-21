@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.shard.operator.v2.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -24,6 +26,9 @@ class ManagedProcessorControllerTest {
 
     @Inject
     ManagedProcessorController managedProcessorController;
+
+    @Inject
+    KubernetesClient kubernetesClient;
 
     @Inject
     NamespaceProvider namespaceProvider;
@@ -42,6 +47,28 @@ class ManagedProcessorControllerTest {
         // Then
         assertThat(updateControl.isUpdateStatus()).isFalse();
         assertThat(managedProcessor.getStatus().isReady()).isTrue();
+    }
+
+    @Test
+    void testCreateCamelIntegration() {
+        // Given
+        ManagedProcessor managedProcessor = buildManagedProcessor();
+
+        // When
+        UpdateControl<ManagedProcessor> updateControl = managedProcessorController.reconcile(managedProcessor, null);
+
+        String integrationName = String.format("integration-%s", managedProcessor.getMetadata().getName());
+
+        // Then
+        CamelIntegration camelIntegration = kubernetesClient
+                .resources(CamelIntegration.class)
+                .inNamespace(managedProcessor.getMetadata().getNamespace())
+                .withName(integrationName)
+                .get();
+
+        assertThat(camelIntegration).isNotNull();
+        assertThat(camelIntegration.getMetadata().getOwnerReferences().size()).isEqualTo(1);
+        assertThat(camelIntegration.getMetadata().getLabels()).isNotNull();
     }
 
     private ManagedProcessor buildManagedProcessor() {
