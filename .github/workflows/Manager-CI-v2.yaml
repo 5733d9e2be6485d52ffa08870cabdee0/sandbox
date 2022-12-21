@@ -122,12 +122,12 @@ jobs:
         run: |
           docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME executor/
           kind load docker-image $EXECUTOR_CONTAINER_NAME
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
       - name: Install knative
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
-      - name: Istio Setup
-        uses: ./.github/actions/istio-setup
       - name: Install Camel K
         run: |
           chmod +x dev/bin/camel-k-installer.sh

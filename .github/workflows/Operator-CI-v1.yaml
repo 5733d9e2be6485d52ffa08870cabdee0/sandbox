@@ -80,6 +80,8 @@ jobs:
         run: |
           # KinD needs a specific version to skip external image pull, in case of default 'latest' version KinD would try to fetch the image from external location
           kind load docker-image openbridge/shard-operator:$GITHUB_SHA
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
       - name: Install Knative resources and Prometheus ServiceMonitor CRD
         run: |
           chmod +x dev/bin/knative-installer.sh
@@ -87,8 +89,6 @@ jobs:
 
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
-      - name: Istio Setup
-        uses: ./.github/actions/istio-setup
       - name: Install Camel K
         run: |
           chmod +x dev/bin/camel-k-installer.sh
