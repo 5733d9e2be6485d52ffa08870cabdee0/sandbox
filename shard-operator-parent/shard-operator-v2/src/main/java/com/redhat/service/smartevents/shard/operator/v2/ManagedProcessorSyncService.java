@@ -5,6 +5,7 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,9 @@ public class ManagedProcessorSyncService {
     @Inject
     ManagedProcessorService managedProcessorService;
 
+    @Inject
+    NamespaceProvider namespaceProvider;
+
     public void syncManagedProcessorWithManager() {
         managerClient.fetchProcessorsToDeployOrDelete()
                 .onItem()
@@ -36,7 +40,8 @@ public class ManagedProcessorSyncService {
             if (processorDTO.getOperationType() == OperationType.DELETE) {
                 managedProcessorService.deleteManagedProcessor(processorDTO);
             } else {
-                managedProcessorService.createManagedProcessor(processorDTO, "namespace");
+                String namespace = namespaceProvider.getNamespaceName(processorDTO.getBridgeId());
+                managedProcessorService.createManagedProcessor(processorDTO, namespace);
             }
         }
     }
