@@ -30,7 +30,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static final String COMPONENT_NAME = "managed-processor";
-    public static final String OB_RESOURCE_NAME_PREFIX = "proc-";
+    public static final String PROCESSOR_NAME_PREFIX = "proc-";
 
     /**
      * Don't use this default constructor!
@@ -65,7 +65,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
     }
 
     public static String resolveResourceName(String id) {
-        return OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
+        return PROCESSOR_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
     }
 
     public static final class Builder {
