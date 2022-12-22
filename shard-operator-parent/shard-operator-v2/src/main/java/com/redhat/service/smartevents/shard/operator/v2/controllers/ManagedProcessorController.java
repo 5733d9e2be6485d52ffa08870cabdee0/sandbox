@@ -95,8 +95,7 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
             return UpdateControl.updateStatus(managedProcessor);
         }
 
-        String integrationName = String.format("integration-%s", managedProcessorName);
-        CamelIntegration camelIntegration = managedProcessorService.fetchOrCreateCamelIntegration(managedProcessor, integrationName);
+        CamelIntegration camelIntegration = managedProcessorService.fetchOrCreateCamelIntegration(managedProcessor);
 
         if (!camelIntegration.isReady()) {
             LOGGER.info("CamelIntegration for the ManagedProcessor '{}' in namespace '{}' is not ready",
