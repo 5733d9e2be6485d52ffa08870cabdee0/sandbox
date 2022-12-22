@@ -14,17 +14,4 @@ runs:
       run: |
         curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${{ inputs.istio-version }} TARGET_ARCH=x86_64 sh -
         export PATH=$PWD/istio-${{ inputs.istio-version }}/bin:$PATH
-        echo $PWD
-        ls
-        cat <<-EOF | istioctl manifest apply  --skip-confirmation --set values.gateways.istio-ingressgateway.type="ClusterIP" -f -
-        apiVersion: install.istio.io/v1alpha1
-        kind: IstioOperator
-        spec:
-          components:
-            ingressGateways:
-              - name: rhose-ingressgateway
-                enabled: true
-                label:
-                  istio: rhose-ingressgateway
-                  app: rhose-ingressgateway
-        EOF
+        istioctl manifest apply  --skip-confirmation --set values.gateways.istio-ingressgateway.type="ClusterIP" -f dev/bin/istio-manifest.yaml
