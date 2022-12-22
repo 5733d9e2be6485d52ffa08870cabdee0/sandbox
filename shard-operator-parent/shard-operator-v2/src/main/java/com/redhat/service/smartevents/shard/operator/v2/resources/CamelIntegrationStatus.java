@@ -13,6 +13,11 @@ import com.redhat.service.smartevents.shard.operator.core.resources.ConditionSta
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CamelIntegrationStatus {
 
+    private final static String INTEGRATION_KIT_AVAILABLE = "IntegrationKitAvailable";
+    private final static String INTEGRATION_PLATFORM_AVAILABLE = "IntegrationPlatformAvailable";
+    private final static String KNATIVE_SERVICE_AVAILABLE = "KnativeServiceAvailable";
+    private final static String KNATIVE_SERVICE_READY = "KnativeServiceReady";
+
     private Set<Condition> conditions = new HashSet<>();
 
     public Set<Condition> getConditions() {
@@ -25,7 +30,7 @@ public class CamelIntegrationStatus {
 
     @JsonIgnore
     public final boolean isReady() {
-        return conditionsAreTrue("IntegrationKitAvailable", "IntegrationPlatformAvailable", "KnativeServiceAvailable", "KnativeServiceReady");
+        return conditionsAreTrue(INTEGRATION_KIT_AVAILABLE, INTEGRATION_PLATFORM_AVAILABLE, KNATIVE_SERVICE_AVAILABLE, KNATIVE_SERVICE_READY);
     }
 
     private boolean conditionsAreTrue(String... conditionsName) {
