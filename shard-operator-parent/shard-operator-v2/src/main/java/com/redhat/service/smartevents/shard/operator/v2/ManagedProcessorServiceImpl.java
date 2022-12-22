@@ -51,9 +51,12 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
     }
 
     @Override
-    public CamelIntegration fetchOrCreateCamelIntegration(ManagedProcessor processor, String integrationName) {
+    public CamelIntegration fetchOrCreateCamelIntegration(ManagedProcessor processor) {
         TemplateImportConfig config = TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME);
         CamelIntegration expected = new TemplateProviderImplV2().loadCamelIntegrationTemplate(processor, config);
+
+        String processorName = processor.getMetadata().getName();
+        String integrationName = processor.getMetadata().getName();
 
         expected.getMetadata().setName(integrationName);
         expected.getSpec().setFlows(List.of(processor.getSpec().getFlows()));
@@ -67,7 +70,7 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
 
         if (integration == null) {
             LOGGER.info("Create CamelIntegration with name '{}' in namespace '{}' for ManagedProcessor with id '{}'",
-                    integrationName, processorNamespace, processor.getMetadata().getName());
+                    integrationName, processorNamespace, processorName);
             return kubernetesClient
                     .resources(CamelIntegration.class)
                     .inNamespace(processorNamespace)

@@ -63,12 +63,11 @@ public class ManagedProcessorServiceImplTest {
         waitUntiManagedProcessorExists(processorDTO, namespace);
         ManagedProcessor managedProcessor = fetchManagedProcessorByDTONamespace(processorDTO, namespace);
 
-        String integrationName = "integration-" + processorDTO.getName();
-        CamelIntegration camelIntegration = bridgeIngressService.fetchOrCreateCamelIntegration(managedProcessor, integrationName);
+        CamelIntegration camelIntegration = bridgeIngressService.fetchOrCreateCamelIntegration(managedProcessor);
 
         assertThat(camelIntegration).isNotNull();
         assertThat(camelIntegration.getSpec().getFlows().get(0)).isEqualTo(flow);
-        waitUntiCamelIntegrationExists(namespace, integrationName);
+        waitUntiCamelIntegrationExists(namespace, processorDTO.getName());
     }
 
     private void waitUntiCamelIntegrationExists(String namespace, String name) {

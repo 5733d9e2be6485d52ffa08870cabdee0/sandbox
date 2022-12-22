@@ -8,7 +8,7 @@ public interface ManagedProcessorService {
 
     void createManagedProcessor(ProcessorDTO bridgeDTO, String namespace);
 
-    CamelIntegration fetchOrCreateCamelIntegration(ManagedProcessor processor, String integrationName);
+    CamelIntegration fetchOrCreateCamelIntegration(ManagedProcessor processor);
 
     void deleteManagedProcessor(ProcessorDTO processorDTO);
 }

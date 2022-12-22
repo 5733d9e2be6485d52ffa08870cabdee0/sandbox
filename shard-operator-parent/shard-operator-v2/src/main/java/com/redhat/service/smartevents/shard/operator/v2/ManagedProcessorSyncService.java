@@ -5,12 +5,12 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 
 @ApplicationScoped
 public class ManagedProcessorSyncService {
