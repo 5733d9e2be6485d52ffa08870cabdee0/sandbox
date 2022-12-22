@@ -48,20 +48,9 @@ if [ "${disable_extra_components}" != 'true' ]; then
   sleep 5
   kubectl wait pod -l app-component=keycloak --for=condition=Ready --timeout=600s -n keycloak
   sleep 5
+  istioctl manifest apply  --skip-confirmation --set values.gateways.istio-ingressgateway.type="ClusterIP" -f ${SCRIPT_DIR_PATH}/istio-manifest.yaml
   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
   . "${SCRIPT_DIR_PATH}/knative-installer.sh"
-  cat <<-EOF | istioctl manifest apply  --skip-confirmation --set values.gateways.istio-ingressgateway.type="ClusterIP" -f -
-  apiVersion: install.istio.io/v1alpha1
-  kind: IstioOperator
-  spec:
-    components:
-      ingressGateways:
-        - name: rhose-ingressgateway
-          enabled: true
-          label:
-            istio: rhose-ingressgateway
-            app: rhose-ingressgateway
-  EOF
   sleep 5
   . "${SCRIPT_DIR_PATH}/camel-k-installer.sh"
 fi

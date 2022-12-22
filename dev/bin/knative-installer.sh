@@ -27,9 +27,20 @@ header_text "Waiting for Knative Serving Core to become ready"
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-serving
 
 header_text "Installing Istio Configuration for Knative Serving"
+
+header_text "Waiting for all Istio resources to become ready..."
+kubectl wait deployment --all --timeout=900s --for=condition=Available -n istio-system
 kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.5.0/net-istio.yaml
 kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-serving
 kubectl label namespace knative-serving istio-injection=enabled --overwrite
+
+# Sets the domain name configuration for all KService services to be exposed as cluster private. We do not need to
+# expose Kservice to the outside world.
+# @see https://knative.dev/docs/serving/services/private-services/
+kubectl patch configmap/config-domain \
+      --namespace knative-serving \
+      --type merge \
+      --patch '{"data":{"svc.cluster.local":""}}'
 
 header_text "Knative Eventing Kafka - Installer"
 header_text "Initializing Knative Eventing Core APIs"
