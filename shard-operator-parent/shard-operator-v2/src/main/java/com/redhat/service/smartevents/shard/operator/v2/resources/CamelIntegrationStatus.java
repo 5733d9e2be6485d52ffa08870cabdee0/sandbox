@@ -38,7 +38,7 @@ public class CamelIntegrationStatus {
                 .map(this::getConditionByType)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .anyMatch(c -> ConditionStatus.True.equals(c.getStatus()));
+                .allMatch(c -> ConditionStatus.True.equals(c.getStatus()));
     }
 
     @JsonIgnore
