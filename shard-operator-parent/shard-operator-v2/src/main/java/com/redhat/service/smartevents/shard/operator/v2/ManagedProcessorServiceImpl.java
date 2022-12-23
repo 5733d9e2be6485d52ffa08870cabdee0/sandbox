@@ -68,7 +68,7 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
                 .withName(integrationName)
                 .get();
 
-        if (integration != null && integration.equals(expected)) {
+        if (integration != null && integration.getSpec().equals(expected.getSpec())) {
             return integration;
         }
 
