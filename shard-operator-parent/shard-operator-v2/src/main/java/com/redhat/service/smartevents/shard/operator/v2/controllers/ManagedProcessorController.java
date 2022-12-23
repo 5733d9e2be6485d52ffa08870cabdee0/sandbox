@@ -118,7 +118,7 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
         // Only issue a Status Update once.
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
-        if (!managedProcessor.getStatus().isReady()) {
+        if (!managedProcessor.getStatus().allConditionsAreReady()) {
             metricsService.onOperationComplete(managedProcessor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             processorStatus.markConditionTrue(ConditionTypeConstants.READY);
             // Notify Manager is Ready
