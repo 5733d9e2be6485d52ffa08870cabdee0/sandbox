@@ -118,6 +118,9 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
                     .withNamespace(namespace)
                     .withLabels(new LabelsBuilder()
                             .withCustomerId(customerId)
+                            .withBridgeId(bridgeId)
+                            .withProcessorId(processorId)
+                            .withProcessorName(processorName)
                             .withComponent(COMPONENT_NAME)
                             .buildWithDefaults(LabelsBuilder.V2_OPERATOR_NAME))
                     .build();
