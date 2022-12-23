@@ -24,6 +24,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.knative.Knat
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.v1.utils.Constants;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -234,6 +235,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         expected.getSpec().getRules().get(0).setWhen(Collections.singletonList(userAuthPolicy));
         expected.getSpec().getRules().get(1).setWhen(Collections.singletonList(serviceAccountsAuthPolicy));
+        expected.getSpec().getSelector().setMatchLabels(Collections.singletonMap(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL,
+                istioGatewayProvider.getIstioGatewayService().getMetadata().getLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL)));
 
         AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
                 .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221

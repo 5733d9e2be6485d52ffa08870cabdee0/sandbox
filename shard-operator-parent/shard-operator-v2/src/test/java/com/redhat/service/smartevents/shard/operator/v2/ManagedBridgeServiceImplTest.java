@@ -23,6 +23,7 @@ import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvi
 import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 import com.redhat.service.smartevents.shard.operator.v2.utils.V2KubernetesResourcePatcher;
 
@@ -136,6 +137,8 @@ public class ManagedBridgeServiceImplTest {
                     assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getKey().length()).isGreaterThan(0);
                     assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().size()).isGreaterThan(0);
                     assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0).length()).isGreaterThan(0);
+                    assertThat(authorizationPolicy.getSpec().getSelector().getMatchLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL))
+                            .isEqualTo(istioGatewayProvider.getIstioGatewayService().getMetadata().getLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL));
                 });
     }
 
