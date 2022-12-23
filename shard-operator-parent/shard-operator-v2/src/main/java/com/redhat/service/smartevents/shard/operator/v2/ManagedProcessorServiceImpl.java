@@ -68,16 +68,16 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
                 .withName(integrationName)
                 .get();
 
-        if (integration == null) {
-            LOGGER.info("Create CamelIntegration with name '{}' in namespace '{}' for ManagedProcessor with id '{}'",
-                    integrationName, processorNamespace, processorName);
-            return kubernetesClient
-                    .resources(CamelIntegration.class)
-                    .inNamespace(processorNamespace)
-                    .create(expected);
+        if (integration != null && integration.equals(expected)) {
+            return integration;
         }
 
-        return integration;
+        LOGGER.info("Create/Update CamelIntegration with name '{}' in namespace '{}' for ManagedProcessor with id '{}'",
+                    integrationName, processorNamespace, processorName);
+        return kubernetesClient
+                .resources(CamelIntegration.class)
+                .inNamespace(processorNamespace)
+                .createOrReplace(expected);
     }
 
     @Override
