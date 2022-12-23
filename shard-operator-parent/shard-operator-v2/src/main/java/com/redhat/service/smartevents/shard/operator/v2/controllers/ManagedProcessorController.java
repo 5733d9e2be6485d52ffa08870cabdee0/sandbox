@@ -101,9 +101,8 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
             LOGGER.info("CamelIntegration for the ManagedProcessor '{}' in namespace '{}' is not ready",
                     managedProcessorName,
                     managedProcessorNamespace);
-            if (!processorStatus.isConditionTypeFalse(ConditionTypeConstants.READY)) {
-                processorStatus.markConditionFalse(ConditionTypeConstants.READY);
-            }
+            processorStatus.markConditionFalse(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE);
+
             return UpdateControl.updateStatus(managedProcessor).rescheduleAfter(executorPollIntervalMilliseconds);
         } else if (!processorStatus.isConditionTypeTrue(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE)) {
             LOGGER.info("CamelIntegration for the ManagedProcessor '{}' in namespace '{}' is ready",
