@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -220,7 +219,6 @@ public class BridgeIngressServiceTest {
         verifyNoInteractions(managerClient);
     }
 
-    @Disabled
     @Test
     public void testBridgeIngressCreationWhenSpecAlreadyExistsAsReady() {
         // Given a PROVISIONING Bridge

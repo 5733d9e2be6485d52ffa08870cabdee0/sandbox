@@ -17,11 +17,14 @@ public class ConditionConverter {
     }
 
     private static ConditionDTO fromConditionToConditionDTO(Condition condition) {
-        return new ConditionDTO(condition.getType(),
+        ConditionDTO conditionDTO = new ConditionDTO(condition.getType(),
                 ConditionStatus.fromString(condition.getStatus().name()),
                 condition.getReason(),
                 condition.getMessage(),
-                condition.getErrorCode(),
-                condition.getLastTransitionTime().toInstant().atZone(ZoneOffset.UTC));
+                condition.getErrorCode());
+        if (condition.getLastTransitionTime() != null) {
+            conditionDTO.setLastTransitionTime(condition.getLastTransitionTime().toInstant().atZone(ZoneOffset.UTC));
+        }
+        return conditionDTO;
     }
 }
