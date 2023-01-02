@@ -16,6 +16,8 @@ public class ManagedBridgeSpec {
 
     private String owner;
 
+    private long generation;
+
     public String getCustomerId() {
         return customerId;
     }
@@ -64,6 +66,14 @@ public class ManagedBridgeSpec {
         this.dnsConfiguration = dnsConfiguration;
     }
 
+    public long getGeneration() {
+        return generation;
+    }
+
+    public void setGeneration(long generation) {
+        this.generation = generation;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -74,11 +84,11 @@ public class ManagedBridgeSpec {
         }
         ManagedBridgeSpec that = (ManagedBridgeSpec) o;
         return Objects.equals(id, that.id) && Objects.equals(customerId, that.customerId) && Objects.equals(kNativeBrokerConfiguration, that.kNativeBrokerConfiguration)
-                && Objects.equals(dnsConfiguration, that.dnsConfiguration) && Objects.equals(owner, that.owner);
+                && Objects.equals(dnsConfiguration, that.dnsConfiguration) && Objects.equals(owner, that.owner) && Objects.equals(generation, that.generation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, customerId, kNativeBrokerConfiguration, dnsConfiguration, owner);
+        return Objects.hash(id, customerId, kNativeBrokerConfiguration, dnsConfiguration, owner, generation);
     }
 }

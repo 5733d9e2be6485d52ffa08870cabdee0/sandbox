@@ -3,6 +3,9 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -16,6 +19,7 @@ import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfig
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
@@ -25,6 +29,7 @@ import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvi
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
+import com.redhat.service.smartevents.shard.operator.v2.utils.Constants;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -226,6 +231,8 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
         expected.getSpec().getRules().get(0).setWhen(Collections.singletonList(userAuthPolicy));
         expected.getSpec().getRules().get(1).setWhen(Collections.singletonList(serviceAccountsAuthPolicy));
+        expected.getSpec().getSelector().setMatchLabels(Collections.singletonMap(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL,
+                istioGatewayProvider.getIstioGatewayService().getMetadata().getLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL)));
 
         AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
                 .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
@@ -243,5 +250,39 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
         }
 
         return existing;
+    }
+
+    @Override
+    public boolean compareBridgeStatus(ManagedBridge oldBridge, ManagedBridge newBridge) {
+        Map<String, Condition> oldBridgeConditionMap = oldBridge.getStatus().getConditions().stream().collect(Collectors.toMap(Condition::getType, condition -> condition));
+        Map<String, Condition> newBridgeConditionMap = newBridge.getStatus().getConditions().stream().collect(Collectors.toMap(Condition::getType, condition -> condition));
+        for (Map.Entry<String, Condition> oldBridgeConditionEntry : oldBridgeConditionMap.entrySet()) {
+            Condition newCondition = newBridgeConditionMap.get(oldBridgeConditionEntry.getKey());
+            if (!compareCondition(oldBridgeConditionEntry.getValue(), newCondition)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public ManagedBridge fetchManagedBridge(String name, String namespace) {
+        return kubernetesClient.resources(ManagedBridge.class).inNamespace(namespace).withName(name).get();
+    }
+
+    /**
+     * Compare condition on bases of condition equality.
+     * 
+     * @param oldCondition Old condition
+     * @param newCondition New Condition.
+     * @return { {@code @True} } if both conditions are equal else { {@code @False} }
+     */
+    private boolean compareCondition(Condition oldCondition, Condition newCondition) {
+        return oldCondition.getStatus().equals(newCondition.getStatus());
+    }
+
+    @Override
+    public List<ManagedBridge> fetchAllManagedBridges() {
+        return kubernetesClient.resources(ManagedBridge.class).inAnyNamespace().list().getItems();
     }
 }
