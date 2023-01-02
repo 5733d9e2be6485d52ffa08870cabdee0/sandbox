@@ -224,7 +224,7 @@ public class BridgeServiceImpl implements BridgeService {
             throw new ItemNotFoundException(String.format("Bridge with id '%s' does not exist.", statusDTO.getId()));
         }
         if (bridge.getGeneration() != statusDTO.getGeneration()) {
-            LOGGER.info("Update for Processor with id '{}' was discarded. The expected generation '{}' did not match the actual '{}'.",
+            LOGGER.info("Update for Bridge with id '{}' was discarded. The expected generation '{}' did not match the actual '{}'.",
                     bridge.getId(),
                     bridge.getGeneration(),
                     statusDTO.getGeneration());
@@ -254,8 +254,8 @@ public class BridgeServiceImpl implements BridgeService {
 
             case DELETE:
                 if (isOperationComplete(updatedConditions)) {
-                    // There is no need to check if the Processor exists as any subsequent Status Update cycle
-                    // would not include the same Processor if it had been deleted. It would not have existed
+                    // There is no need to check if the Bridge exists as any subsequent Status Update cycle
+                    // would not include the same Bridge if it had been deleted. It would not have existed
                     // on the database and hence would not have been included in the Status Update cycle.
                     bridgeDAO.deleteById(statusDTO.getId());
                     // TODO: record metrics with MetricsService
