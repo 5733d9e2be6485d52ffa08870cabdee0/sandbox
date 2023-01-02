@@ -75,11 +75,11 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         // setup
         stubBridgeUpdate();
         Set<ConditionDTO> conditions1 = new HashSet<>();
-        conditions1.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions1.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
         BridgeStatusDTO bridgeStatusDTO1 = new BridgeStatusDTO("1", 1, conditions1);
 
         Set<ConditionDTO> conditions2 = new HashSet<>();
-        conditions2.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions2.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
         BridgeStatusDTO bridgeStatusDTO2 = new BridgeStatusDTO("2", 2, conditions2);
 
         // test
@@ -87,7 +87,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
         // assert
         String expectedJsonUpdate =
-                "[{\"id\":\"1\",\"generation\":1,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"True\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":null}]},{\"id\":\"2\",\"generation\":2,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"False\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":null}]}]";
+                "[{\"id\":\"1\",\"generation\":1,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"True\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":\"2022-12-31T00:00:00Z\"}]},{\"id\":\"2\",\"generation\":2,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"False\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":\"2022-12-31T00:00:00Z\"}]}]";
         wireMockServer.verify(putRequestedFor(urlEqualTo(V2_SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
