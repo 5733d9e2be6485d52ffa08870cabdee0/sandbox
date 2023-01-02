@@ -8,6 +8,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
@@ -19,12 +20,15 @@ import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
@@ -44,6 +48,9 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CU
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createDeprovisioningBridge;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProvisioningBridge;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyBridge;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,7 +63,7 @@ public class BridgesServiceTest {
     BridgeDAO bridgeDAO;
 
     @Inject
-    BridgeService bridgesService;
+    BridgeService bridgeService;
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
@@ -69,7 +76,7 @@ public class BridgesServiceTest {
     @Test
     public void testCreateBridge() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
-        Bridge createdBridge = bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
+        Bridge createdBridge = bridgeService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         Bridge retrieved = bridgeDAO.findByIdWithConditions(createdBridge.getId());
 
@@ -92,7 +99,7 @@ public class BridgesServiceTest {
     @Test
     void testCreateBridge_whiteSpaceInName() {
         BridgeRequest request = new BridgeRequest("   name   ", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
-        Bridge bridge = bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
+        Bridge bridge = bridgeService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
         assertThat(bridge.getName()).isEqualTo("name");
     }
 
@@ -100,7 +107,7 @@ public class BridgesServiceTest {
     void testToResponse() {
         Bridge bridge = createBridgeWithAcceptedConditions();
 
-        BridgeResponse response = bridgesService.toResponse(bridge);
+        BridgeResponse response = bridgeService.toResponse(bridge);
 
         assertThat(response.getId()).isEqualTo(bridge.getId());
         assertThat(response.getName()).isEqualTo(bridge.getName());
@@ -119,7 +126,7 @@ public class BridgesServiceTest {
     @Test
     void testOrganisationWithNoQuota() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
-        assertThatExceptionOfType(NoQuotaAvailable.class).isThrownBy(() -> bridgesService.createBridge(DEFAULT_CUSTOMER_ID, "organisation_with_no_quota", DEFAULT_USER_NAME, request));
+        assertThatExceptionOfType(NoQuotaAvailable.class).isThrownBy(() -> bridgeService.createBridge(DEFAULT_CUSTOMER_ID, "organisation_with_no_quota", DEFAULT_USER_NAME, request));
     }
 
     protected Bridge createBridgeWithAcceptedConditions() {
@@ -140,20 +147,20 @@ public class BridgesServiceTest {
         Bridge bridge = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        assertThat(bridgesService.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isEqualTo(bridge);
+        assertThat(bridgeService.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isEqualTo(bridge);
     }
 
     @Test
     public void testGetBridge_NotFound() {
-        assertThatThrownBy(() -> bridgesService.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isInstanceOf(ItemNotFoundException.class);
+        assertThatThrownBy(() -> bridgeService.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isInstanceOf(ItemNotFoundException.class);
     }
 
     @Test
     public void testGetReadyBridge_FoundReady() {
-        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        assertThat(bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isEqualTo(bridge);
+        assertThat(bridgeService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).isEqualTo(bridge);
     }
 
     @Test
@@ -161,22 +168,22 @@ public class BridgesServiceTest {
         Bridge bridge = Fixtures.createAcceptedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgeService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
     }
 
     @Test
     public void testGetReadyBridge_NotFound() {
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgeService.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID));
     }
 
     @Test
     public void testDeleteBridge() {
-        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
+        bridgeService.deleteBridge(bridge.getId(), bridge.getCustomerId());
 
-        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        Bridge retrievedBridge = bridgeService.getBridge(bridge.getId(), bridge.getCustomerId());
         assertThat(StatusUtilities.getManagedResourceStatus(retrievedBridge)).isEqualTo(DEPROVISION);
         assertThat(retrievedBridge.getOperation().getType()).isEqualTo(OperationType.DELETE);
     }
@@ -186,37 +193,37 @@ public class BridgesServiceTest {
         Bridge bridge = Fixtures.createFailedBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
+        bridgeService.deleteBridge(bridge.getId(), bridge.getCustomerId());
 
-        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        Bridge retrievedBridge = bridgeService.getBridge(bridge.getId(), bridge.getCustomerId());
         assertThat(StatusUtilities.getManagedResourceStatus(retrievedBridge)).isEqualTo(DEPROVISION);
         assertThat(retrievedBridge.getOperation().getType()).isEqualTo(OperationType.DELETE);
     }
 
     @Test
     public void testDeleteBridge_whenStatusIsNotReady() {
-        Bridge bridge = Fixtures.createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Bridge bridge = createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId()));
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgeService.deleteBridge(bridge.getId(), bridge.getCustomerId()));
     }
 
     @Test
     void testFindByShardIdToDeployOrDelete() {
-        Bridge bridge = Fixtures.createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Bridge bridge = createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        List<Bridge> bridges = bridgesService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
+        List<Bridge> bridges = bridgeService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(bridges).hasSize(1);
         assertThat(bridges.get(0).getId()).isEqualTo(bridge.getId());
     }
 
     @Test
     public void testToDTO() {
-        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        BridgeDTO bridgeDTO = bridgesService.toDTO(bridge);
+        BridgeDTO bridgeDTO = bridgeService.toDTO(bridge);
 
         assertThat(bridgeDTO.getId()).hasSizeGreaterThan(0);
         assertThat(bridgeDTO.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
@@ -227,5 +234,109 @@ public class BridgesServiceTest {
         assertThat(bridgeDTO.getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
         assertThat(bridgeDTO.getGeneration()).isEqualTo(bridge.getGeneration());
         assertThat(bridgeDTO.getOperationType()).isEqualTo(bridge.getOperation().getType());
+    }
+
+    @Test
+    void testUpdateBridgeStatus_Create() {
+        Bridge bridge = createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThat(bridge.getPublishedAt()).isNull();
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(bridge.getId());
+        statusDTO.setGeneration(bridge.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        bridgeService.updateBridgeStatus(statusDTO);
+
+        assertThat(bridgeDAO.findById(bridge.getId()).getPublishedAt()).isNotNull();
+    }
+
+    @Test
+    void testUpdateBridgeStatus_CreateWithSuccessiveUpdate() {
+        Bridge bridge = createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThat(bridge.getPublishedAt()).isNull();
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(bridge.getId());
+        statusDTO.setGeneration(bridge.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+
+        assertThat(updated.getPublishedAt()).isNotNull();
+
+        Bridge updated2 = bridgeService.updateBridgeStatus(statusDTO);
+
+        assertThat(updated2.getPublishedAt()).isEqualTo(updated.getPublishedAt());
+    }
+
+    @Test
+    void testUpdateBridgeStatus_CreateWhenIncomplete() {
+        Bridge bridge = createProvisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        assertThat(bridge.getPublishedAt()).isNull();
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(bridge.getId());
+        statusDTO.setGeneration(bridge.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        bridgeService.updateBridgeStatus(statusDTO);
+
+        assertThat(bridge.getPublishedAt()).isNull();
+    }
+
+    @Test
+    @Disabled("Nothing to assert until Metrics are added back. See MGDOBR-1340.")
+    void testUpdateBridgeStatus_Update() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Operation operation = new Operation();
+        operation.setType(OperationType.UPDATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        bridge.setOperation(operation);
+        bridgeDAO.persist(bridge);
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(bridge.getId());
+        statusDTO.setGeneration(bridge.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        bridgeService.updateBridgeStatus(statusDTO);
+
+        assertThat(bridge.getPublishedAt()).isNotNull();
+    }
+
+    @Test
+    void testUpdateBridgeStatus_Delete() {
+        Bridge bridge = createDeprovisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(bridge.getId());
+        statusDTO.setGeneration(bridge.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        bridgeService.updateBridgeStatus(statusDTO);
+        assertThat(bridgeDAO.findById(bridge.getId())).isNotNull();
+    }
+
+    @Test
+    void testUpdateBridgeStatus_DeleteWhenIncomplete() {
+        Bridge bridge = createDeprovisioningBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(bridge.getId());
+        statusDTO.setGeneration(bridge.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        bridgeService.updateBridgeStatus(statusDTO);
+
+        assertThat(bridgeDAO.findById(bridge.getId())).isNull();
     }
 }

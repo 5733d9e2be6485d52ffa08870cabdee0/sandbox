@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 
@@ -136,14 +136,23 @@ public class TestUtils {
                 .get(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors");
     }
 
-    public static Response updateProcessorStatus(ProcessorStatusDTO statusDTO) {
+    public static Response updateBridgeStatus(ResourceStatusDTO statusDTO) {
+        return updateBridgesStatus(List.of(statusDTO));
+    }
+
+    public static Response updateBridgesStatus(List<ResourceStatusDTO> statusDTOs) {
+        return jsonRequest()
+                .body(statusDTOs)
+                .put(V2APIConstants.V2_SHARD_API_BASE_PATH);
+    }
+
+    public static Response updateProcessorStatus(ResourceStatusDTO statusDTO) {
         return updateProcessorsStatus(List.of(statusDTO));
     }
 
-    public static Response updateProcessorsStatus(List<ProcessorStatusDTO> statusDTOs) {
+    public static Response updateProcessorsStatus(List<ResourceStatusDTO> statusDTOs) {
         return jsonRequest()
                 .body(statusDTOs)
                 .put(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors");
     }
-
 }

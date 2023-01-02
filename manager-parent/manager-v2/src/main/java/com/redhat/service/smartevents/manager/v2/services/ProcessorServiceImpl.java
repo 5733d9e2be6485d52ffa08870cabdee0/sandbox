@@ -31,7 +31,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
@@ -265,7 +265,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     @Transactional
-    public Processor updateProcessorStatus(ProcessorStatusDTO statusDTO) {
+    public Processor updateProcessorStatus(ResourceStatusDTO statusDTO) {
         Processor processor = processorDAO.findByIdWithConditions(statusDTO.getId());
         if (Objects.isNull(processor)) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist.", statusDTO.getId()));
