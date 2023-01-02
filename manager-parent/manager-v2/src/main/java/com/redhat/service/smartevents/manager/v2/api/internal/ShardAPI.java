@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.api.internal;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -30,7 +31,9 @@ import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
@@ -141,11 +144,38 @@ public class ShardAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(hidden = true, summary = "Update a Processor status.", description = "Update a Processor status.")
+    @Operation(hidden = true, summary = "Update Processors' status.", description = "Update Processors' status.")
     @PUT
     @Path("processors")
-    public Response updateProcessorStatus() {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+    public Response updateProcessorsStatus(List<ProcessorStatusDTO> statusDTOs) {
+        String shardId = identityResolver.resolve(jwt);
+        failIfNotAuthorized(shardId);
+
+        statusDTOs.forEach(this::updateProcessorStatus);
+        return Response.ok().build();
+    }
+
+    private void updateProcessorStatus(ProcessorStatusDTO statusDTO) {
+        try {
+            LOGGER.info("Processing update from Shard for Processor with id '{}' and generation '{}' with conditions '{}'",
+                    statusDTO.getId(),
+                    statusDTO.getGeneration(),
+                    logConditions(statusDTO.getConditions()));
+            processorService.updateProcessorStatus(statusDTO);
+        } catch (Exception e) {
+            LOGGER.warn("Failed to process update from Shard for Processor with id '{}' and generation '{}' with conditions '{}'",
+                    statusDTO.getId(),
+                    statusDTO.getGeneration(),
+                    logConditions(statusDTO.getConditions()),
+                    e);
+        }
+
+    }
+
+    private String logConditions(List<ConditionDTO> conditions) {
+        return conditions.stream().map(c -> new StringBuilder(c.getType())
+                .append(" = ")
+                .append(c.getStatus())).collect(Collectors.joining(", "));
     }
 
     private void failIfNotAuthorized(String shardId) {

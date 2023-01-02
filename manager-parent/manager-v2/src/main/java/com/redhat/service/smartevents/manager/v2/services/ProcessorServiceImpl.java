@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -30,6 +31,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
@@ -259,6 +261,68 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
         return processorDAO.findByShardIdToDeployOrDelete(shardId);
+    }
+
+    @Override
+    @Transactional
+    public Processor updateProcessorStatus(ProcessorStatusDTO statusDTO) {
+        Processor processor = processorDAO.findByIdWithConditions(statusDTO.getId());
+        if (Objects.isNull(processor)) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist.", statusDTO.getId()));
+        }
+        if (processor.getGeneration() != statusDTO.getGeneration()) {
+            LOGGER.info("Update for Processor with id '{}' was discarded. The expected generation '{}' did not match the actual '{}'.",
+                    processor.getId(),
+                    processor.getGeneration(),
+                    statusDTO.getGeneration());
+            return processor;
+        }
+        Operation operation = processor.getOperation();
+        List<Condition> conditions = processor.getConditions();
+        List<Condition> updatedConditions = conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).collect(Collectors.toList());
+        statusDTO.getConditions().forEach(c -> updatedConditions.add(Condition.from(c, ComponentType.SHARD)));
+        processor.setConditions(updatedConditions);
+
+        switch (operation.getType()) {
+            case CREATE:
+                if (isOperationComplete(updatedConditions)) {
+                    if (Objects.isNull(processor.getPublishedAt())) {
+                        processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                        // TODO: record metrics with MetricsService
+                        // metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
+                    }
+                }
+                break;
+
+            case UPDATE:
+                // TODO: record metrics with MetricsService
+                // metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+                break;
+
+            case DELETE:
+                if (isOperationComplete(updatedConditions)) {
+                    // There is no need to check if the Processor exists as any subsequent Status Update cycle
+                    // would not include the same Processor if it had been deleted. It would not have existed
+                    // on the database and hence would not have been included in the Status Update cycle.
+                    processorDAO.deleteById(statusDTO.getId());
+                    // TODO: record metrics with MetricsService
+                    // metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
+                }
+                break;
+        }
+
+        statusDTO.getConditions().stream().filter(c -> Objects.nonNull(c.getErrorCode())).findFirst().ifPresent(c -> {
+            // TODO: record metrics with MetricsService
+            // metricsService.onOperationFailed(processor, operation.getMetricsOperation());
+        });
+
+        return processor;
+    }
+
+    private boolean isOperationComplete(List<Condition> conditions) {
+        return conditions
+                .stream()
+                .allMatch(c -> c.getStatus() == ConditionStatus.TRUE);
     }
 
     @Override

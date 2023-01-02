@@ -38,7 +38,9 @@ public class Fixtures {
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createBridge(id, name, operation, createBridgeReadyConditions());
+        Bridge b = createBridge(id, name, operation, createBridgeReadyConditions());
+        b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        return b;
     }
 
     public static Bridge createAcceptedBridge(String id, String name) {
@@ -77,7 +79,6 @@ public class Fixtures {
         Bridge b = new Bridge();
         b.setId(id);
         b.setOperation(operation);
-        b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
         b.setOwner(TestConstants.DEFAULT_USER_NAME);
@@ -113,7 +114,9 @@ public class Fixtures {
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorReadyConditions());
+        Processor p = createProcessor(DEFAULT_PROCESSOR_ID, b, DEFAULT_PROCESSOR_NAME, operation, createProcessorReadyConditions());
+        p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        return p;
     }
 
     public static Processor createPreparingProcessor(Bridge b) {
@@ -169,7 +172,6 @@ public class Fixtures {
         p.setId(id);
         p.setName(name);
         p.setOperation(operation);
-        p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         p.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         p.setBridge(b);
         p.setOwner(TestConstants.DEFAULT_USER_NAME);
