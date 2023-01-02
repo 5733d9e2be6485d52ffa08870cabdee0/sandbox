@@ -49,8 +49,8 @@ import static com.redhat.service.smartevents.infra.core.models.ManagedResourceSt
 import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus.FAILED;
 import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus.TRUE;
 import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus.UNKNOWN;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_CONFIG_MAP_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
-import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SERVICE_READY_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -196,7 +196,7 @@ public class ShardAPITest {
         // Update Status to reflect that the Processor is being created by the Shard
         TestUtils.updateProcessorStatus(makeProcessorStatusDTO(processorId,
                 List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
-                        makeConditionDTO(DP_SERVICE_READY_NAME, UNKNOWN))));
+                        makeConditionDTO(DP_CONFIG_MAP_READY_NAME, UNKNOWN))));
 
         // Check the new status remains PROVISIONING
         awaitForProcessorToBe(PROVISIONING, processorId);
@@ -204,7 +204,7 @@ public class ShardAPITest {
         // Update Status to reflect that the Processor is READY
         TestUtils.updateProcessorStatus(makeProcessorStatusDTO(processorId,
                 List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
-                        makeConditionDTO(DP_SERVICE_READY_NAME, TRUE))));
+                        makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE))));
 
         // Check the new status remains READY
         awaitForProcessorToBe(READY, processorId);
@@ -256,10 +256,10 @@ public class ShardAPITest {
         TestUtils.updateProcessorsStatus(List.of(
                 makeProcessorStatusDTO(processor1Id,
                         List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
-                                makeConditionDTO(DP_SERVICE_READY_NAME, TRUE))),
+                                makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE))),
                 makeProcessorStatusDTO(processor2Id,
                         List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
-                                makeConditionDTO(DP_SERVICE_READY_NAME, TRUE)))));
+                                makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE)))));
 
         // Check the new status remains READY
         awaitForProcessorToBe(READY, processor1Id, processor2Id);
@@ -288,10 +288,10 @@ public class ShardAPITest {
         TestUtils.updateProcessorsStatus(List.of(
                 makeProcessorStatusDTO("UnknownProcessorId",
                         List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
-                                makeConditionDTO(DP_SERVICE_READY_NAME, TRUE))),
+                                makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE))),
                 makeProcessorStatusDTO(processor2Id,
                         List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
-                                makeConditionDTO(DP_SERVICE_READY_NAME, TRUE)))));
+                                makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE)))));
 
         // The Processor1 update had an unknown ProcessorId so will fail; leaving the resource in PROVISIONING
         awaitForProcessorToBe(PROVISIONING, processor1Id);
@@ -318,7 +318,7 @@ public class ShardAPITest {
         // Update Status to reflect FAILURE within the Shard however the update is on a stale generation
         TestUtils.updateProcessorStatus(makeProcessorStatusDTO(processorId,
                 List.of(makeConditionDTO(DP_SECRET_READY_NAME, FAILED),
-                        makeConditionDTO(DP_SERVICE_READY_NAME, FAILED))));
+                        makeConditionDTO(DP_CONFIG_MAP_READY_NAME, FAILED))));
 
         // Check the new status remains PROVISIONING
         awaitForProcessorToBe(PROVISIONING, processorId);

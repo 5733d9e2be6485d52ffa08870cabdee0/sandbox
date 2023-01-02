@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,11 +75,11 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         // setup
         stubBridgeUpdate();
         Set<ConditionDTO> conditions1 = new HashSet<>();
-        conditions1.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE));
+        conditions1.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC)));
         BridgeStatusDTO bridgeStatusDTO1 = new BridgeStatusDTO("1", 1, conditions1);
 
         Set<ConditionDTO> conditions2 = new HashSet<>();
-        conditions2.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE));
+        conditions2.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC)));
         BridgeStatusDTO bridgeStatusDTO2 = new BridgeStatusDTO("2", 2, conditions2);
 
         // test
