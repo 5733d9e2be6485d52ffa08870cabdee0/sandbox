@@ -13,6 +13,8 @@ public class ManagedProcessorSpec {
 
     private String flows;
 
+    private long generation;
+
     public String getId() {
         return id;
     }
@@ -53,6 +55,14 @@ public class ManagedProcessorSpec {
         this.flows = flows;
     }
 
+    public long getGeneration() {
+        return generation;
+    }
+
+    public void setGeneration(long generation) {
+        this.generation = generation;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -63,11 +73,11 @@ public class ManagedProcessorSpec {
         }
         ManagedProcessorSpec that = (ManagedProcessorSpec) o;
         return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(bridgeId, that.bridgeId) && Objects.equals(shardId, that.shardId)
-                && Objects.equals(flows, that.flows);
+                && Objects.equals(flows, that.flows) && Objects.equals(generation, that.generation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, bridgeId, shardId, flows);
+        return Objects.hash(id, name, bridgeId, shardId, flows, generation);
     }
 }

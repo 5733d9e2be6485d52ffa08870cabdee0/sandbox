@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.shard.operator.core.resources;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -23,7 +22,7 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     private final Set<Condition> conditions;
 
     @JsonCreator
-    protected CustomResourceStatus(@JsonProperty("conditions") final HashSet<Condition> initialConditions) {
+    protected CustomResourceStatus(@JsonProperty("conditions") final Set<Condition> initialConditions) {
         if (initialConditions == null) {
             throw new IllegalArgumentException("initialConditions can't be null");
         }

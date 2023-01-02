@@ -40,6 +40,7 @@ public class ManagedBridgeConverter {
                     .withBridgeId(bridgeDTO.getId())
                     .withDnsConfigurationSpec(dns)
                     .withKnativeBrokerConfigurationSpec(new KNativeBrokerConfigurationSpec(kafkaConfigurationSpec))
+                    .withGeneration(bridgeDTO.getGeneration())
                     .build();
         } catch (MalformedURLException e) {
             throw new InvalidURLException("Could not extract host from " + bridgeDTO.getEndpoint());

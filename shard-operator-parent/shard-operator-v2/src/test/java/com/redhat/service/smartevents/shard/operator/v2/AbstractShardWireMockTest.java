@@ -15,6 +15,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 @QuarkusTestResource(restrictToAnnotatedClass = true, value = ManagerMockResource.class)
@@ -35,5 +36,12 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(objectMapper.writeValueAsString(processorDTOS))));
+    }
+
+    protected void stubBridgeUpdate() {
+        wireMockServer.stubFor(put(urlEqualTo(V2APIConstants.V2_SHARD_API_BASE_PATH))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withStatus(200)));
     }
 }
