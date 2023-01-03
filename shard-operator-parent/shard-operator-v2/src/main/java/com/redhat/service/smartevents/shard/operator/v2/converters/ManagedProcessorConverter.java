@@ -13,6 +13,7 @@ public class ManagedProcessorConverter {
                 .withCustomerId(processorDTO.getCustomerId())
                 .withDefinition(processorDTO.getFlows())
                 .withProcessorName(processorDTO.getName())
+                .withGeneration(processorDTO.getGeneration())
                 .build();
     }
 }

@@ -1,0 +1,10 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  components:
+    ingressGateways:
+      - name: rhose-ingressgateway
+        enabled: true
+        label:
+          istio: rhose-ingressgateway
+          app: rhose-ingressgateway

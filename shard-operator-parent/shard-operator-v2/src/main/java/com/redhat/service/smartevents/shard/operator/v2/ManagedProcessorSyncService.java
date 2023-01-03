@@ -23,7 +23,7 @@ public class ManagedProcessorSyncService {
     ManagedProcessorService managedProcessorService;
 
     public void syncManagedProcessorWithManager() {
-        managerClient.fetchProcessorsToDeployOrDelete()
+        managerClient.fetchProcessorsForDataPlane()
                 .onItem()
                 .invoke(this::processDelta)
                 .subscribe().with(

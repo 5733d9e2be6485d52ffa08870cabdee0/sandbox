@@ -25,4 +25,10 @@ public class ManagerSyncService {
         managedBridgeSyncService.syncManagedBridgeWithManager();
         managedProcessorSyncService.syncManagedProcessorWithManager();
     }
+
+    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    public void syncStatusBackToManager() {
+        LOGGER.debug("Sending back status from Operator to Manager");
+        managedBridgeSyncService.syncManagedBridgeStatusBackToManager();
+    }
 }

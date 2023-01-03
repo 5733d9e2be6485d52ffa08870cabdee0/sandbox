@@ -2,26 +2,26 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: rhose-stage-prolong-cron
+  name: rhose-prolong-stage
 spec:
-  schedule: "0 8 * * *"
+  schedule: "0 7 * * *"
   concurrencyPolicy: Forbid
   suspend: false
   jobTemplate:
     metadata:
       labels:
-        cronjob: rhose-stage-prolong
+        cronjob: rhose-prolong-stage
     spec:
       backoffLimit: 5
       activeDeadlineSeconds: 1200
       template:
         metadata:
           labels:
-            cronjob: rhose-stage-prolong
+            cronjob: rhose-prolong-stage
         spec:
           restartPolicy: OnFailure
           containers:
-            - name: rhose-stage-prolong
+            - name: rhose-prolong-stage
               image: registry.access.redhat.com/ubi8/ubi
               imagePullPolicy: IfNotPresent
               command:

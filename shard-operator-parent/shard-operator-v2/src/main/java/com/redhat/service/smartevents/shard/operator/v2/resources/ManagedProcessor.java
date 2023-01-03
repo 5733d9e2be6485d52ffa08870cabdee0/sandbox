@@ -64,6 +64,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
         private String customerId;
         private String processorName;
         private JsonNode processorDefinition;
+        private long generation;
 
         public Builder() {
 
@@ -99,6 +100,11 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
             return this;
         }
 
+        public Builder withGeneration(long generation) {
+            this.generation = generation;
+            return this;
+        }
+
         public ManagedProcessor build() {
             this.validate();
             ObjectMeta meta = new ObjectMetaBuilder()
@@ -115,6 +121,7 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
             ManagedProcessorSpec.setBridgeId(bridgeId);
             ManagedProcessorSpec.setShardId(customerId);
             ManagedProcessorSpec.setName(processorName);
+            ManagedProcessorSpec.setGeneration(generation);
 
             try {
                 ManagedProcessorSpec.setFlows(MAPPER.writeValueAsString(processorDefinition));

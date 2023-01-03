@@ -116,7 +116,7 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     }
 
     private String readFile(String resourceDirectory, String name) {
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name + JSON_FILE_EXTENSION);
+        InputStream is = this.getClass().getResourceAsStream(resourceDirectory + name + JSON_FILE_EXTENSION);
 
         if (is == null) {
             throw new ItemNotFoundException(String.format("Could not find '%s'.", name));

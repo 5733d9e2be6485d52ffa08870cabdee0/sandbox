@@ -16,11 +16,13 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.core.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.core.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
+import com.redhat.service.smartevents.shard.operator.core.utils.WebClientUtils;
 
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
@@ -46,7 +48,7 @@ public class ManagerClientImpl implements ManagerClient {
     ObjectMapper mapper;
 
     @Override
-    public Uni<List<BridgeDTO>> fetchBridgesToDeployOrDelete() {
+    public Uni<List<BridgeDTO>> fetchBridgesForDataPlane() {
         return getAuthenticatedRequest(webClientManager.get(V2APIConstants.V2_SHARD_API_BASE_PATH), HttpRequest::send)
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))
@@ -54,7 +56,16 @@ public class ManagerClientImpl implements ManagerClient {
     }
 
     @Override
-    public Uni<List<ProcessorDTO>> fetchProcessorsToDeployOrDelete() {
+    public Uni<HttpResponse<Buffer>> notifyBridgeStatus(List<BridgeStatusDTO> bridgeStatusDTOs) {
+        LOGGER.debug("Notifying manager about the new status of the Bridge");
+        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_BASE_PATH), request -> request.sendJson(bridgeStatusDTOs))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
+    }
+
+    @Override
+    public Uni<List<ProcessorDTO>> fetchProcessorsForDataPlane() {
         return getAuthenticatedRequest(webClientManager.get(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))

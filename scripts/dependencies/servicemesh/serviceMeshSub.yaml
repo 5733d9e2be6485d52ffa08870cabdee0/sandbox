@@ -8,7 +8,7 @@ spec:
   name: servicemeshoperator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: servicemeshoperator.v2.2.2
+  startingCSV: servicemeshoperator.v2.3.0
   installPlanApproval: Manual
   config:
     tolerations:

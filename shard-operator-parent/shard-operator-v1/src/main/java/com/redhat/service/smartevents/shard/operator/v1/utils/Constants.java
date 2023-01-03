@@ -12,4 +12,6 @@ public class Constants {
     public static final String BRIDGE_EXECUTOR_WEBHOOK_SSO_ENV_VAR = "SSO_SERVER_URL";
     public static final String BRIDGE_EXECUTOR_WEBHOOK_CLIENT_ID_ENV_VAR = "WEBHOOK_CLIENT_ID";
     public static final String BRIDGE_EXECUTOR_WEBHOOK_CLIENT_SECRET_ENV_VAR = "WEBHOOK_CLIENT_SECRET";
+
+    public static final String BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL = "istio";
 }

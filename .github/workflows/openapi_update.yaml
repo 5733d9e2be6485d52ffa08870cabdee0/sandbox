@@ -16,6 +16,7 @@ jobs:
           - "redhat-developer/app-services-sdk-go"
           - "redhat-developer/app-services-sdk-js"
           - "redhat-developer/app-services-sdk-java"
+          - "redhat-developer/app-services-sdk-core"
     runs-on: ubuntu-latest
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:

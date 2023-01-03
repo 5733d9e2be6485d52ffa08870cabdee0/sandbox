@@ -7,10 +7,10 @@ spec:
   channel: stable
   name: serverless-operator
   # consume from specific catalog source for the specific version of serverless midstream
-  source: serverless-operator-v1-24-0
+  source: serverless-operator-v1-25-0
   sourceNamespace: openshift-marketplace
   installPlanApproval: Manual
-  startingCSV: serverless-operator.v1.24.0
+  startingCSV: serverless-operator.v1.25.0
   config:
     tolerations:
       - operator: "Exists"

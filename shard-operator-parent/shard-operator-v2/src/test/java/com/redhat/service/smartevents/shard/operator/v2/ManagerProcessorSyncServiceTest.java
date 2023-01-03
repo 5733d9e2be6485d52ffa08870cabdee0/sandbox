@@ -47,7 +47,7 @@ public class ManagerProcessorSyncServiceTest {
 
         Mockito.doNothing().when(managedProcessorService).createManagedProcessor(processorDTO1);
         Mockito.doNothing().when(managedProcessorService).deleteManagedProcessor(processorDTO2);
-        Mockito.when(managerClient.fetchProcessorsToDeployOrDelete()).thenReturn(Uni.createFrom().item(processorDTOList));
+        Mockito.when(managerClient.fetchProcessorsForDataPlane()).thenReturn(Uni.createFrom().item(processorDTOList));
 
         // test
         managedProcessorSyncService.syncManagedProcessorWithManager();

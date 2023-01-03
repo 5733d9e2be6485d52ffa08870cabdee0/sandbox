@@ -19,11 +19,15 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
 
     @JsonProperty("name")
     @NotNull
+    @Schema(
+            description = "The name of the processor",
+            example = "processor1")
     protected String name;
 
     @JsonProperty("flows")
     // ObjectNode is not rendered properly by swagger
-    @Schema(implementation = Object.class, required = true)
+    @Schema(implementation = Object.class, required = true,
+            description = "The Camel YAML DSL code, formatted as JSON, that defines the flows in the processor")
     @NotNull
     private ObjectNode flows;
 

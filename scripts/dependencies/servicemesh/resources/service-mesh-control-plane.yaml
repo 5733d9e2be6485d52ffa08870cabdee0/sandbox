@@ -22,4 +22,13 @@ spec:
   tracing:
     sampling: 10000
     type: Jaeger
-  version: v2.0
+  version: v2.3
+  gateways:
+    additionalIngress:
+      rhose-ingressgateway:
+        enabled: true
+        service:
+          metadata:
+            labels:
+              istio: rhose-ingressgateway
+              app: rhose-ingressgateway

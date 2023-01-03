@@ -36,3 +36,6 @@ spec:
           values:
             - ""                               # customerId
             - ""                               # webhook technical accountId
+  selector:
+    matchLabels:
+      app: rhose-ingressgateway

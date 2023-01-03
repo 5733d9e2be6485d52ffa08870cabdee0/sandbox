@@ -8,7 +8,7 @@ metadata:
   name: ""
 spec:
   selector:
-    istio: ingressgateway
+    istio: rhose-ingressgateway
   servers:
     - port:
         number: 80

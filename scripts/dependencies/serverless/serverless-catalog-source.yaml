@@ -2,11 +2,11 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   # Replace the version with whatever version you want to install
-  name: serverless-operator-v1-24-0
+  name: serverless-operator-v1-25-0
   namespace: openshift-marketplace
 spec:
   displayName: Serverless Operator
   # Replace the version with whatever version you want to install
-  image: registry.ci.openshift.org/knative/openshift-serverless-v1.24.0:serverless-index
+  image: registry.ci.openshift.org/knative/openshift-serverless-v1.25.0:serverless-index
   publisher: Red Hat
   sourceType: grpc

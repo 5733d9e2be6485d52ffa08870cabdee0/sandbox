@@ -4,16 +4,20 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.AMSFailException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
@@ -29,7 +33,10 @@ import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
+import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
@@ -54,6 +61,17 @@ public class BridgeServiceImpl implements BridgeService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeServiceImpl.class);
 
+    private String tlsCertificate;
+
+    private String tlsKey;
+
+    // The tls certificate and the key are b64 encoded. See https://issues.redhat.com/browse/MGDOBR-1068 .
+    @ConfigProperty(name = "event-bridge.dns.subdomain.tls.certificate")
+    String b64TlsCertificate;
+
+    @ConfigProperty(name = "event-bridge.dns.subdomain.tls.key")
+    String b64TlsKey;
+
     @Inject
     BridgeDAO bridgeDAO;
 
@@ -70,9 +88,26 @@ public class BridgeServiceImpl implements BridgeService {
     @Inject
     WorkManager workManager;
 
+    @Inject
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+
+    @Inject
+    ResourceNamesProvider resourceNamesProvider;
+
     @V2
     @Inject
     AccountManagementService accountManagementService;
+
+    @PostConstruct
+    void init() {
+        if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
+            LOGGER.info("Decoding base64 tls certificate and key");
+            tlsCertificate = new String(Base64.getDecoder().decode(b64TlsCertificate));
+            tlsKey = new String(Base64.getDecoder().decode(b64TlsKey));
+        } else {
+            LOGGER.info("Tls certificate and key were not configured.");
+        }
+    }
 
     @Override
     @Transactional
@@ -172,6 +207,35 @@ public class BridgeServiceImpl implements BridgeService {
         // TODO: record metrics with MetricsService.
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+    }
+
+    @Override
+    public List<Bridge> findByShardIdToDeployOrDelete(String shardId) {
+        return bridgeDAO.findByShardIdToDeployOrDelete(shardId);
+    }
+
+    @Override
+    public BridgeDTO toDTO(Bridge bridge) {
+        KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
+                internalKafkaConfigurationProvider.getBootstrapServers(),
+                internalKafkaConfigurationProvider.getClientId(),
+                internalKafkaConfigurationProvider.getClientSecret(),
+                internalKafkaConfigurationProvider.getSecurityProtocol(),
+                internalKafkaConfigurationProvider.getSaslMechanism(),
+                resourceNamesProvider.getBridgeTopicName(bridge.getId()),
+                resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
+        BridgeDTO dto = new BridgeDTO();
+        dto.setId(bridge.getId());
+        dto.setName(bridge.getName());
+        dto.setCustomerId(bridge.getCustomerId());
+        dto.setOwner(bridge.getOwner());
+        dto.setEndpoint(bridge.getEndpoint());
+        dto.setOperationType(bridge.getOperation().getType());
+        dto.setGeneration(bridge.getGeneration());
+        dto.setKafkaConnection(kafkaConnectionDTO);
+        dto.setTlsCertificate(tlsCertificate);
+        dto.setTlsKey(tlsKey);
+        return dto;
     }
 
     @Override

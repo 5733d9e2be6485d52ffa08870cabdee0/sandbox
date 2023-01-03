@@ -3,7 +3,7 @@ description: 'Istio setup'
 inputs:
   istio-version:
     description: "The istio version"
-    default: 1.13.2
+    default: 1.13.4
     required: true
 
 runs:
@@ -14,4 +14,4 @@ runs:
       run: |
         curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${{ inputs.istio-version }} TARGET_ARCH=x86_64 sh -
         export PATH=$PWD/istio-${{ inputs.istio-version }}/bin:$PATH
-        istioctl manifest apply -y --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
+        istioctl manifest apply  --skip-confirmation --set values.gateways.istio-ingressgateway.type="ClusterIP" -f dev/bin/istio-manifest.yaml

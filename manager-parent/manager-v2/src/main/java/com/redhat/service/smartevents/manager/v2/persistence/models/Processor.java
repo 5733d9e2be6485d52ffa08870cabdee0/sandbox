@@ -8,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -31,8 +33,27 @@ import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDe
                 query = "select distinct (p) from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt desc"),
         @NamedQuery(name = "PROCESSOR_V2.findByIdBridgeIdAndCustomerId",
                 query = "from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.id=:id and p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
+        @NamedQuery(name = "PROCESSOR_V2.findByIdsWithBridgeAndConditions",
+                query = "select distinct (p) from Processor_V2 p left join fetch p.bridge left join fetch p.conditions where p.id in (:ids)"),
         @NamedQuery(name = "PROCESSOR_V2.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor_V2 p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId")
+})
+// Hibernate does not support sub-queries in Named Queries. This is therefore written as Native Query.
+// Hibernate however does not support eager fetches with Native Queries without composing a _View_ class model,
+// retrieving a flat ResultSet and then building the object model hierarchy in Java. We therefore split
+// retrieval into two database calls: (1) Get the Processor IDs, (2) Fetch the Processor objects.
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "PROCESSOR_V2.findProcessorIdByShardIdToDeployOrDelete",
+                query = "select p.id " +
+                        "from Processor_V2 p " +
+                        "left join Bridge_V2 b on p.bridge_id = b.id " +
+                        "left join (" +
+                        "  select processor_id, count(*) as incomplete_count from Condition c where component='MANAGER' and status != 'TRUE' group by c.processor_id " +
+                        "    ) cp on cp.processor_id = p.id " +
+                        "where " +
+                        // The LEFT JOIN on the sub-query can return a null if there are no MANAGER records that are NOT complete.
+                        "(cp.incomplete_count = 0 or cp.incomplete_count is null) and " +
+                        "b.shard_id = :shardId")
 })
 @Entity(name = "Processor_V2")
 @FilterDefs({

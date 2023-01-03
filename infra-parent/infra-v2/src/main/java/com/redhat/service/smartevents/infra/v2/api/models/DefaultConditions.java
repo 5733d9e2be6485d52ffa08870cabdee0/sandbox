@@ -13,8 +13,10 @@ public final class DefaultConditions {
     public static final String CP_DNS_RECORD_DELETED_NAME = "DnsRecordDeleted";
 
     public static final String DP_SECRET_READY_NAME = "SecretReady";
-    public static final String DP_IMAGE_READY_NAME = "ImageReady";
-    public static final String DP_DEPLOYMENT_READY_NAME = "DeploymentReady";
-    public static final String DP_SERVICE_READY_NAME = "ServiceReady";
-    public static final String DP_SERVICE_MONITOR_READY_NAME = "ServiceMonitorReady";
+    public static final String DP_CONFIG_MAP_READY_NAME = "ConfigMapReady";
+    public static final String DP_KNATIVE_BROKER_READY_NAME = "KNativeBrokerReady";
+    public static final String DP_AUTHORISATION_POLICY_READY_NAME = "AuthorisationPolicyReady";
+    public static final String DP_NETWORK_RESOURCE_READY_NAME = "NetworkResourceReady";
+
+    public static final String DP_BRIDGE_DELETED_NAME = "BridgeDeleted";
 }

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "testDeployment"
+spec:
+  selector:
+    matchLabels:
+      labelkey1: "labelvalue1"
+      labelkey2: "labelvalue2"
+  progressDeadlineSeconds: 123
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        labelkey1: "labelvalue1"
+    spec:
+      containers:
+        - name: ""
+          image: "test-image:1.0"
+status:
+  conditions:
+    - type: "READY"
+      status: "TRUE"

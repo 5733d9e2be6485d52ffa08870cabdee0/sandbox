@@ -58,6 +58,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
         private String owner;
         private KNativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec;
         private DNSConfigurationSpec dnsConfigurationSpec;
+        private long generation;
 
         public Builder() {
 
@@ -98,6 +99,11 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             return this;
         }
 
+        public Builder withGeneration(long generation) {
+            this.generation = generation;
+            return this;
+        }
+
         public ManagedBridge build() {
             this.validate();
             ObjectMeta meta = new ObjectMetaBuilder()
@@ -116,6 +122,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             managedBridgeSpec.setName(bridgeName);
             managedBridgeSpec.setDnsConfiguration(this.dnsConfigurationSpec);
             managedBridgeSpec.setkNativeBrokerConfiguration(this.kNativeBrokerConfigurationSpec);
+            managedBridgeSpec.setGeneration(this.generation);
 
             ManagedBridge managedBridge = new ManagedBridge();
             managedBridge.setSpec(managedBridgeSpec);
