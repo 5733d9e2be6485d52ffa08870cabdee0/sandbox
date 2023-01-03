@@ -33,7 +33,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
@@ -462,7 +462,7 @@ public class ProcessorServiceImplTest {
 
         assertThat(processor.getPublishedAt()).isNull();
 
-        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
@@ -481,7 +481,7 @@ public class ProcessorServiceImplTest {
 
         assertThat(processor.getPublishedAt()).isNull();
 
-        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
@@ -504,7 +504,7 @@ public class ProcessorServiceImplTest {
 
         assertThat(processor.getPublishedAt()).isNull();
 
-        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
@@ -526,7 +526,7 @@ public class ProcessorServiceImplTest {
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
         processor.setOperation(operation);
 
-        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
@@ -543,7 +543,7 @@ public class ProcessorServiceImplTest {
         Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         Processor processor = createDeprovisionProcessor(bridge);
 
-        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
@@ -560,7 +560,7 @@ public class ProcessorServiceImplTest {
         Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         Processor processor = createDeprovisionProcessor(bridge);
 
-        ProcessorStatusDTO statusDTO = new ProcessorStatusDTO();
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
