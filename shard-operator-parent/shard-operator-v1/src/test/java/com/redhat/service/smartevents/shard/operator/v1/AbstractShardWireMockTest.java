@@ -16,6 +16,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.v1.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
+import io.javaoperatorsdk.operator.Operator;
 import io.quarkus.test.common.QuarkusTestResource;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -25,6 +26,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 @QuarkusTestResource(restrictToAnnotatedClass = true, value = ManagerMockResource.class)
 public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
+
+    @Inject
+    Operator operator;
 
     @Inject
     protected KubernetesResourcePatcher kubernetesResourcePatcher;
@@ -40,6 +44,7 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
     protected void beforeEach() {
         super.beforeEach();
         kubernetesResourcePatcher.cleanUp();
+        operator.start();
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {
