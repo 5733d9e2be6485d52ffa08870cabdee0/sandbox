@@ -36,7 +36,6 @@ import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
-import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
