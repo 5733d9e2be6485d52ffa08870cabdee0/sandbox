@@ -57,13 +57,14 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration(name = BridgeIngressController.NAME, labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
         EventSourceInitializer<BridgeIngress>,
         ErrorStatusHandler<BridgeIngress>,
         Cleaner<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
+    public static final String NAME = "bridgeingresscontroller";
 
     @ConfigProperty(name = "event-bridge.ingress.deployment.timeout-seconds")
     int ingressTimeoutSeconds;
@@ -111,12 +112,18 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         BridgeIngressStatus status = bridgeIngress.getStatus();
 
+        // Always mark the AUGMENTING condition as TRUE at the beginning of the reconcile loop.
+        // If we are in timeout or in another dead path, override it as FALSE.
+        // If everything is already deployed and ready, the reconcile loop exits with no update.
+        status.markConditionTrue(ConditionTypeConstants.AUGMENTING);
+
         if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeIngress,
                     new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
                             bridgeIngress.getClass().getSimpleName(),
                             bridgeIngress.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
+            status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -191,6 +198,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         if (!status.isReady()) {
             metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
+            status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
@@ -201,7 +209,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     private boolean isTimedOut(BridgeIngressStatus status) {
         Optional<Date> lastTransitionDate = status.getConditions()
                 .stream()
-                .filter(c -> Objects.nonNull(c.getLastTransitionTime()))
+                // Ignore the Augmenting condition
+                .filter(c -> Objects.nonNull(c.getLastTransitionTime()) && !c.getType().equals(ConditionTypeConstants.AUGMENTING))
                 .reduce((c1, c2) -> c1.getLastTransitionTime().after(c2.getLastTransitionTime()) ? c1 : c2)
                 .map(Condition::getLastTransitionTime);
 
@@ -249,6 +258,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                     e.getMessage());
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeIngress.getStatus().setStatusFromBridgeError(bei);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManagerOfFailure(bridgeIngress, bei);
             return ErrorStatusUpdateControl.updateStatus(bridgeIngress);
         }

@@ -448,8 +448,8 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        // Since the DTO remained in PROVISIONING the manager is not notified again.
-        verify(managerClient).notifyProcessorStatusChange(updateDTO.capture());
+        // Since the DTO remained in PROVISIONING the manager is notified again as the resource is in a FAILED state.
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> assertProcessorManagedResourceStatusUpdateDTOUpdate(d,
                 dto.getId(),
                 dto.getCustomerId(),

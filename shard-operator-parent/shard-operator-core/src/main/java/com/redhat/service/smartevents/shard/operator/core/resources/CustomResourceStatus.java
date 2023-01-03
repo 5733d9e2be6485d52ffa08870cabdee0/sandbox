@@ -45,6 +45,11 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     }
 
     @JsonIgnore
+    public final boolean isAugmenting() {
+        return conditions.stream().anyMatch(c -> ConditionTypeConstants.AUGMENTING.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
+    }
+
+    @JsonIgnore
     public final boolean isConditionTypeTrue(final String conditionType) {
         return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
     }
