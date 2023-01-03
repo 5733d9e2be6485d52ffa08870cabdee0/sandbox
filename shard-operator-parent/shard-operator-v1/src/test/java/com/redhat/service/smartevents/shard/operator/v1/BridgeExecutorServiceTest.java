@@ -459,7 +459,6 @@ public class BridgeExecutorServiceTest {
     }
 
     @Test
-    @Disabled("The deletion of the deployment is not triggering the reconcile loop anymore with the current version of the operator sdk")
     public void testBridgeExecutorRecreationTimeout() {
         // Given a PROVISIONING Processor
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();

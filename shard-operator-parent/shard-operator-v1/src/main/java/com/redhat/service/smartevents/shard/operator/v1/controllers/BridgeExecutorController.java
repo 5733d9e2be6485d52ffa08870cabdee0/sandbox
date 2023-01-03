@@ -95,10 +95,10 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     @Override
     public Map<String, EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
         return EventSourceInitializer.nameEventSources(
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, Secret.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, Service.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, Deployment.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, ServiceMonitor.class));
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, Secret.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, Service.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, Deployment.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, ServiceMonitor.class));
     }
 
     @Override
