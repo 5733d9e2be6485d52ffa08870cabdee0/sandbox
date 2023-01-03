@@ -22,7 +22,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: rhose-prolong-stage
-              image: registry.redhat.io/ubi8/ubi
+              image: quay.io/app-sre/ubi8-ubi:8.7
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/bash
