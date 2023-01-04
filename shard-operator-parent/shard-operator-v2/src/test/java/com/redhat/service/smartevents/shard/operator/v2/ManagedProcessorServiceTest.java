@@ -33,7 +33,7 @@ public class ManagedProcessorServiceTest {
     }
 
     @Test
-    public void TestCreateManagedProcessor() {
+    public void testCreateManagedProcessor() {
         // setup
         ProcessorDTO processorDTO = Fixtures.createProcessor(OperationType.CREATE);
 
@@ -46,7 +46,7 @@ public class ManagedProcessorServiceTest {
     }
 
     @Test
-    public void TestDeleteManagedProcessor() {
+    public void testDeleteManagedProcessor() {
         // setup
         ProcessorDTO processorDTO1 = Fixtures.createProcessor(OperationType.CREATE);
         managedProcessorService.createManagedProcessor(processorDTO1);
@@ -62,7 +62,7 @@ public class ManagedProcessorServiceTest {
     }
 
     @Test
-    public void TestFetchAllManagedProcessors() {
+    public void testFetchAllManagedProcessors() {
         // setup
         ProcessorDTO processorDTO1 = Fixtures.createProcessor(OperationType.CREATE);
         processorDTO1.setId("1");

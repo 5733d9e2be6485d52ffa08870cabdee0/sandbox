@@ -70,7 +70,7 @@ public class ManagedProcessorSyncServiceTest {
     }
 
     @Test
-    public void TestSyncManagedProcessorStatusBackToManager() {
+    public void testSyncManagedProcessorStatusBackToManager() {
         // setup
         List<ProcessorDTO> processorDTOList = new ArrayList<>();
         ProcessorDTO processorDTO1 = Fixtures.createProcessor(OperationType.CREATE);

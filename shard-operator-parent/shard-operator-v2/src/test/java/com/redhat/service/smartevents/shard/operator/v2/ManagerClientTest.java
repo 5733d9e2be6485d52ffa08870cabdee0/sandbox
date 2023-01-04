@@ -91,7 +91,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void TestToNotifyProcessorStatus() {
+    public void testToNotifyProcessorStatus() {
 
         // setup
         stubProcessorUpdate();
