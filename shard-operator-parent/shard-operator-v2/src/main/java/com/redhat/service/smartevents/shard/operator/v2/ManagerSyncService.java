@@ -30,5 +30,6 @@ public class ManagerSyncService {
     public void syncStatusBackToManager() {
         LOGGER.debug("Sending back status from Operator to Manager");
         managedBridgeSyncService.syncManagedBridgeStatusBackToManager();
+        managedProcessorSyncService.syncManagedProcessorStatusBackToManager();
     }
 }

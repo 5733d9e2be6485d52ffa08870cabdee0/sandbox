@@ -19,4 +19,6 @@ public final class DefaultConditions {
     public static final String DP_NETWORK_RESOURCE_READY_NAME = "NetworkResourceReady";
 
     public static final String DP_BRIDGE_DELETED_NAME = "BridgeDeleted";
+
+    public static final String DP_PROCESSOR_DELETED_NAME = "ProcessorDeleted";
 }

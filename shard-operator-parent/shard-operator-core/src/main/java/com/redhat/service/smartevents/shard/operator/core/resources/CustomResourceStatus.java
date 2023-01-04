@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 
 import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
 
@@ -108,6 +107,4 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
                 bridgeError.getReason(),
                 bridgeError.getCode());
     }
-
-    public abstract ManagedResourceStatus inferManagedResourceStatus();
 }

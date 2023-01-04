@@ -144,7 +144,6 @@ class BridgeWorkerTest {
             boolean throwDnsError,
             boolean isWorkComplete) {
         Bridge bridge = createAndPersistDefaultDeprovisionBridge();
-        bridgeDAO.persist(bridge);
 
         Work work = makeWork(bridge);
 

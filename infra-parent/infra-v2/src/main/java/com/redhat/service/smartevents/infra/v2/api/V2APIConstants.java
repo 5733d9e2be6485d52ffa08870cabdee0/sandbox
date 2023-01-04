@@ -32,6 +32,11 @@ public class V2APIConstants {
      */
     public static final String V2_ERROR_API_BASE_PATH = V2_ROOT + "/errors/";
 
+    /**
+     * Path for fetching/Update processor.
+     */
+    public static final String V2_SHARD_API_PROCESSORS_PATH = V2_SHARD_API_BASE_PATH + "processors";
+
     private V2APIConstants() {
     }
 }

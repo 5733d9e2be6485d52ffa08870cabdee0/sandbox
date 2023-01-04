@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
-public class ManagedBridgeServiceImplTest {
+public class ManagedBridgeServiceTest {
 
     @Inject
     Operator operator;

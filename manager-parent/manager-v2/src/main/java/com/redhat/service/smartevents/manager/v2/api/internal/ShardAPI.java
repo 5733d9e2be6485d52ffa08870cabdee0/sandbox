@@ -33,7 +33,7 @@ import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
@@ -109,8 +109,12 @@ public class ShardAPI {
     })
     @Operation(hidden = true, summary = "Update a Bridge status.", description = "Update a Bridge status.")
     @PUT
-    public Response updateBridgeStatus() {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
+    public Response updateBridgeStatus(List<ResourceStatusDTO> statusDTOs) {
+        String shardId = identityResolver.resolve(jwt);
+        failIfNotAuthorized(shardId);
+
+        statusDTOs.forEach(this::updateBridgeStatus);
+        return Response.ok().build();
     }
 
     @APIResponses(value = {
@@ -147,7 +151,7 @@ public class ShardAPI {
     @Operation(hidden = true, summary = "Update Processors' status.", description = "Update Processors' status.")
     @PUT
     @Path("processors")
-    public Response updateProcessorsStatus(List<ProcessorStatusDTO> statusDTOs) {
+    public Response updateProcessorsStatus(List<ResourceStatusDTO> statusDTOs) {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
 
@@ -155,9 +159,9 @@ public class ShardAPI {
         return Response.ok().build();
     }
 
-    private void updateProcessorStatus(ProcessorStatusDTO statusDTO) {
+    private void updateProcessorStatus(ResourceStatusDTO statusDTO) {
         try {
-            LOGGER.info("Processing update from Shard for Processor with id '{}' and generation '{}' with conditions '{}'",
+            LOGGER.debug("Processing update from Shard for Processor with id '{}' and generation '{}' with conditions '{}'",
                     statusDTO.getId(),
                     statusDTO.getGeneration(),
                     logConditions(statusDTO.getConditions()));
@@ -170,6 +174,22 @@ public class ShardAPI {
                     e);
         }
 
+    }
+
+    private void updateBridgeStatus(ResourceStatusDTO statusDTO) {
+        try {
+            LOGGER.debug("Processing update from Shard for Bridge with id '{}' and generation '{}' with conditions '{}'",
+                    statusDTO.getId(),
+                    statusDTO.getGeneration(),
+                    logConditions(statusDTO.getConditions()));
+            bridgesService.updateBridgeStatus(statusDTO);
+        } catch (Exception e) {
+            LOGGER.warn("Failed to process update from Shard for Bridge with id '{}' and generation '{}' with conditions '{}'",
+                    statusDTO.getId(),
+                    statusDTO.getGeneration(),
+                    logConditions(statusDTO.getConditions()),
+                    e);
+        }
     }
 
     private String logConditions(List<ConditionDTO> conditions) {

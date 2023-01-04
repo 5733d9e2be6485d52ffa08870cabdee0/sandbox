@@ -1,11 +1,14 @@
 package com.redhat.service.smartevents.shard.operator.v2.utils;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
+import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 
 public class Fixtures {
 
@@ -44,6 +47,10 @@ public class Fixtures {
     }
 
     public static ProcessorDTO createProcessor(OperationType operation) {
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, null, BRIDGE_ID, CUSTOMER_ID, USER_NAME, operation);
+        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, JsonNodeFactory.instance.objectNode(), BRIDGE_ID, CUSTOMER_ID, USER_NAME, operation);
+    }
+
+    public static ManagedProcessor createManagedProcessor(ProcessorDTO processorDTO, String namespace) {
+        return ManagedProcessorConverter.fromProcessorDTOToManagedProcessor(processorDTO, namespace);
     }
 }

@@ -14,7 +14,7 @@ import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 public class ManagerSyncServiceTest {
 
     @InjectMock
-    ManagedBridgeSyncServiceImpl managedBridgeSyncService;
+    ManagedBridgeSyncService managedBridgeSyncService;
 
     @InjectMock
     ManagedProcessorSyncService managedProcessorSyncService;
@@ -24,10 +24,6 @@ public class ManagerSyncServiceTest {
 
     @Test
     public void TestSyncUpdatesFromManager() {
-        // setup
-        Mockito.doNothing().when(managedBridgeSyncService).syncManagedBridgeWithManager();
-        Mockito.doNothing().when(managedProcessorSyncService).syncManagedProcessorWithManager();
-
         // test
         managerSyncService.syncUpdatesFromManager();
 
@@ -38,13 +34,11 @@ public class ManagerSyncServiceTest {
 
     @Test
     public void TestSyncStatusBackToManager() {
-        // setup
-        Mockito.doNothing().when(managedBridgeSyncService).syncManagedBridgeStatusBackToManager();
-
         // test
         managerSyncService.syncStatusBackToManager();
 
         // assert
         Mockito.verify(managedBridgeSyncService).syncManagedBridgeStatusBackToManager();
+        Mockito.verify(managedProcessorSyncService).syncManagedProcessorStatusBackToManager();
     }
 }
