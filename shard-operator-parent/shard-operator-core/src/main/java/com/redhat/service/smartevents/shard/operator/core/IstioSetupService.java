@@ -14,9 +14,11 @@ import com.redhat.service.smartevents.shard.operator.core.resources.istio.reques
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.quarkus.arc.profile.UnlessBuildProfile;
 import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
+@UnlessBuildProfile(value = "test") // We don't need to create bean for this service in test.
 public class IstioSetupService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IstioSetupService.class);

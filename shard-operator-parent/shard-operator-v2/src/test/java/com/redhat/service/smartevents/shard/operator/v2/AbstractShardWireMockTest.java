@@ -32,7 +32,7 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {
-        wireMockServer.stubFor(get(urlEqualTo(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors"))
+        wireMockServer.stubFor(get(urlEqualTo(V2APIConstants.V2_SHARD_API_PROCESSORS_PATH))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(objectMapper.writeValueAsString(processorDTOS))));
@@ -40,6 +40,13 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
 
     protected void stubBridgeUpdate() {
         wireMockServer.stubFor(put(urlEqualTo(V2APIConstants.V2_SHARD_API_BASE_PATH))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withStatus(200)));
+    }
+
+    protected void stubProcessorUpdate() {
+        wireMockServer.stubFor(put(urlEqualTo(V2APIConstants.V2_SHARD_API_PROCESSORS_PATH))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));

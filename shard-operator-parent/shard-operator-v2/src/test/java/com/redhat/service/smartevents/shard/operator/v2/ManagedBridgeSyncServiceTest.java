@@ -13,8 +13,8 @@ import org.mockito.Mockito;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
@@ -30,7 +30,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditio
 public class ManagedBridgeSyncServiceTest {
 
     @Inject
-    ManagedBridgeSyncServiceImpl managedBridgeSyncService;
+    ManagedBridgeSyncService managedBridgeSyncService;
 
     @InjectMock
     ManagerClient managerClient;
@@ -90,18 +90,18 @@ public class ManagedBridgeSyncServiceTest {
         managedBridgeSyncService.syncManagedBridgeStatusBackToManager();
 
         // assert
-        ArgumentCaptor<List<BridgeStatusDTO>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<ResourceStatusDTO>> argumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(managerClient).notifyBridgeStatus(argumentCaptor.capture());
-        List<BridgeStatusDTO> bridgeStatusDTOs = argumentCaptor.getValue();
+        List<ResourceStatusDTO> bridgeStatusDTOs = argumentCaptor.getValue();
         Assertions.assertThat(bridgeStatusDTOs).size().isEqualTo(2);
 
-        BridgeStatusDTO bridgeStatusDTO1 = bridgeStatusDTOs.get(0);
+        ResourceStatusDTO bridgeStatusDTO1 = bridgeStatusDTOs.get(0);
         Assertions.assertThat(bridgeStatusDTO1.getId()).isEqualTo(bridgeDTO1.getId());
         Assertions.assertThat(bridgeStatusDTO1.getGeneration()).isEqualTo(bridgeDTO1.getGeneration());
         Assertions.assertThat(bridgeStatusDTO1.getConditions().size()).isEqualTo(managedBridge.getStatus().getConditions().size());
         Assertions.assertThat(bridgeStatusDTO1.getConditions().stream().allMatch(c -> c.getStatus() == ConditionStatus.UNKNOWN)).isTrue();
 
-        BridgeStatusDTO bridgeStatusDTO2 = bridgeStatusDTOs.get(1);
+        ResourceStatusDTO bridgeStatusDTO2 = bridgeStatusDTOs.get(1);
         Assertions.assertThat(bridgeStatusDTO2.getId()).isEqualTo(bridgeDTO2.getId());
         Assertions.assertThat(bridgeStatusDTO2.getGeneration()).isEqualTo(bridgeDTO2.getGeneration());
         Assertions.assertThat(bridgeStatusDTO2.getConditions().size()).isEqualTo(1);

@@ -37,7 +37,6 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
         super(EXECUTOR_CONDITIONS);
     }
 
-    @Override
     public ManagedResourceStatus inferManagedResourceStatus() {
         if (isReady()) {
             return ManagedResourceStatus.READY;

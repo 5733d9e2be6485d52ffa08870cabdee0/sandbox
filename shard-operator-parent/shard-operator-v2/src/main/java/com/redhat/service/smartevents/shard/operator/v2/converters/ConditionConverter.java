@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2.converters;
 
 import java.time.ZoneOffset;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,9 +11,8 @@ import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 
 public class ConditionConverter {
 
-    public static Set<ConditionDTO> fromConditionsToConditionDTOs(Set<Condition> conditions) {
-        Set<ConditionDTO> conditionDTOs = new HashSet<>(conditions.size());
-        return conditions.stream().map(ConditionConverter::fromConditionToConditionDTO).collect(Collectors.toSet());
+    public static List<ConditionDTO> fromConditionsToConditionDTOs(Set<Condition> conditions) {
+        return conditions.stream().map(ConditionConverter::fromConditionToConditionDTO).collect(Collectors.toList());
     }
 
     private static ConditionDTO fromConditionToConditionDTO(Condition condition) {

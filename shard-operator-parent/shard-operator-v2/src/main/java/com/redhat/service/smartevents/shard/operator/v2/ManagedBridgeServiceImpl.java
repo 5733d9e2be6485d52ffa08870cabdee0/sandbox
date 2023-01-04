@@ -78,11 +78,6 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
             createOrUpdateBridgeSecret(expected);
         }
-
-        /*
-         * TODO - Callback to Control Plane will be added in https://issues.redhat.com/browse/MGDOBR-1267
-         */
-
     }
 
     private void createOrUpdateBridgeSecret(ManagedBridge managedBridge) {

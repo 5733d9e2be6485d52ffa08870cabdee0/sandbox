@@ -14,6 +14,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.knative.Knat
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBrokerStatus;
 import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
+import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 import com.redhat.service.smartevents.shard.operator.v2.utils.networking.V2NetworkingTestUtils;
 
 import io.fabric8.kubernetes.api.model.LoadBalancerStatus;
@@ -51,6 +52,7 @@ public class V2KubernetesResourcePatcher {
     public void cleanUp() {
         kubernetesClient.resources(KnativeBroker.class).inAnyNamespace().delete();
         kubernetesClient.resources(ManagedBridge.class).inAnyNamespace().delete();
+        kubernetesClient.resources(ManagedProcessor.class).inAnyNamespace().delete();
         kubernetesClient.secrets().inAnyNamespace().delete();
         kubernetesClient.apps().deployments().inAnyNamespace().delete();
         kubernetesClient.services().inAnyNamespace().delete();

@@ -1,36 +1,18 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
+import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
-public class ManagedProcessorStatus {
+public class ManagedProcessorStatus extends CustomResourceStatus {
 
-    private Set<Condition> conditions;
-
-    public Set<Condition> getConditions() {
-        return conditions;
+    private static Set<Condition> getCreationConditions() {
+        return new HashSet<>();
     }
 
-    public void setConditions(Set<Condition> conditions) {
-        this.conditions = conditions;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ManagedProcessorStatus that = (ManagedProcessorStatus) o;
-        return Objects.equals(conditions, that.conditions);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(conditions);
+    public ManagedProcessorStatus() {
+        super(getCreationConditions());
     }
 }

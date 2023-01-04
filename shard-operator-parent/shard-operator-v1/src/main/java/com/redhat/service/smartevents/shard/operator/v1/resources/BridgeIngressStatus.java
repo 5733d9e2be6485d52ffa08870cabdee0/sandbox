@@ -37,7 +37,6 @@ public class BridgeIngressStatus extends CustomResourceStatus {
         super(INGRESS_CONDITIONS);
     }
 
-    @Override
     public ManagedResourceStatus inferManagedResourceStatus() {
         if (isReady()) {
             return ManagedResourceStatus.READY;
