@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -65,10 +65,10 @@ public class MetricsServiceImpl implements ManagerMetricsServiceV1 {
 
     private boolean isOperationSuccessful(ManagedResourceV1 managedResource, MetricsOperation operation) {
         if (MetricsOperation.MANAGER_RESOURCE_PROVISION == operation || MetricsOperation.MANAGER_RESOURCE_MODIFY == operation) {
-            return ManagedResourceStatus.READY == managedResource.getStatus();
+            return ManagedResourceStatusV1.READY == managedResource.getStatus();
         }
 
-        return ManagedResourceStatus.DELETED == managedResource.getStatus();
+        return ManagedResourceStatusV1.DELETED == managedResource.getStatus();
     }
 
     @Override
@@ -80,7 +80,7 @@ public class MetricsServiceImpl implements ManagerMetricsServiceV1 {
     }
 
     private boolean isOperationFailed(ManagedResourceV1 managedResource) {
-        return ManagedResourceStatus.FAILED == managedResource.getStatus();
+        return ManagedResourceStatusV1.FAILED == managedResource.getStatus();
     }
 
     private List<Tag> buildTags(ManagedResourceV1 managedResource, MetricsOperation operation) {

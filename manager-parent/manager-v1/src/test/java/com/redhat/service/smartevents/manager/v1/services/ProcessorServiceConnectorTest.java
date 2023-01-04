@@ -16,7 +16,7 @@ import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
 import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
@@ -40,9 +40,9 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_CUSTOMER_ID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -265,20 +265,20 @@ class ProcessorServiceConnectorTest {
         assertShardAsksForProcessorToBeDeletedDoesNotInclude(processor);
     }
 
-    private Bridge createPersistBridge(ManagedResourceStatus status) {
+    private Bridge createPersistBridge(ManagedResourceStatusV1 status) {
         Bridge b = Fixtures.createBridge();
         b.setStatus(status);
         bridgeDAO.persist(b);
         return b;
     }
 
-    private Processor createPersistProcessor(Bridge bridge, ManagedResourceStatus status) {
+    private Processor createPersistProcessor(Bridge bridge, ManagedResourceStatusV1 status) {
         Processor processor = Fixtures.createProcessor(bridge, status);
         processorDAO.persist(processor);
         return processor;
     }
 
-    private ConnectorEntity createPersistentConnector(Processor processor, ManagedResourceStatus status) {
+    private ConnectorEntity createPersistentConnector(Processor processor, ManagedResourceStatusV1 status) {
         ConnectorEntity connector = Fixtures.createSinkConnector(processor, status);
         connectorsDAO.persist(connector);
         return connector;
@@ -323,7 +323,7 @@ class ProcessorServiceConnectorTest {
         });
     }
 
-    private void reloadAssertProcessorIsInStatus(Processor processor, ManagedResourceStatus status) {
+    private void reloadAssertProcessorIsInStatus(Processor processor, ManagedResourceStatusV1 status) {
         Processor foundProcessor = processorDAO.findById(processor.getId());
         assertThat(foundProcessor.getStatus()).isEqualTo(status);
     }

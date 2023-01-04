@@ -14,10 +14,10 @@ import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorDAO;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
@@ -35,8 +35,8 @@ import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
@@ -377,7 +377,7 @@ public class BridgesAPITest {
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
         BridgeResponse response = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
 
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatusV2.DEPROVISION);
     }
 
     @Test

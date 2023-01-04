@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
@@ -128,8 +128,8 @@ class ConnectorsServiceTest {
             verify(gatewayConnector).connectorPayload(processor.getDefinition().getRequestedAction(), connectorEntity.getTopicName(), "TopicNameError");
         }
 
-        assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
-        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatusV1.ACCEPTED);
+        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatusV1.ACCEPTED);
     }
 
     private static Stream<Arguments> connectorProcessors() {

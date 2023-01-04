@@ -21,7 +21,6 @@ import org.mockito.ArgumentCaptor;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorType;
@@ -33,9 +32,10 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Ite
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.StringContains;
@@ -63,14 +63,14 @@ import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PREPARING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType.ERROR_HANDLER;
 import static com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType.SINK;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_ID;
@@ -506,7 +506,7 @@ class ProcessorServiceTest {
 
     @ParameterizedTest
     @MethodSource("getUserVisibleProcessorsWhenBridgeIsStatus")
-    void testGetUserVisibleProcessorsWhenBridgeIsPreparing(ManagedResourceStatus status) {
+    void testGetUserVisibleProcessorsWhenBridgeIsPreparing(ManagedResourceStatusV1 status) {
         Bridge bridge = createBridge(status);
         when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
 
@@ -843,7 +843,7 @@ class ProcessorServiceTest {
         return createBridge(FAILED);
     }
 
-    private static Bridge createBridge(ManagedResourceStatus status) {
+    private static Bridge createBridge(ManagedResourceStatusV1 status) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(DEFAULT_BRIDGE_ID);
         bridge.setStatus(status);

@@ -13,10 +13,10 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
@@ -44,13 +44,13 @@ import io.restassured.common.mapper.TypeRef;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus.FAILED;
 import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus.TRUE;
 import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus.UNKNOWN;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_CONFIG_MAP_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -211,7 +211,7 @@ public class ShardAPITest {
         awaitForBridgeToBe(READY, bridgeResponse.getId());
     }
 
-    private void awaitForBridgeToBe(ManagedResourceStatus status, String... bridgeIds) {
+    private void awaitForBridgeToBe(ManagedResourceStatusV2 status, String... bridgeIds) {
         await().atMost(5, SECONDS)
                 .untilAsserted(() -> {
                     Arrays.stream(bridgeIds).forEach(bridgeId -> {
@@ -327,7 +327,7 @@ public class ShardAPITest {
         awaitForProcessorToBe(READY, processorId);
     }
 
-    private void awaitForProcessorToBe(ManagedResourceStatus status, String... processorIds) {
+    private void awaitForProcessorToBe(ManagedResourceStatusV2 status, String... processorIds) {
         await().atMost(5, SECONDS)
                 .untilAsserted(() -> {
                     Arrays.stream(processorIds).forEach(processorId -> {

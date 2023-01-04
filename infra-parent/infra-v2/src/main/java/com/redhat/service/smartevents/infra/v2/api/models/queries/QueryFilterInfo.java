@@ -1,22 +1,27 @@
-package com.redhat.service.smartevents.infra.core.models.queries;
+package com.redhat.service.smartevents.infra.v2.api.models.queries;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.QueryParam;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.core.models.queries.BaseQueryFilterInfo;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 
-import static com.redhat.service.smartevents.infra.core.api.APIConstants.FILTER_NAME;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.FILTER_STATUS;
 
-public class QueryFilterInfo {
-
-    @QueryParam(FILTER_NAME)
-    private String filterName;
+public class QueryFilterInfo extends BaseQueryFilterInfo {
 
     @QueryParam(FILTER_STATUS)
-    private Set<ManagedResourceStatus> filterStatus;
+    private Set<ManagedResourceStatusV2> filterStatus;
+
+    protected QueryFilterInfo() {
+    }
+
+    protected QueryFilterInfo(String filterName, Set<ManagedResourceStatusV2> filterStatus) {
+        super(filterName);
+        this.filterStatus = filterStatus;
+    }
 
     public static class QueryFilterInfoBuilder {
 
@@ -25,14 +30,14 @@ public class QueryFilterInfo {
         }
 
         private String filterName;
-        private Set<ManagedResourceStatus> filterStatus = new HashSet<>();
+        private Set<ManagedResourceStatusV2> filterStatus = new HashSet<>();
 
         public QueryFilterInfoBuilder by(String filterName) {
             this.filterName = filterName;
             return this;
         }
 
-        public QueryFilterInfoBuilder by(ManagedResourceStatus filterStatus) {
+        public QueryFilterInfoBuilder by(ManagedResourceStatusV2 filterStatus) {
             this.filterStatus.add(filterStatus);
             return this;
         }
@@ -43,28 +48,16 @@ public class QueryFilterInfo {
 
     }
 
-    protected QueryFilterInfo() {
-
-    }
-
-    protected QueryFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus) {
-        this.filterName = filterName;
-        this.filterStatus = filterStatus;
-    }
-
-    public String getFilterName() {
-        return filterName;
-    }
-
-    public Set<ManagedResourceStatus> getFilterStatus() {
+    public Set<ManagedResourceStatusV2> getFilterStatus() {
         return filterStatus;
     }
 
     @Override
     public String toString() {
         return "QueryFilterInfo{" +
-                "filterName='" + filterName + '\'' +
+                "filterName='" + getFilterName() + '\'' +
                 ", filterStatus=" + filterStatus +
                 '}';
     }
+
 }

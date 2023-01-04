@@ -15,7 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
@@ -30,8 +30,8 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType.SINK;
 import static com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType.SOURCE;
 import static com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder.filter;
@@ -63,7 +63,7 @@ public class ProcessorDAOTest {
         p.setType(type);
         p.setBridge(bridge);
         p.setName(name);
-        p.setStatus(ManagedResourceStatus.ACCEPTED);
+        p.setStatus(ManagedResourceStatusV1.ACCEPTED);
         p.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         p.setShardId(TestConstants.SHARD_ID);
@@ -85,7 +85,7 @@ public class ProcessorDAOTest {
 
     private Bridge createBridge() {
         Bridge b = Fixtures.createBridge();
-        b.setStatus(ManagedResourceStatus.READY);
+        b.setStatus(ManagedResourceStatusV1.READY);
         b.setShardId(TestConstants.SHARD_ID);
         bridgeDAO.persist(b);
         return b;
@@ -124,32 +124,32 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         //To be provisioned
         Processor p = createProcessor(b, "foo");
-        p.setStatus(ManagedResourceStatus.PREPARING);
-        p.setDependencyStatus(ManagedResourceStatus.READY);
+        p.setStatus(ManagedResourceStatusV1.PREPARING);
+        p.setDependencyStatus(ManagedResourceStatusV1.READY);
         processorDAO.getEntityManager().merge(p);
 
         //Already provisioned
         Processor q = createProcessor(b, "bob");
-        q.setStatus(ManagedResourceStatus.READY);
-        q.setDependencyStatus(ManagedResourceStatus.READY);
+        q.setStatus(ManagedResourceStatusV1.READY);
+        q.setDependencyStatus(ManagedResourceStatusV1.READY);
         processorDAO.getEntityManager().merge(q);
 
         //To be de-provisioned
         Processor r = createProcessor(b, "frank");
-        r.setStatus(ManagedResourceStatus.DEPROVISION);
-        r.setDependencyStatus(ManagedResourceStatus.DELETED);
+        r.setStatus(ManagedResourceStatusV1.DEPROVISION);
+        r.setDependencyStatus(ManagedResourceStatusV1.DELETED);
         processorDAO.getEntityManager().merge(r);
 
         //In the process of being provisioned
         Processor s = createProcessor(b, "mary");
-        s.setStatus(ManagedResourceStatus.PROVISIONING);
-        s.setDependencyStatus(ManagedResourceStatus.READY);
+        s.setStatus(ManagedResourceStatusV1.PROVISIONING);
+        s.setDependencyStatus(ManagedResourceStatusV1.READY);
         processorDAO.getEntityManager().merge(s);
 
         //In the process of being deleted
         Processor t = createProcessor(b, "sue");
-        t.setStatus(ManagedResourceStatus.DELETING);
-        t.setDependencyStatus(ManagedResourceStatus.DELETED);
+        t.setStatus(ManagedResourceStatusV1.DELETING);
+        t.setDependencyStatus(ManagedResourceStatusV1.DELETED);
         processorDAO.getEntityManager().merge(t);
 
         List<Processor> processors = processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
@@ -164,34 +164,34 @@ public class ProcessorDAOTest {
 
         //To be provisioned
         Processor withProvisionedConnectors = createProcessor(b, "withProvisionedConnectors");
-        withProvisionedConnectors.setStatus(ManagedResourceStatus.PREPARING);
-        withProvisionedConnectors.setDependencyStatus(ManagedResourceStatus.READY);
+        withProvisionedConnectors.setStatus(ManagedResourceStatusV1.PREPARING);
+        withProvisionedConnectors.setDependencyStatus(ManagedResourceStatusV1.READY);
         processorDAO.getEntityManager().merge(withProvisionedConnectors);
 
         ConnectorEntity provisionedConnector = Fixtures.createSinkConnector(withProvisionedConnectors,
-                ManagedResourceStatus.READY);
+                ManagedResourceStatusV1.READY);
         provisionedConnector.setName("connectorProvisioned");
         processorDAO.getEntityManager().merge(provisionedConnector);
 
         //Not to be provisioned as Connector is not ready
         Processor nonProvisioned = createProcessor(b, "withUnprovisionedConnector");
-        nonProvisioned.setStatus(ManagedResourceStatus.PREPARING);
-        nonProvisioned.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
+        nonProvisioned.setStatus(ManagedResourceStatusV1.PREPARING);
+        nonProvisioned.setDependencyStatus(ManagedResourceStatusV1.PROVISIONING);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity nonProvisionedConnector = Fixtures.createSinkConnector(nonProvisioned,
-                ManagedResourceStatus.PROVISIONING);
+                ManagedResourceStatusV1.PROVISIONING);
         nonProvisionedConnector.setName("nonProvisionedConnector");
         processorDAO.getEntityManager().merge(nonProvisionedConnector);
 
         // Not to be de-provisioned as there's a connector yet to be deleted
         Processor toBeDeleted = createProcessor(b, "notToBeDeletedYet");
-        toBeDeleted.setStatus(ManagedResourceStatus.DEPROVISION);
-        toBeDeleted.setDependencyStatus(ManagedResourceStatus.DELETING);
+        toBeDeleted.setStatus(ManagedResourceStatusV1.DEPROVISION);
+        toBeDeleted.setDependencyStatus(ManagedResourceStatusV1.DELETING);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity toBeDeletedConnector = Fixtures.createSinkConnector(toBeDeleted,
-                ManagedResourceStatus.DELETING);
+                ManagedResourceStatusV1.DELETING);
         toBeDeletedConnector.setName("toBeDeletedConnector");
         processorDAO.getEntityManager().merge(toBeDeletedConnector);
 

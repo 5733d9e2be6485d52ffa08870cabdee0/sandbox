@@ -19,7 +19,7 @@ import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -95,14 +95,14 @@ class ConnectorWorkerTest {
     @ParameterizedTest
     @MethodSource("provideArgsForCreateTest")
     void handleWorkProvisioningWithKnownResourceMultiplePasses(
-            ManagedResourceStatus resourceStatus,
+            ManagedResourceStatusV1 resourceStatus,
             ConnectorState connectorState,
             boolean throwRhoasError,
             boolean useSourceConnectorEntity,
             RhoasTopicAccessType expectedTopicAccessType,
-            ManagedResourceStatus expectedResourceStatus) {
+            ManagedResourceStatusV1 expectedResourceStatus) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatusV1.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity
                 ? Fixtures.createSourceConnector(processor, resourceStatus)
                 : Fixtures.createSinkConnector(processor, resourceStatus);
@@ -130,8 +130,8 @@ class ConnectorWorkerTest {
 
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         verify(connectorsApiMock, times(throwRhoasError ? 0 : 1)).createConnector(connectorEntity);
-        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
-        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatusV1.PREPARING);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatusV1.PROVISIONING);
         verify(workManagerMock, never()).reschedule(work);
 
         // This emulates a subsequent invocation from the ProcessorWorker
@@ -140,14 +140,14 @@ class ConnectorWorkerTest {
         verify(rhoasServiceMock, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         verify(connectorsApiMock, times(throwRhoasError ? 0 : 1)).createConnector(connectorEntity);
 
-        assertThat(refreshed.getStatus()).isEqualTo(throwRhoasError ? ManagedResourceStatus.PREPARING : expectedResourceStatus);
-        assertThat(refreshed.getDependencyStatus()).isEqualTo(throwRhoasError ? ManagedResourceStatus.PROVISIONING : expectedResourceStatus);
-        if (expectedResourceStatus == ManagedResourceStatus.READY) {
+        assertThat(refreshed.getStatus()).isEqualTo(throwRhoasError ? ManagedResourceStatusV1.PREPARING : expectedResourceStatus);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(throwRhoasError ? ManagedResourceStatusV1.PROVISIONING : expectedResourceStatus);
+        if (expectedResourceStatus == ManagedResourceStatusV1.READY) {
             assertThat(refreshed.getPublishedAt()).isNotNull();
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
-        if (expectedResourceStatus == ManagedResourceStatus.FAILED) {
+        if (expectedResourceStatus == ManagedResourceStatusV1.FAILED) {
             assertThat(refreshed.getErrorId()).isNotNull();
             assertThat(refreshed.getErrorUUID()).isNotNull();
         }
@@ -166,12 +166,12 @@ class ConnectorWorkerTest {
             JsonNode updatedDefinition,
             boolean patchConnector) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatusV1.READY);
         processor.setGeneration(patchConnector ? 1 : 0);
 
         ConnectorEntity connectorEntity = useSourceConnectorEntity
-                ? Fixtures.createSourceConnector(processor, ManagedResourceStatus.ACCEPTED)
-                : Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
+                ? Fixtures.createSourceConnector(processor, ManagedResourceStatusV1.ACCEPTED)
+                : Fixtures.createSinkConnector(processor, ManagedResourceStatusV1.ACCEPTED);
         connectorEntity.setPublishedAt(null);
 
         bridgeDAO.persist(bridge);
@@ -197,7 +197,7 @@ class ConnectorWorkerTest {
         if (patchConnector) {
             verify(connectorsApiMock).updateConnector(connectorEntity.getConnectorExternalId(), updatedDefinition);
         } else {
-            ManagedResourceStatus expectedStatus = connectorState == ConnectorState.READY ? ManagedResourceStatus.READY : ManagedResourceStatus.FAILED;
+            ManagedResourceStatusV1 expectedStatus = connectorState == ConnectorState.READY ? ManagedResourceStatusV1.READY : ManagedResourceStatusV1.FAILED;
             assertThat(refreshed.getStatus()).isEqualTo(expectedStatus);
             assertThat(refreshed.getDependencyStatus()).isEqualTo(expectedStatus);
         }
@@ -209,12 +209,12 @@ class ConnectorWorkerTest {
     @ParameterizedTest
     @MethodSource("provideArgsForDeleteTest")
     void handleWorkDeletingWithKnownResourceMultiplePasses(
-            ManagedResourceStatus resourceStatus,
+            ManagedResourceStatusV1 resourceStatus,
             ConnectorState connectorState,
             boolean useSourceConnectorEntity,
             RhoasTopicAccessType expectedTopicAccessType) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatusV1.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity
                 ? Fixtures.createSourceConnector(processor, resourceStatus)
                 : Fixtures.createSinkConnector(processor, resourceStatus);
@@ -235,8 +235,8 @@ class ConnectorWorkerTest {
         ConnectorEntity refreshed = worker.handleWork(work);
 
         if (connectorState != ConnectorState.DELETED) {
-            assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETING);
-            assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETING);
+            assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatusV1.DELETING);
+            assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatusV1.DELETING);
             verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
             verify(connectorsApiMock).deleteConnector(connectorEntity.getConnectorExternalId());
 
@@ -247,44 +247,44 @@ class ConnectorWorkerTest {
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         assertThat(connectorsDAO.findById(connectorEntity.getId())).isNull();
 
-        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
+        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatusV1.DELETED);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatusV1.DELETED);
         verify(workManagerMock, never()).reschedule(work);
     }
 
     private static Stream<Arguments> provideArgsForCreateTest() {
         Object[][] arguments = {
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.PREPARING, ConnectorState.READY, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.PREPARING, ConnectorState.READY, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatusV1.ACCEPTED, ConnectorState.READY, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatusV1.READY },
+                { ManagedResourceStatusV1.ACCEPTED, ConnectorState.FAILED, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatusV1.FAILED },
+                { ManagedResourceStatusV1.PREPARING, ConnectorState.READY, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatusV1.READY },
+                { ManagedResourceStatusV1.PREPARING, ConnectorState.FAILED, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatusV1.FAILED },
+                { ManagedResourceStatusV1.ACCEPTED, ConnectorState.READY, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatusV1.READY },
+                { ManagedResourceStatusV1.ACCEPTED, ConnectorState.FAILED, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatusV1.FAILED },
+                { ManagedResourceStatusV1.PREPARING, ConnectorState.READY, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatusV1.READY },
+                { ManagedResourceStatusV1.PREPARING, ConnectorState.FAILED, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatusV1.FAILED },
 
-                { ManagedResourceStatus.ACCEPTED, null, true, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.PROVISIONING },
-                { ManagedResourceStatus.PREPARING, null, true, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.PROVISIONING },
-                { ManagedResourceStatus.ACCEPTED, null, true, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.PROVISIONING },
-                { ManagedResourceStatus.PREPARING, null, true, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.PROVISIONING }
+                { ManagedResourceStatusV1.ACCEPTED, null, true, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatusV1.PROVISIONING },
+                { ManagedResourceStatusV1.PREPARING, null, true, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatusV1.PROVISIONING },
+                { ManagedResourceStatusV1.ACCEPTED, null, true, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatusV1.PROVISIONING },
+                { ManagedResourceStatusV1.PREPARING, null, true, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatusV1.PROVISIONING }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
 
     private static Stream<Arguments> provideArgsForDeleteTest() {
         Object[][] arguments = {
-                { ManagedResourceStatus.DEPROVISION, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER },
-                { ManagedResourceStatus.DEPROVISION, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER },
-                { ManagedResourceStatus.DEPROVISION, ConnectorState.DELETED, true, RhoasTopicAccessType.CONSUMER },
-                { ManagedResourceStatus.DELETING, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER },
-                { ManagedResourceStatus.DELETING, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER },
-                { ManagedResourceStatus.DELETING, ConnectorState.DELETED, true, RhoasTopicAccessType.CONSUMER },
-                { ManagedResourceStatus.DEPROVISION, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER },
-                { ManagedResourceStatus.DEPROVISION, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER },
-                { ManagedResourceStatus.DEPROVISION, ConnectorState.DELETED, false, RhoasTopicAccessType.PRODUCER },
-                { ManagedResourceStatus.DELETING, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER },
-                { ManagedResourceStatus.DELETING, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER },
-                { ManagedResourceStatus.DELETING, ConnectorState.DELETED, false, RhoasTopicAccessType.PRODUCER }
+                { ManagedResourceStatusV1.DEPROVISION, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatusV1.DEPROVISION, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatusV1.DEPROVISION, ConnectorState.DELETED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatusV1.DELETING, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatusV1.DELETING, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatusV1.DELETING, ConnectorState.DELETED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatusV1.DEPROVISION, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatusV1.DEPROVISION, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatusV1.DEPROVISION, ConnectorState.DELETED, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatusV1.DELETING, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatusV1.DELETING, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatusV1.DELETING, ConnectorState.DELETED, false, RhoasTopicAccessType.PRODUCER }
         };
         return Stream.of(arguments).map(Arguments::of);
     }

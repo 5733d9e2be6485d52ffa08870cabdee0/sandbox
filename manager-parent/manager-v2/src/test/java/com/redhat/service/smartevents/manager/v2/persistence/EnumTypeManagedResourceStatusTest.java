@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.core.persistence;
+package com.redhat.service.smartevents.manager.v2.persistence;
 
 import java.util.Properties;
 
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,7 +78,7 @@ public class EnumTypeManagedResourceStatusTest {
 
     private void assertDefaultInstantiation() {
         assertThat(type.isOrdinal()).isFalse();
-        assertThat(type.returnedClass()).isEqualTo(ManagedResourceStatus.class);
+        assertThat(type.returnedClass()).isEqualTo(ManagedResourceStatusV2.class);
     }
 
 }

@@ -26,16 +26,16 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Ite
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
@@ -126,8 +126,8 @@ public class BridgeServiceImpl implements BridgeService {
     @Transactional
     public Bridge getReadyBridge(String bridgeId, String customerId) {
         Bridge bridge = getBridge(bridgeId, customerId);
-        if (StatusUtilities.getManagedResourceStatus(bridge) != ManagedResourceStatus.READY) {
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.READY));
+        if (StatusUtilities.getManagedResourceStatus(bridge) != ManagedResourceStatusV2.READY) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedResourceStatusV2.READY));
         }
         return bridge;
     }
@@ -310,7 +310,7 @@ public class BridgeServiceImpl implements BridgeService {
         response.setName(bridge.getName());
         response.setStatus(StatusUtilities.getManagedResourceStatus(bridge));
         // Return the endpoint only if the resource is READY or FAILED https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1006#discussion_r937488097
-        if (ManagedResourceStatus.READY.equals(response.getStatus()) || ManagedResourceStatus.FAILED.equals(response.getStatus())) {
+        if (ManagedResourceStatusV2.READY.equals(response.getStatus()) || ManagedResourceStatusV2.FAILED.equals(response.getStatus())) {
             response.setEndpoint(bridge.getEndpoint());
         }
         response.setSubmittedAt(bridge.getSubmittedAt());

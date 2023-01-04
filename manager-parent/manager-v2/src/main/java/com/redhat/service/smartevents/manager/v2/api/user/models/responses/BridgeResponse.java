@@ -6,10 +6,11 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.core.api.models.responses.BaseManagedResourceResponse;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BridgeResponse extends BaseManagedResourceResponse {
+public class BridgeResponse extends BaseManagedResourceResponse<ManagedResourceStatusV2> {
 
     @JsonProperty("name")
     @NotNull

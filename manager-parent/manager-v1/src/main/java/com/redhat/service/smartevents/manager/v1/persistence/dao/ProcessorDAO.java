@@ -10,7 +10,7 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
@@ -147,7 +147,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         }
 
         // filter by status
-        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
+        Set<ManagedResourceStatusV1> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             query.filter("byStatus", Parameters.with("status", filterStatus));
         }

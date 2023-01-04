@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.shard.operator.v1.resources;
 
 import java.util.HashSet;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
@@ -37,9 +37,9 @@ public class BridgeIngressStatus extends CustomResourceStatus {
         super(INGRESS_CONDITIONS);
     }
 
-    public ManagedResourceStatus inferManagedResourceStatus() {
+    public ManagedResourceStatusV1 inferManagedResourceStatus() {
         if (isReady()) {
-            return ManagedResourceStatus.READY;
+            return ManagedResourceStatusV1.READY;
         }
         if (isConditionTypeFalse(ConditionTypeConstants.READY)
                 && !isConditionTypeTrue(SECRET_AVAILABLE)
@@ -47,9 +47,9 @@ public class BridgeIngressStatus extends CustomResourceStatus {
                 && !isConditionTypeTrue(KNATIVE_BROKER_AVAILABLE)
                 && !isConditionTypeTrue(AUTHORISATION_POLICY_AVAILABLE)
                 && !isConditionTypeTrue(NETWORK_RESOURCE_AVAILABLE)) {
-            return ManagedResourceStatus.FAILED;
+            return ManagedResourceStatusV1.FAILED;
         }
-        return ManagedResourceStatus.PROVISIONING;
+        return ManagedResourceStatusV1.PROVISIONING;
     }
 
 }

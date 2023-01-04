@@ -12,9 +12,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
@@ -178,10 +178,10 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.UNKNOWN));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.ACCEPTED);
 
         bridge.setOperation(new Operation(OperationType.UPDATE, null));
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.UPDATE_ACCEPTED);
     }
 
     @Test
@@ -193,10 +193,10 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, TRUE));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.READY);
 
         bridge.setOperation(new Operation(OperationType.UPDATE, null));
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.READY);
     }
 
     @Test
@@ -208,13 +208,13 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.FAILED));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.FAILED);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.FAILED);
 
         bridge.setOperation(new Operation(OperationType.UPDATE, null));
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.FAILED);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.FAILED);
 
         bridge.setOperation(new Operation(OperationType.DELETE, null));
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.FAILED);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.FAILED);
     }
 
     @Test
@@ -227,10 +227,10 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.UNKNOWN));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.PREPARING);
 
         bridge.setOperation(new Operation(OperationType.UPDATE, null));
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.UPDATE_PREPARING);
 
         conditions = new ArrayList<>();
         conditions.add(createComponentConditionWithStatus(MANAGER, ConditionStatus.FALSE));
@@ -238,10 +238,10 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.UNKNOWN));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.UPDATE_PREPARING);
 
         bridge.setOperation(new Operation(OperationType.UPDATE, null));
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.UPDATE_PREPARING);
     }
 
     @Test
@@ -253,7 +253,7 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.UNKNOWN));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.DEPROVISION);
     }
 
     @Test
@@ -265,14 +265,14 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.UNKNOWN));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.DELETING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.DELETING);
 
         conditions = new ArrayList<>();
         conditions.add(createComponentConditionWithStatus(MANAGER, ConditionStatus.FALSE));
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.UNKNOWN));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.DELETING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.DELETING);
     }
 
     @Test
@@ -284,14 +284,14 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, TRUE));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.DELETED);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.DELETED);
 
         conditions = new ArrayList<>();
         conditions.add(createComponentConditionWithStatus(MANAGER, TRUE));
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, TRUE));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.DELETED);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.DELETED);
     }
 
     @Test
@@ -304,10 +304,10 @@ public class StatusUtilitiesTest {
         conditions.add(createComponentConditionWithStatus(ComponentType.SHARD, ConditionStatus.UNKNOWN));
         bridge.setConditions(conditions);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.PROVISIONING);
 
         bridge.setOperation(new Operation(OperationType.UPDATE, null));
-        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(StatusUtilities.getManagedResourceStatus(bridge)).isEqualTo(ManagedResourceStatusV2.UPDATE_PROVISIONING);
     }
 
     @ParameterizedTest

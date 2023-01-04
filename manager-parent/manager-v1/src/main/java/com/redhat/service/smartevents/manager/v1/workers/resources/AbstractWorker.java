@@ -17,8 +17,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.V1;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -29,23 +29,23 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
 import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PREPARING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 
 public abstract class AbstractWorker<T extends ManagedResourceV1> implements Worker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
-    private static final Set<ManagedResourceStatus> PROVISIONING_STARTED = Set.of(ACCEPTED, PREPARING);
-    private static final Set<ManagedResourceStatus> DEPROVISIONING_STARTED = Set.of(DEPROVISION, DELETING);
+    private static final Set<ManagedResourceStatusV1> PROVISIONING_STARTED = Set.of(ACCEPTED, PREPARING);
+    private static final Set<ManagedResourceStatusV1> DEPROVISIONING_STARTED = Set.of(DEPROVISION, DELETING);
 
-    protected static final Set<ManagedResourceStatus> PROVISIONING_COMPLETED = Set.of(READY, FAILED);
-    protected static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETED = Set.of(DELETED, FAILED);
+    protected static final Set<ManagedResourceStatusV1> PROVISIONING_COMPLETED = Set.of(READY, FAILED);
+    protected static final Set<ManagedResourceStatusV1> DEPROVISIONING_COMPLETED = Set.of(DELETED, FAILED);
 
     @ConfigProperty(name = "event-bridge.resources.worker.max-retries")
     int maxRetries;

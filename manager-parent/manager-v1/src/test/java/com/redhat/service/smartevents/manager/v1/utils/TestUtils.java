@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
@@ -55,7 +55,7 @@ public class TestUtils {
                 .get(V1APIConstants.V1_USER_API_BASE_PATH + "?name=" + name);
     }
 
-    public static Response getBridgesFilterByStatus(ManagedResourceStatus... status) {
+    public static Response getBridgesFilterByStatus(ManagedResourceStatusV1... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest().get(V1APIConstants.V1_USER_API_BASE_PATH + "?" + queryString);
     }
@@ -65,7 +65,7 @@ public class TestUtils {
         return jsonRequest().get(V1APIConstants.V1_USER_API_BASE_PATH + "?" + queryString);
     }
 
-    public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
+    public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatusV1... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest().get(V1APIConstants.V1_USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
     }
@@ -85,7 +85,7 @@ public class TestUtils {
                 .get(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors?name=" + name);
     }
 
-    public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatus... status) {
+    public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatusV1... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest().get(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors?" + queryString);
     }
@@ -103,7 +103,7 @@ public class TestUtils {
         return jsonRequest().get(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors?type=" + type);
     }
 
-    public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatus... status) {
+    public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatusV1... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest()
                 .get(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&" + queryString);
@@ -114,7 +114,7 @@ public class TestUtils {
                 .get(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&type=" + type.getValue());
     }
 
-    public static Response listProcessorsFilterByStatusAndType(String bridgeId, ManagedResourceStatus status, ProcessorType type) {
+    public static Response listProcessorsFilterByStatusAndType(String bridgeId, ManagedResourceStatusV1 status, ProcessorType type) {
         return jsonRequest()
                 .get(V1APIConstants.V1_USER_API_BASE_PATH + bridgeId + "/processors?status=" + status.getValue() + "&type=" + type.getValue());
     }
@@ -258,7 +258,7 @@ public class TestUtils {
             processors.clear();
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatusV1.READY);
             processors.add(p);
         });
         return processors.get(0);

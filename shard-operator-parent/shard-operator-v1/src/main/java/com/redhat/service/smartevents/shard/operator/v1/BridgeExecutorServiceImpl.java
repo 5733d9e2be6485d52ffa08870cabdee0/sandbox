@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
@@ -88,9 +88,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // create or update the secrets for the bridgeExecutor
             createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
         } else {
-            ManagedResourceStatus inferredStatus = existing.getStatus().inferManagedResourceStatus();
+            ManagedResourceStatusV1 inferredStatus = existing.getStatus().inferManagedResourceStatus();
             // The Controller would have notified the Manager with PROVISIONING before it first started.
-            if (inferredStatus == ManagedResourceStatus.PROVISIONING) {
+            if (inferredStatus == ManagedResourceStatusV1.PROVISIONING) {
                 return;
             }
             LOGGER.info("BridgeExecutor '{}' already exists and is '{}'. Notifying manager that it is '{}'.",
@@ -172,7 +172,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeExecutor '{}' not deleted. Notifying manager that it has been deleted.", processorDTO.getId());
             ProcessorManagedResourceStatusUpdateDTO updateDTO =
-                    new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(), processorDTO.getCustomerId(), processorDTO.getBridgeId(), ManagedResourceStatus.DELETED);
+                    new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(), processorDTO.getCustomerId(), processorDTO.getBridgeId(), ManagedResourceStatusV1.DELETED);
             managerClient.notifyProcessorStatusChange(updateDTO).subscribe().with(
                     success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));

@@ -7,7 +7,7 @@ import java.util.List;
 import org.awaitility.Awaitility;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 abstract class AbstractManagerSyncServiceTest extends AbstractShardWireMockTest {
 
-    protected BridgeDTO makeBridgeDTO(ManagedResourceStatus status, int suffix) {
+    protected BridgeDTO makeBridgeDTO(ManagedResourceStatusV1 status, int suffix) {
         return new BridgeDTO("bridgesDeployed-" + suffix,
                 "myName-" + suffix,
                 TestSupport.BRIDGE_ENDPOINT,

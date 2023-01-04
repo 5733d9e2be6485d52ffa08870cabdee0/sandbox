@@ -23,8 +23,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningReplicaFailureException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
@@ -55,7 +55,7 @@ import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
@@ -230,7 +230,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         if (!bridgeExecutor.getStatus().isReady()) {
             metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
-            notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
+            notifyManager(bridgeExecutor, ManagedResourceStatusV1.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
@@ -260,7 +260,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         // Linked resources are automatically deleted
 
         metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
-        notifyManager(bridgeExecutor, ManagedResourceStatus.DELETED);
+        notifyManager(bridgeExecutor, ManagedResourceStatusV1.DELETED);
 
         return DeleteControl.defaultDelete();
     }
@@ -275,7 +275,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         return Optional.of(bridgeExecutor);
     }
 
-    private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
+    private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatusV1 status) {
         ProcessorManagedResourceStatusUpdateDTO updateDTO =
                 new ProcessorManagedResourceStatusUpdateDTO(bridgeExecutor.getSpec().getId(), bridgeExecutor.getSpec().getCustomerId(), bridgeExecutor.getSpec().getBridgeId(), status);
         managerClient.notifyProcessorStatusChange(updateDTO)
