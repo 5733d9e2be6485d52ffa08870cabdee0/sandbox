@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.infra.v2.api.models.dto;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,12 +16,12 @@ public class BridgeStatusDTO {
     private long generation;
 
     @JsonProperty("conditions")
-    private Set<ConditionDTO> conditions;
+    private List<ConditionDTO> conditions;
 
     public BridgeStatusDTO() {
     }
 
-    public BridgeStatusDTO(String id, long generation, Set<ConditionDTO> conditions) {
+    public BridgeStatusDTO(String id, long generation, List<ConditionDTO> conditions) {
         this.id = id;
         this.generation = generation;
         this.conditions = conditions;
@@ -43,11 +43,11 @@ public class BridgeStatusDTO {
         this.generation = generation;
     }
 
-    public Set<ConditionDTO> getConditions() {
+    public List<ConditionDTO> getConditions() {
         return conditions;
     }
 
-    public void setConditions(Set<ConditionDTO> conditions) {
+    public void setConditions(List<ConditionDTO> conditions) {
         this.conditions = conditions;
     }
 

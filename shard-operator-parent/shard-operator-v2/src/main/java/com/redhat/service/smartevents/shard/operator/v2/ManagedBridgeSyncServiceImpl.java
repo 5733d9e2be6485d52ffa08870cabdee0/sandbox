@@ -3,10 +3,8 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -86,8 +84,7 @@ public class ManagedBridgeSyncServiceImpl implements ManagedBridgeSyncService {
     }
 
     private BridgeStatusDTO getDeletedBridgeStatus(BridgeDTO bridgeDTO) {
-        Set<ConditionDTO> conditions = new HashSet<>();
-        conditions.add(new ConditionDTO(DP_BRIDGE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC)));
+        List<ConditionDTO> conditions = List.of(new ConditionDTO(DP_BRIDGE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC)));
         return new BridgeStatusDTO(bridgeDTO.getId(), bridgeDTO.getGeneration(), conditions);
     }
 

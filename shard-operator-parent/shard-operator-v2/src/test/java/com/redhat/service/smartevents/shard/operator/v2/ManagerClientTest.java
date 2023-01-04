@@ -3,9 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -20,6 +18,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
@@ -32,6 +31,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.redhat.service.smartevents.infra.v2.api.V2APIConstants.V2_SHARD_API_BASE_PATH;
+import static com.redhat.service.smartevents.infra.v2.api.V2APIConstants.V2_SHARD_API_PROCESSORS_PATH;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -74,12 +74,10 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
         // setup
         stubBridgeUpdate();
-        Set<ConditionDTO> conditions1 = new HashSet<>();
-        conditions1.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
+        List<ConditionDTO> conditions1 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
         BridgeStatusDTO bridgeStatusDTO1 = new BridgeStatusDTO("1", 1, conditions1);
 
-        Set<ConditionDTO> conditions2 = new HashSet<>();
-        conditions2.add(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
+        List<ConditionDTO> conditions2 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
         BridgeStatusDTO bridgeStatusDTO2 = new BridgeStatusDTO("2", 2, conditions2);
 
         // test
@@ -89,6 +87,28 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         String expectedJsonUpdate =
                 "[{\"id\":\"1\",\"generation\":1,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"True\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":\"2022-12-31T00:00:00Z\"}]},{\"id\":\"2\",\"generation\":2,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"False\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":\"2022-12-31T00:00:00Z\"}]}]";
         wireMockServer.verify(putRequestedFor(urlEqualTo(V2_SHARD_API_BASE_PATH))
+                .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
+                .withHeader("Content-Type", equalTo("application/json")));
+    }
+
+    @Test
+    public void TestToNotifyProcessorStatus() {
+
+        // setup
+        stubProcessorUpdate();
+        List<ConditionDTO> conditions1 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
+        ProcessorStatusDTO processorStatusDTO1 = new ProcessorStatusDTO("1", 1, conditions1);
+
+        List<ConditionDTO> conditions2 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
+        ProcessorStatusDTO processorStatusDTO2 = new ProcessorStatusDTO("2", 2, conditions2);
+
+        // test
+        managerClient.notifyProcessorStatus(List.of(processorStatusDTO1, processorStatusDTO2)).await().atMost(Duration.ofSeconds(5));
+
+        // assert
+        String expectedJsonUpdate =
+                "[{\"id\":\"1\",\"generation\":1,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"True\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":\"2022-12-31T00:00:00Z\"}]},{\"id\":\"2\",\"generation\":2,\"conditions\":[{\"type\":\"SecretReady\",\"status\":\"False\",\"reason\":null,\"message\":null,\"error_code\":null,\"last_transition_time\":\"2022-12-31T00:00:00Z\"}]}]";
+        wireMockServer.verify(putRequestedFor(urlEqualTo(V2_SHARD_API_PROCESSORS_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }

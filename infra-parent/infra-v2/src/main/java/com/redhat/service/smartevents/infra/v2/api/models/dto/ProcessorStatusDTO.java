@@ -58,11 +58,11 @@ public class ProcessorStatusDTO {
         if (o == null || getClass() != o.getClass())
             return false;
         ProcessorStatusDTO that = (ProcessorStatusDTO) o;
-        return Objects.equals(id, that.id);
+        return generation == that.generation && Objects.equals(id, that.id) && Objects.equals(conditions, that.conditions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(id, generation, conditions);
     }
 }

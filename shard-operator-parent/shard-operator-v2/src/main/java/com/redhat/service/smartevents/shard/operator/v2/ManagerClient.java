@@ -5,6 +5,7 @@ import java.util.List;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
 
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
@@ -17,4 +18,6 @@ public interface ManagerClient {
     Uni<HttpResponse<Buffer>> notifyBridgeStatus(List<BridgeStatusDTO> bridgeStatusDTOs);
 
     Uni<List<ProcessorDTO>> fetchProcessorsForDataPlane();
+
+    Uni<HttpResponse<Buffer>> notifyProcessorStatus(List<ProcessorStatusDTO> processorStatusDTOs);
 }
