@@ -30,7 +30,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditio
 public class ManagedBridgeSyncServiceTest {
 
     @Inject
-    ManagedBridgeSyncServiceImpl managedBridgeSyncService;
+    ManagedBridgeSyncService managedBridgeSyncService;
 
     @InjectMock
     ManagerClient managerClient;

@@ -27,10 +27,10 @@ import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditio
 
 @QuarkusTest
 @WithOpenShiftTestServer
-public class ManagerProcessorSyncServiceTest {
+public class ManagedProcessorSyncServiceTest {
 
     @Inject
-    ManagedProcessorSyncServiceImpl managedProcessorSyncService;
+    ManagedProcessorSyncService managedProcessorSyncService;
 
     @InjectMock
     ManagerClient managerClient;
