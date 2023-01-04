@@ -15,10 +15,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
@@ -75,10 +74,10 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         // setup
         stubBridgeUpdate();
         List<ConditionDTO> conditions1 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
-        BridgeStatusDTO bridgeStatusDTO1 = new BridgeStatusDTO("1", 1, conditions1);
+        ResourceStatusDTO bridgeStatusDTO1 = new ResourceStatusDTO("1", 1, conditions1);
 
         List<ConditionDTO> conditions2 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
-        BridgeStatusDTO bridgeStatusDTO2 = new BridgeStatusDTO("2", 2, conditions2);
+        ResourceStatusDTO bridgeStatusDTO2 = new ResourceStatusDTO("2", 2, conditions2);
 
         // test
         managerClient.notifyBridgeStatus(List.of(bridgeStatusDTO1, bridgeStatusDTO2)).await().atMost(Duration.ofSeconds(5));
@@ -97,10 +96,10 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         // setup
         stubProcessorUpdate();
         List<ConditionDTO> conditions1 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
-        ProcessorStatusDTO processorStatusDTO1 = new ProcessorStatusDTO("1", 1, conditions1);
+        ResourceStatusDTO processorStatusDTO1 = new ResourceStatusDTO("1", 1, conditions1);
 
         List<ConditionDTO> conditions2 = List.of(new ConditionDTO(DP_SECRET_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.of(2022, 12, 31, 0, 0, 0, 0, ZoneOffset.UTC)));
-        ProcessorStatusDTO processorStatusDTO2 = new ProcessorStatusDTO("2", 2, conditions2);
+        ResourceStatusDTO processorStatusDTO2 = new ResourceStatusDTO("2", 2, conditions2);
 
         // test
         managerClient.notifyProcessorStatus(List.of(processorStatusDTO1, processorStatusDTO2)).await().atMost(Duration.ofSeconds(5));

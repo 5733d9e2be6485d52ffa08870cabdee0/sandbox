@@ -16,9 +16,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.core.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.core.metrics.ManagerRequestStatus;
@@ -57,9 +56,9 @@ public class ManagerClientImpl implements ManagerClient {
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyBridgeStatus(List<BridgeStatusDTO> bridgeStatusDTOs) {
+    public Uni<HttpResponse<Buffer>> notifyBridgeStatus(List<ResourceStatusDTO> resourceStatusDTOs) {
         LOGGER.debug("Notifying manager about the new status of the Bridges");
-        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_BASE_PATH), request -> request.sendJson(bridgeStatusDTOs))
+        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_BASE_PATH), request -> request.sendJson(resourceStatusDTOs))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
@@ -74,9 +73,9 @@ public class ManagerClientImpl implements ManagerClient {
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyProcessorStatus(List<ProcessorStatusDTO> processorStatusDTOs) {
+    public Uni<HttpResponse<Buffer>> notifyProcessorStatus(List<ResourceStatusDTO> resourceStatusDTOs) {
         LOGGER.debug("Notifying manager about the new status of the processors");
-        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_PROCESSORS_PATH), request -> request.sendJson(processorStatusDTOs))
+        return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_PROCESSORS_PATH), request -> request.sendJson(resourceStatusDTOs))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);

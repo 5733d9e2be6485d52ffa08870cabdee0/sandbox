@@ -17,8 +17,8 @@ import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
-import com.redhat.service.smartevents.shard.operator.v2.converters.ProcessorStatusConverter;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
+import com.redhat.service.smartevents.shard.operator.v2.converters.ResourceStatusConverter;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_PROCESSOR_DELETED_NAME;
@@ -65,31 +65,31 @@ public class ManagedProcessorSyncServiceImpl implements ManagedProcessorSyncServ
         }
     }
 
-    private List<ProcessorStatusDTO> transformToProcessorStatus(List<ProcessorDTO> processorDTOList) {
+    private List<ResourceStatusDTO> transformToProcessorStatus(List<ProcessorDTO> processorDTOList) {
         Map<String, ManagedProcessor> deployedManagedProcessors = managedProcessorService.fetchAllManagedProcessors()
                 .stream().collect(Collectors.toMap(m -> m.getSpec().getId(), m -> m));
 
-        List<ProcessorStatusDTO> processorStatusDTOS = new ArrayList<>(processorDTOList.size());
+        List<ResourceStatusDTO> resourceStatusDTOs = new ArrayList<>(processorDTOList.size());
         for (ProcessorDTO processorDTO : processorDTOList) {
             ManagedProcessor deployedManagedProcessor = deployedManagedProcessors.get(processorDTO.getId());
             if (deployedManagedProcessor != null) {
-                processorStatusDTOS.add(ProcessorStatusConverter.fromManagedProcessorToProcessorStatusDTO(deployedManagedProcessor));
+                resourceStatusDTOs.add(ResourceStatusConverter.fromManagedProcessorToResourceStatusDTO(deployedManagedProcessor));
             } else {
                 if (processorDTO.getOperationType() == OperationType.DELETE) {
-                    processorStatusDTOS.add(getDeletedProcessorStatus(processorDTO));
+                    resourceStatusDTOs.add(getDeletedProcessorStatus(processorDTO));
                 }
             }
         }
-        return processorStatusDTOS;
+        return resourceStatusDTOs;
     }
 
-    private ProcessorStatusDTO getDeletedProcessorStatus(ProcessorDTO processorDTO) {
+    private ResourceStatusDTO getDeletedProcessorStatus(ProcessorDTO processorDTO) {
         List<ConditionDTO> conditions = List.of(new ConditionDTO(DP_PROCESSOR_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC)));
-        return new ProcessorStatusDTO(processorDTO.getId(), processorDTO.getGeneration(), conditions);
+        return new ResourceStatusDTO(processorDTO.getId(), processorDTO.getGeneration(), conditions);
     }
 
-    private void notifyProcessorStatus(List<ProcessorStatusDTO> processorStatusDTOs) {
-        managerClient.notifyProcessorStatus(processorStatusDTOs).subscribe().with(
+    private void notifyProcessorStatus(List<ResourceStatusDTO> resourceStatusDTOs) {
+        managerClient.notifyProcessorStatus(resourceStatusDTOs).subscribe().with(
                 success -> LOGGER.debug("Successfully sends ManagedProcessor status"),
                 error -> LOGGER.error("Failed to send ManagedProcessor status", error));
     }

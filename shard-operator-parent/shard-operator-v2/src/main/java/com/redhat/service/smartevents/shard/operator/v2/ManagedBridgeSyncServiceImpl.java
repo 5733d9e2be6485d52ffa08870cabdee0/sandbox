@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
-import com.redhat.service.smartevents.shard.operator.v2.converters.BridgeStatusConverter;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
+import com.redhat.service.smartevents.shard.operator.v2.converters.ResourceStatusConverter;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_BRIDGE_DELETED_NAME;
@@ -65,31 +65,31 @@ public class ManagedBridgeSyncServiceImpl implements ManagedBridgeSyncService {
         }
     }
 
-    private List<BridgeStatusDTO> transformToBridgeStatus(List<BridgeDTO> bridgeDTOList) {
+    private List<ResourceStatusDTO> transformToBridgeStatus(List<BridgeDTO> bridgeDTOList) {
         Map<String, ManagedBridge> deployedManagedBridges = managedBridgeService.fetchAllManagedBridges()
                 .stream().collect(Collectors.toMap(m -> m.getSpec().getId(), m -> m));
 
-        List<BridgeStatusDTO> bridgeStatusDTOs = new ArrayList<>(bridgeDTOList.size());
+        List<ResourceStatusDTO> resourceStatusDTOs = new ArrayList<>(bridgeDTOList.size());
         for (BridgeDTO bridgeDTO : bridgeDTOList) {
             ManagedBridge deployedManagedBridge = deployedManagedBridges.get(bridgeDTO.getId());
             if (deployedManagedBridge != null) {
-                bridgeStatusDTOs.add(BridgeStatusConverter.fromManagedBridgeToBridgeStatusDTO(deployedManagedBridge));
+                resourceStatusDTOs.add(ResourceStatusConverter.fromManagedBridgeToResourceStatusDTO(deployedManagedBridge));
             } else {
                 if (bridgeDTO.getOperationType() == OperationType.DELETE) {
-                    bridgeStatusDTOs.add(getDeletedBridgeStatus(bridgeDTO));
+                    resourceStatusDTOs.add(getDeletedBridgeStatus(bridgeDTO));
                 }
             }
         }
-        return bridgeStatusDTOs;
+        return resourceStatusDTOs;
     }
 
-    private BridgeStatusDTO getDeletedBridgeStatus(BridgeDTO bridgeDTO) {
+    private ResourceStatusDTO getDeletedBridgeStatus(BridgeDTO bridgeDTO) {
         List<ConditionDTO> conditions = List.of(new ConditionDTO(DP_BRIDGE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC)));
-        return new BridgeStatusDTO(bridgeDTO.getId(), bridgeDTO.getGeneration(), conditions);
+        return new ResourceStatusDTO(bridgeDTO.getId(), bridgeDTO.getGeneration(), conditions);
     }
 
-    private void notifyBridgeStatus(List<BridgeStatusDTO> bridgeStatusDTOs) {
-        managerClient.notifyBridgeStatus(bridgeStatusDTOs).subscribe().with(
+    private void notifyBridgeStatus(List<ResourceStatusDTO> resourceStatusDTOs) {
+        managerClient.notifyBridgeStatus(resourceStatusDTOs).subscribe().with(
                 success -> LOGGER.debug("Successfully sends ManagedBridges status"),
                 error -> LOGGER.error("Failed to send ManagedBridges status", error));
     }

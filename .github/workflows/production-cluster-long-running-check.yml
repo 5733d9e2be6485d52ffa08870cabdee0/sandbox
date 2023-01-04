@@ -1,10 +1,10 @@
-name: Check long running bridge instance on development cluster
+name: Check long running bridge instance on production cluster
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
 jobs:
-  run-periodical-slack-check:
+  production-run-periodical-slack-check:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
@@ -15,9 +15,9 @@ jobs:
         uses: ./.github/actions/free-disk-space
       - name: Add mask
         run: |
-          echo "::add-mask::${{ secrets.DEV_CLUSTER_MANAGER_URL }}"
-          echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_ID }}"
-          echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_SECRET }}"
+          echo "::add-mask::${{ secrets.PROD_CLUSTER_MANAGER_URL }}"
+          echo "::add-mask::${{ secrets.PROD_SSO_CLIENT_ID }}"
+          echo "::add-mask::${{ secrets.PROD_SSO_CLIENT_SECRET }}"
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL }}"
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_TOKEN }}"
           echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
@@ -26,7 +26,7 @@ jobs:
           echo "::add-mask::${{ secrets.WEBHOOK_SITE_TOKEN }}"
           echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
           echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
-          echo "::add-mask::${{ secrets.REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}"
+          echo "::add-mask::${{ secrets.PROD_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}"
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
@@ -50,13 +50,13 @@ jobs:
           WEBHOOK_SITE_TOKEN_SECOND: ${{ secrets.WEBHOOK_SITE_TOKEN_SECOND }}
       - name: Run periodical slack check
         env:
-          DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
-          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
-          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
-          REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT: ${{ secrets.REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}
+          PROD_CLUSTER_MANAGER_URL: ${{ secrets.PROD_CLUSTER_MANAGER_URL }}
+          PROD_SSO_CLIENT_ID: ${{ secrets.PROD_SSO_CLIENT_ID }}
+          PROD_SSO_CLIENT_SECRET: ${{ secrets.PROD_SSO_CLIENT_SECRET }}
+          PROD_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT: ${{ secrets.PROD_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pperiodical-slack-check -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dremote.cluster.bridge.endpoint=$REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Pperiodical-slack-check -Dparallel -Devent-bridge.manager.url=$PROD_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$PROD_SSO_CLIENT_ID -Dbridge.client.secret=$PROD_SSO_CLIENT_SECRET -Dremote.cluster.bridge.endpoint=$PROD_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests/manager-integration-tests/manager-integration-tests-v1
       - name: Send mail with link to failing job
         uses: dawidd6/action-send-mail@v3
@@ -66,7 +66,7 @@ jobs:
           server_port: 465
           username: ${{ secrets.CI_MAIL_USERNAME }}
           password: ${{ secrets.CI_MAIL_PASSWORD }}
-          subject: Dev cluster long running Bridge CI - Check failed
+          subject: Production cluster long running Bridge CI - Check failed
           to: openbridge-dev@redhat.com
-          from: Dev cluster CI
-          html_body: Dev cluster long running Bridge CI check failed. On-Call engineer please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-long-running-bridge.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
+          from: Production cluster CI
+          html_body: Production cluster long running Bridge CI check failed. On-Call engineer please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/production-cluster-long-running-check.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.

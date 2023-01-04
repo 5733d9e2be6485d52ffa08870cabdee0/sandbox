@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProcessorStatusDTO {
+public class ResourceStatusDTO {
 
     @JsonProperty("id")
     private String id;
@@ -18,10 +18,10 @@ public class ProcessorStatusDTO {
     @JsonProperty("conditions")
     private List<ConditionDTO> conditions;
 
-    public ProcessorStatusDTO() {
+    public ResourceStatusDTO() {
     }
 
-    public ProcessorStatusDTO(String id, long generation, List<ConditionDTO> conditions) {
+    public ResourceStatusDTO(String id, long generation, List<ConditionDTO> conditions) {
         this.id = id;
         this.generation = generation;
         this.conditions = conditions;
@@ -57,12 +57,12 @@ public class ProcessorStatusDTO {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        ProcessorStatusDTO that = (ProcessorStatusDTO) o;
-        return generation == that.generation && Objects.equals(id, that.id) && Objects.equals(conditions, that.conditions);
+        ResourceStatusDTO that = (ResourceStatusDTO) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, generation, conditions);
+        return Objects.hash(id);
     }
 }

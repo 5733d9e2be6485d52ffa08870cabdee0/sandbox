@@ -14,7 +14,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
@@ -91,18 +91,18 @@ public class ManagerProcessorSyncServiceTest {
         managedProcessorSyncService.syncManagedProcessorStatusBackToManager();
 
         // assert
-        ArgumentCaptor<List<ProcessorStatusDTO>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<ResourceStatusDTO>> argumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(managerClient).notifyProcessorStatus(argumentCaptor.capture());
-        List<ProcessorStatusDTO> processorStatusDTOs = argumentCaptor.getValue();
+        List<ResourceStatusDTO> processorStatusDTOs = argumentCaptor.getValue();
         Assertions.assertThat(processorStatusDTOs).size().isEqualTo(2);
 
-        ProcessorStatusDTO processorStatusDTO1 = processorStatusDTOs.get(0);
+        ResourceStatusDTO processorStatusDTO1 = processorStatusDTOs.get(0);
         Assertions.assertThat(processorStatusDTO1.getId()).isEqualTo(processorDTO1.getId());
         Assertions.assertThat(processorStatusDTO1.getGeneration()).isEqualTo(processorDTO1.getGeneration());
         Assertions.assertThat(processorStatusDTO1.getConditions().size()).isEqualTo(managedProcessor.getStatus().getConditions().size());
         Assertions.assertThat(processorStatusDTO1.getConditions().stream().allMatch(c -> c.getStatus() == ConditionStatus.UNKNOWN)).isTrue();
 
-        ProcessorStatusDTO processorStatusDTO2 = processorStatusDTOs.get(1);
+        ResourceStatusDTO processorStatusDTO2 = processorStatusDTOs.get(1);
         Assertions.assertThat(processorStatusDTO2.getId()).isEqualTo(processorDTO2.getId());
         Assertions.assertThat(processorStatusDTO2.getGeneration()).isEqualTo(processorDTO2.getGeneration());
         Assertions.assertThat(processorStatusDTO2.getConditions().size()).isEqualTo(1);
