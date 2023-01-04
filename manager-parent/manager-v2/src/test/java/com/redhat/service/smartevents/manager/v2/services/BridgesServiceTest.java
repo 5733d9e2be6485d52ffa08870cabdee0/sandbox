@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.v2.services;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -15,7 +14,6 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Bri
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
@@ -49,6 +47,7 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_OR
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createDeprovisioningBridge;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createFailedConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createProvisioningBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyBridge;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,22 +104,22 @@ public class BridgesServiceTest {
 
     @Test
     void testToResponse() {
-        Bridge bridge = createBridgeWithAcceptedConditions();
+        Bridge bridge = createBridgeWithFailedConditions();
 
         BridgeResponse response = bridgeService.toResponse(bridge);
 
         assertThat(response.getId()).isEqualTo(bridge.getId());
         assertThat(response.getName()).isEqualTo(bridge.getName());
-        assertThat(response.getEndpoint()).isNull();
+        assertThat(response.getEndpoint()).isEqualTo(TestConstants.DEFAULT_BRIDGE_ENDPOINT);
         assertThat(response.getSubmittedAt()).isEqualTo(bridge.getSubmittedAt());
         assertThat(response.getPublishedAt()).isEqualTo(bridge.getPublishedAt());
         assertThat(response.getModifiedAt()).isNull();
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
         assertThat(response.getHref()).contains(bridge.getId());
         assertThat(response.getOwner()).isEqualTo(bridge.getOwner());
         assertThat(response.getCloudProvider()).isEqualTo(bridge.getCloudProvider());
         assertThat(response.getRegion()).isEqualTo(bridge.getRegion());
-        assertThat(response.getStatusMessage()).isNull();
+        assertThat(response.getStatusMessage()).contains(TestConstants.FAILED_CONDITION_ERROR_CODE, TestConstants.FAILED_CONDITION_ERROR_MESSAGE);
     }
 
     @Test
@@ -129,11 +128,8 @@ public class BridgesServiceTest {
         assertThatExceptionOfType(NoQuotaAvailable.class).isThrownBy(() -> bridgeService.createBridge(DEFAULT_CUSTOMER_ID, "organisation_with_no_quota", DEFAULT_USER_NAME, request));
     }
 
-    protected Bridge createBridgeWithAcceptedConditions() {
-        List<Condition> conditions = new ArrayList<>();
-        conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
-        conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
-        conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
+    protected Bridge createBridgeWithFailedConditions() {
+        List<Condition> conditions = createFailedConditions();
 
         Bridge b = Fixtures.createBridge();
         b.setConditions(conditions);

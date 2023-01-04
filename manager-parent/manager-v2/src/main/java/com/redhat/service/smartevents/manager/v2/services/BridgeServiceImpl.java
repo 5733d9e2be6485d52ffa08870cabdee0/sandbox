@@ -57,6 +57,7 @@ import dev.bf2.ffm.ams.core.models.ResourceCreated;
 import dev.bf2.ffm.ams.core.models.TermsRequest;
 
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getModifiedAt;
+import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getStatusMessage;
 
 @ApplicationScoped
 public class BridgeServiceImpl implements BridgeService {
@@ -319,8 +320,7 @@ public class BridgeServiceImpl implements BridgeService {
         response.setOwner(bridge.getOwner());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
-        // TODO: add support for errors in v2 https://issues.redhat.com/browse/MGDOBR-1284
-        // response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
+        response.setStatusMessage(getStatusMessage(bridge));
 
         return response;
     }
