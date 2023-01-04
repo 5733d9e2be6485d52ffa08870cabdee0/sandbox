@@ -26,21 +26,15 @@
     <performance.horreum.results.upload>false</performance.horreum.results.upload>
   </properties>
 
-  <!-- Using custom version of okhttp due to dependency misalignment between RHOSE and TNB. -->
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.squareup.okhttp3</groupId>
-        <artifactId>okhttp</artifactId>
-        <version>4.10.0</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>manager-v2</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
       <scope>compile</scope>
     </dependency>
 

@@ -58,6 +58,7 @@
     <version.json-schema-validator>1.0.69</version.json-schema-validator>
     <version.com.amazonaws>1.12.258</version.com.amazonaws>
     <version.assertj.core>3.23.1</version.assertj.core>
+    <version.okhttp>4.10.0</version.okhttp>
 
     <version.io.cucumber>7.4.1</version.io.cucumber>
     <version.software.tnb>0.0.6</version.software.tnb>
@@ -182,6 +183,11 @@
         <groupId>com.networknt</groupId>
         <artifactId>json-schema-validator</artifactId>
         <version>${version.json-schema-validator}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>${version.okhttp}</version>
       </dependency>
 
       <dependency>

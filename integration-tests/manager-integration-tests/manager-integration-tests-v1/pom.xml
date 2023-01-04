@@ -26,17 +26,6 @@
     <performance.horreum.results.upload>false</performance.horreum.results.upload>
   </properties>
 
-  <!-- Using custom version of okhttp due to dependency misalignment between RHOSE and TNB. -->
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.squareup.okhttp3</groupId>
-        <artifactId>okhttp</artifactId>
-        <version>4.10.0</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
@@ -93,6 +82,11 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <scope>compile</scope>
     </dependency>
 
     <dependency>
