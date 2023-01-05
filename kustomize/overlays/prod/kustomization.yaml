@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 images:
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: ocp-8e3024d9f489c91789e2d818384f5f02d6e5edfc-jvm
+  newTag: ocp-419b73adb0e9c69131a49d4194379c074107bfc2-jvm
 kind: Kustomization
 namespace: event-bridge-prod
 patchesJson6902:
