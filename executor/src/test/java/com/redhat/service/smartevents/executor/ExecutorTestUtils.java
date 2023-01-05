@@ -7,8 +7,8 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.utils.CloudEventUtils;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
@@ -87,7 +87,7 @@ public class ExecutorTestUtils {
         dto.setDefinition(definition);
         dto.setBridgeId("bridgeId-1");
         dto.setCustomerId("jrota");
-        dto.setStatus(ManagedResourceStatus.READY);
+        dto.setStatus(ManagedResourceStatusV1.READY);
         dto.setKafkaConnection(createKafkaConnection());
         return dto;
     }

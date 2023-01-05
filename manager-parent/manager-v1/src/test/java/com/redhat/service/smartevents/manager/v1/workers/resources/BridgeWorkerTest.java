@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
@@ -39,14 +39,14 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PREPARING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.manager.v1.utils.TestUtils.createWebhookAction;
 import static com.redhat.service.smartevents.manager.v1.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,8 +109,8 @@ class BridgeWorkerTest {
 
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
-    void testProvisionWorkWithKnownResource(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void testProvisionWorkWithKnownResource(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {
@@ -139,8 +139,8 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
-    void testProvisionWorkWithKnownResourceAndErrorHandlerNotPresent(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void testProvisionWorkWithKnownResourceAndErrorHandlerNotPresent(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {
@@ -154,12 +154,12 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParamsWithErrorHandler")
-    void testProvisionWorkWithKnownResourceAndErrorHandlerPresent(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void testProvisionWorkWithKnownResourceAndErrorHandlerPresent(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete,
-            ManagedResourceStatus errorHandlerStatus) {
+            ManagedResourceStatusV1 errorHandlerStatus) {
         doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
                 dependencyStatusWhenComplete,
                 throwRhoasError,
@@ -172,12 +172,12 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParamsWithErrorHandler")
-    void testProvisionWorkWithKnownResourceAndErrorHandlerPresentUpdating(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void testProvisionWorkWithKnownResourceAndErrorHandlerPresentUpdating(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete,
-            ManagedResourceStatus errorHandlerStatus) {
+            ManagedResourceStatusV1 errorHandlerStatus) {
         doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
                 dependencyStatusWhenComplete,
                 throwRhoasError,
@@ -204,12 +204,12 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParamsWithErrorHandler")
-    void testProvisionWorkWithKnownResourceAndErrorHandlerPresentMultipleRetries(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void testProvisionWorkWithKnownResourceAndErrorHandlerPresentMultipleRetries(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete,
-            ManagedResourceStatus errorHandlerStatus) {
+            ManagedResourceStatusV1 errorHandlerStatus) {
         doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
                 dependencyStatusWhenComplete,
                 throwRhoasError,
@@ -232,8 +232,8 @@ class BridgeWorkerTest {
                         any(ProcessorRequest.class));
     }
 
-    private void doTestProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    private void doTestProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {
@@ -246,13 +246,13 @@ class BridgeWorkerTest {
                 READY);
     }
 
-    private void doTestProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    private void doTestProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete,
             boolean errorHandlerProcessorPresent,
-            ManagedResourceStatus errorHandlerStatus) {
+            ManagedResourceStatusV1 errorHandlerStatus) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
         bridge.setStatus(status);
@@ -333,8 +333,8 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParams")
-    void testDeletionWorkWithKnownResource(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void testDeletionWorkWithKnownResource(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {
@@ -365,8 +365,8 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParamsWithErrorHandler")
-    void testDeletionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void testDeletionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete,
@@ -454,7 +454,7 @@ class BridgeWorkerTest {
                 Arguments.of(DELETING, DELETING, true, false, false, false));
     }
 
-    private static Processor createErrorHandlerProcessor(Bridge bridge, ManagedResourceStatus status) {
+    private static Processor createErrorHandlerProcessor(Bridge bridge, ManagedResourceStatusV1 status) {
         Processor processor = Fixtures.createProcessor(bridge, status);
         processor.setType(ProcessorType.ERROR_HANDLER);
         return processor;

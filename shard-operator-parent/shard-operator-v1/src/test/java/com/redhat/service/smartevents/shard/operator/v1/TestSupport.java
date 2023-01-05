@@ -15,9 +15,9 @@ import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDe
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PREPARING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 
 public class TestSupport {
 

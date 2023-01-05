@@ -10,7 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.responses.ProcessingErrorResponse;
@@ -46,7 +46,7 @@ public class ProcessingErrorServiceImpl implements ProcessingErrorService {
 
     @Transactional
     @Override
-    public ListResult<ProcessingError> getProcessingErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
+    public ListResult<ProcessingError> getProcessingErrors(String bridgeId, String customerId, QueryPageInfo queryInfo) {
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
         if (!ProcessingErrorService.isEndpointErrorHandlerAction(bridge.getDefinition().getErrorHandler())) {
             throw new BadRequestException(String.format("Bridge %s is not configured to store processing errors", bridgeId));

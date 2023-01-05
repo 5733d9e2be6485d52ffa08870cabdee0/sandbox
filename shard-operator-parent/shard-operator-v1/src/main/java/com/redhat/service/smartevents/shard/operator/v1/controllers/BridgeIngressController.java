@@ -19,12 +19,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
@@ -54,7 +54,7 @@ import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
@@ -192,7 +192,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         if (!status.isReady()) {
             metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
-            notifyManager(bridgeIngress, ManagedResourceStatus.READY);
+            notifyManager(bridgeIngress, ManagedResourceStatusV1.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -233,7 +233,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
         metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
-        notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
+        notifyManager(bridgeIngress, ManagedResourceStatusV1.DELETED);
 
         return DeleteControl.defaultDelete();
     }
@@ -256,7 +256,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         return Optional.of(bridgeIngress);
     }
 
-    private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
+    private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatusV1 status) {
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
 
         managerClient.notifyBridgeStatusChange(updateDTO)

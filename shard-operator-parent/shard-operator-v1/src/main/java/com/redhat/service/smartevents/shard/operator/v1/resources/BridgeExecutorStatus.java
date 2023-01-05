@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v1.resources;
 import java.util.HashSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
@@ -37,9 +37,9 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
         super(EXECUTOR_CONDITIONS);
     }
 
-    public ManagedResourceStatus inferManagedResourceStatus() {
+    public ManagedResourceStatusV1 inferManagedResourceStatus() {
         if (isReady()) {
-            return ManagedResourceStatus.READY;
+            return ManagedResourceStatusV1.READY;
         }
         if (isConditionTypeFalse(ConditionTypeConstants.READY)
                 && !isConditionTypeTrue(SECRET_AVAILABLE)
@@ -47,9 +47,9 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
                 && !isConditionTypeTrue(DEPLOYMENT_AVAILABLE)
                 && !isConditionTypeTrue(SERVICE_AVAILABLE)
                 && !isConditionTypeTrue(SERVICE_MONITOR_AVAILABLE)) {
-            return ManagedResourceStatus.FAILED;
+            return ManagedResourceStatusV1.FAILED;
         }
-        return ManagedResourceStatus.PROVISIONING;
+        return ManagedResourceStatusV1.PROVISIONING;
     }
 
     @JsonIgnore

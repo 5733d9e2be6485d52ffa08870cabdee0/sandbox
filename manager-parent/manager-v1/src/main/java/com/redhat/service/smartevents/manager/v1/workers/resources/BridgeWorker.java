@@ -9,9 +9,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
@@ -70,10 +70,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
                 bridge.getId());
         // Transition resource to PREPARING status.
         // PROVISIONING is handled by the Operator.
-        bridge.setStatus(ManagedResourceStatus.PREPARING);
+        bridge.setStatus(ManagedResourceStatusV1.PREPARING);
 
         // This is idempotent as it gets overridden later depending on actual state
-        bridge.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
+        bridge.setDependencyStatus(ManagedResourceStatusV1.PROVISIONING);
         bridge = persist(bridge);
 
         // If this call throws an exception the Bridge's dependencies will be left in PROVISIONING state...
@@ -93,14 +93,14 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         Optional<Processor> optErrorHandler = processorService.getErrorHandler(bridge.getId(), bridge.getCustomerId());
         if (optErrorHandler.isEmpty()) {
             // If an Error Handler isn't required there are no dependencies.
-            bridge.setDependencyStatus(ManagedResourceStatus.READY);
+            bridge.setDependencyStatus(ManagedResourceStatusV1.READY);
         } else {
             Processor errorHandler = optErrorHandler.get();
-            if (errorHandler.getStatus() == ManagedResourceStatus.READY) {
+            if (errorHandler.getStatus() == ManagedResourceStatusV1.READY) {
                 // Keep the Bridge in PREPARING until the Error Handler processor is READY (or FAILED).
                 // This ensures Users cannot update the Bridge Error Handler until it is available.
-                bridge.setDependencyStatus(ManagedResourceStatus.READY);
-            } else if (errorHandler.getStatus() == ManagedResourceStatus.FAILED) {
+                bridge.setDependencyStatus(ManagedResourceStatusV1.READY);
+            } else if (errorHandler.getStatus() == ManagedResourceStatusV1.FAILED) {
                 return persistAndPropagateErrorHandlerFailure(bridge, errorHandler);
             }
         }
@@ -155,7 +155,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         LOGGER.info("Deleting topics for bridge '{}' [{}]...", bridge.getName(), bridge.getId());
 
         // This is idempotent as it gets overridden later depending on actual state
-        bridge.setDependencyStatus(ManagedResourceStatus.DELETING);
+        bridge.setDependencyStatus(ManagedResourceStatusV1.DELETING);
         bridge = persist(bridge);
 
         // We don't need to wait for the Bridge to be DELETED to delete the Error Handler.
@@ -179,10 +179,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         // Therefore, don't mark the Bridge ready for deletion (by the Operator) until the Error Handler is removed.
         Optional<Processor> optErrorHandler = processorService.getErrorHandler(bridge.getId(), bridge.getCustomerId());
         if (optErrorHandler.isEmpty()) {
-            bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
+            bridge.setDependencyStatus(ManagedResourceStatusV1.DELETED);
         } else {
             Processor errorHandler = optErrorHandler.get();
-            if (errorHandler.getStatus() == ManagedResourceStatus.FAILED) {
+            if (errorHandler.getStatus() == ManagedResourceStatusV1.FAILED) {
                 return persistAndPropagateErrorHandlerFailure(bridge, errorHandler);
             }
         }
@@ -215,12 +215,12 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     protected Bridge persistAndPropagateErrorHandlerFailure(Bridge bridge, Processor errorHandler) {
         bridge.setErrorId(errorHandler.getErrorId());
         bridge.setErrorUUID(errorHandler.getErrorUUID());
-        bridge.setDependencyStatus(ManagedResourceStatus.FAILED);
+        bridge.setDependencyStatus(ManagedResourceStatusV1.FAILED);
         persist(bridge);
 
         // Updating the status through the service ensures metrics are correctly handled.
         BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(errorHandler.getErrorId(), errorHandler.getErrorUUID());
-        return bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.FAILED, bei));
+        return bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatusV1.FAILED, bei));
     }
 
 }

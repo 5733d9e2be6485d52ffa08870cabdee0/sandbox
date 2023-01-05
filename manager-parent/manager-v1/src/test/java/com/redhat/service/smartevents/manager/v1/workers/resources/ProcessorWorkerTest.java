@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
@@ -32,14 +32,14 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PREPARING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.manager.v1.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -90,8 +90,8 @@ public class ProcessorWorkerTest {
 
     @Transactional
     @ParameterizedTest
-    @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PREPARING" })
-    void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
+    @EnumSource(value = ManagedResourceStatusV1.class, names = { "ACCEPTED", "PREPARING" })
+    void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatusV1 status) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, READY);
         processor.setStatus(status);
@@ -109,9 +109,9 @@ public class ProcessorWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("srcHandleWorkProvisioningWithKnownResourceWithConnector")
-    void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
-            ManagedResourceStatus statusWhenComplete,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 statusWhenComplete,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean isWorkComplete,
             boolean throwsConnectorError) {
         Bridge bridge = Fixtures.createBridge();
@@ -164,8 +164,8 @@ public class ProcessorWorkerTest {
 
     @Transactional
     @ParameterizedTest
-    @EnumSource(value = ManagedResourceStatus.class, names = { "DEPROVISION", "DELETING" })
-    void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
+    @EnumSource(value = ManagedResourceStatusV1.class, names = { "DEPROVISION", "DELETING" })
+    void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatusV1 status) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, READY);
         processor.setStatus(status);
@@ -183,9 +183,9 @@ public class ProcessorWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("srcHandleWorkDeletingWithKnownResourceWithConnector")
-    void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatus status,
-            ManagedResourceStatus statusWhenComplete,
-            ManagedResourceStatus dependencyStatusWhenComplete,
+    void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatusV1 status,
+            ManagedResourceStatusV1 statusWhenComplete,
+            ManagedResourceStatusV1 dependencyStatusWhenComplete,
             boolean isWorkComplete,
             boolean throwsConnectorError) {
         Bridge bridge = Fixtures.createBridge();

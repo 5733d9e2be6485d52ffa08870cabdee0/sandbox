@@ -9,7 +9,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
 @MappedSuperclass
-public class ManagedResource {
+public abstract class ManagedResource {
 
     public static final String ID_PARAM = "id";
 

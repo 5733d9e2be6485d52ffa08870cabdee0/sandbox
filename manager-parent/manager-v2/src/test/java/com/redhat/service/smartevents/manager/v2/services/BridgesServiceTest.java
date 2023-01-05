@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
@@ -35,7 +35,7 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.DEPROVISION;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ENDPOINT;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
@@ -114,7 +114,7 @@ public class BridgesServiceTest {
         assertThat(response.getSubmittedAt()).isEqualTo(bridge.getSubmittedAt());
         assertThat(response.getPublishedAt()).isEqualTo(bridge.getPublishedAt());
         assertThat(response.getModifiedAt()).isNull();
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatusV2.FAILED);
         assertThat(response.getHref()).contains(bridge.getId());
         assertThat(response.getOwner()).isEqualTo(bridge.getOwner());
         assertThat(response.getCloudProvider()).isEqualTo(bridge.getCloudProvider());

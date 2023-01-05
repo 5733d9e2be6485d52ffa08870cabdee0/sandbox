@@ -13,7 +13,7 @@ import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.BaseResponse;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public abstract class BaseManagedResourceResponse extends BaseResponse {
+public abstract class BaseManagedResourceResponse<S extends ManagedResourceStatus> extends BaseResponse {
 
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
@@ -33,7 +33,7 @@ public abstract class BaseManagedResourceResponse extends BaseResponse {
     @Schema(
             description = "The status of this resource",
             example = "ready")
-    private ManagedResourceStatus status;
+    private S status;
 
     @NotNull
     @JsonProperty("owner")
@@ -58,7 +58,7 @@ public abstract class BaseManagedResourceResponse extends BaseResponse {
         return modifiedAt;
     }
 
-    public ManagedResourceStatus getStatus() {
+    public S getStatus() {
         return status;
     }
 
@@ -74,7 +74,7 @@ public abstract class BaseManagedResourceResponse extends BaseResponse {
         this.modifiedAt = modifiedAt;
     }
 
-    public void setStatus(ManagedResourceStatus status) {
+    public void setStatus(S status) {
         this.status = status;
     }
 

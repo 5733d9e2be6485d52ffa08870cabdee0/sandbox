@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.AMSFailException;
@@ -30,13 +29,14 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQ
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
@@ -132,7 +132,7 @@ public class BridgesServiceImpl implements BridgesService {
         String subscriptionId = createResourceOnAMS(organisationId);
 
         Bridge bridge = bridgeRequest.toEntity();
-        bridge.setStatus(ManagedResourceStatus.ACCEPTED);
+        bridge.setStatus(ManagedResourceStatusV1.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setOrganisationId(organisationId);
@@ -199,8 +199,8 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Create new definition copying existing properties
         existingBridge.setModifiedAt(ZonedDateTime.now());
-        existingBridge.setStatus(ManagedResourceStatus.ACCEPTED);
-        existingBridge.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
+        existingBridge.setStatus(ManagedResourceStatusV1.ACCEPTED);
+        existingBridge.setDependencyStatus(ManagedResourceStatusV1.ACCEPTED);
         existingBridge.setDefinition(updatedDefinition);
         existingBridge.setGeneration(existingBridge.getGeneration() + 1);
         existingBridge.setErrorId(null);
@@ -230,8 +230,8 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     public Bridge getReadyBridge(String bridgeId, String customerId) {
         Bridge bridge = getBridge(bridgeId, customerId);
-        if (ManagedResourceStatus.READY != bridge.getStatus()) {
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.READY));
+        if (ManagedResourceStatusV1.READY != bridge.getStatus()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedResourceStatusV1.READY));
         }
         return bridge;
     }
@@ -269,7 +269,7 @@ public class BridgesServiceImpl implements BridgesService {
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
         // Bridge deletion and related Work creation should always be in the same transaction
-        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setStatus(ManagedResourceStatusV1.DEPROVISION);
         bridge.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
         workManager.schedule(bridge);
         metricsService.onOperationStart(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
@@ -367,7 +367,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setId(bridge.getId());
         response.setName(bridge.getName());
         // Return the endpoint only if the resource is READY or FAILED https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1006#discussion_r937488097
-        if (ManagedResourceStatus.READY.equals(bridge.getStatus()) || ManagedResourceStatus.FAILED.equals(bridge.getStatus())) {
+        if (ManagedResourceStatusV1.READY.equals(bridge.getStatus()) || ManagedResourceStatusV1.FAILED.equals(bridge.getStatus())) {
             response.setEndpoint(bridge.getEndpoint());
         }
         response.setSubmittedAt(bridge.getSubmittedAt());

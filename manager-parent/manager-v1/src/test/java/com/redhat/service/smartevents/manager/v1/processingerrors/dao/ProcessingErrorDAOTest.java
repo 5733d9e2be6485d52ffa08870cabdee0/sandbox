@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.persistence.dao.ProcessingErrorDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.ProcessingError;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
@@ -22,7 +22,7 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest

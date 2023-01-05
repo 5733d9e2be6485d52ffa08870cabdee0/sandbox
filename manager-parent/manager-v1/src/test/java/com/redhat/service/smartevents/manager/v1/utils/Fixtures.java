@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
@@ -31,7 +31,7 @@ public class Fixtures {
         return action;
     }
 
-    public static Processor createProcessor(Bridge b, ManagedResourceStatus status) {
+    public static Processor createProcessor(Bridge b, ManagedResourceStatusV1 status) {
         Processor p = new Processor();
         p.setType(ProcessorType.SINK);
         p.setName(TestConstants.DEFAULT_PROCESSOR_NAME);
@@ -55,7 +55,7 @@ public class Fixtures {
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
         b.setOwner(TestConstants.DEFAULT_USER_NAME);
-        b.setStatus(ManagedResourceStatus.READY);
+        b.setStatus(ManagedResourceStatusV1.READY);
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setEndpoint("https://bridge.redhat.com");
@@ -66,15 +66,15 @@ public class Fixtures {
         return b;
     }
 
-    public static ConnectorEntity createSourceConnector(Processor p, ManagedResourceStatus status) {
+    public static ConnectorEntity createSourceConnector(Processor p, ManagedResourceStatusV1 status) {
         return createConnector(p, status, ConnectorType.SOURCE, "test_source_0.1");
     }
 
-    public static ConnectorEntity createSinkConnector(Processor p, ManagedResourceStatus status) {
+    public static ConnectorEntity createSinkConnector(Processor p, ManagedResourceStatusV1 status) {
         return createConnector(p, status, ConnectorType.SINK, "test_sink_0.1");
     }
 
-    private static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status, ConnectorType type, String connectorTypeId) {
+    private static ConnectorEntity createConnector(Processor p, ManagedResourceStatusV1 status, ConnectorType type, String connectorTypeId) {
         ConnectorEntity connector = new ConnectorEntity();
         connector.setType(type);
         connector.setName(TestConstants.DEFAULT_CONNECTOR_NAME);

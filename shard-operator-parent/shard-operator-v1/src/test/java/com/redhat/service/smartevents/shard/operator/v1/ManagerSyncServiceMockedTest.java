@@ -11,8 +11,8 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -73,7 +73,7 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         doThrow(new IllegalStateException()).when(bridgeIngressService).deleteBridgeIngress(any());
 
         BridgeDTO bridge = TestSupport.newProvisioningBridgeDTO();
-        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setStatus(ManagedResourceStatusV1.DEPROVISION);
         stubBridgesToDeployOrDelete(List.of(bridge));
         stubBridgeUpdate();
 
@@ -100,7 +100,7 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
     @Test
     public void testBridgeProvisioningContinues() throws JsonProcessingException {
         // This replicates the Operator crashing after the Manager had been notified but before the resource was READY
-        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.PROVISIONING, 1);
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatusV1.PROVISIONING, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
 
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
@@ -111,7 +111,7 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
     @Test
     public void testBridgeDeletingContinues() throws JsonProcessingException {
         // This replicates the Operator crashing after the Manager had been notified but before the resource was DELETED
-        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DELETING, 1);
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatusV1.DELETING, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
 
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
@@ -151,7 +151,7 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         doThrow(new IllegalStateException()).when(bridgeExecutorService).deleteBridgeExecutor(any());
 
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
-        processor.setStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setStatus(ManagedResourceStatusV1.DEPROVISION);
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
         stubProcessorUpdate();
 
@@ -178,7 +178,7 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
     public void testProcessorProvisioningContinues() throws JsonProcessingException {
         // This replicates the Operator crashing after the Manager had been notified but before the resource was READY
         ProcessorDTO processor1 = TestSupport.newRequestedProcessorDTO();
-        processor1.setStatus(ManagedResourceStatus.PROVISIONING);
+        processor1.setStatus(ManagedResourceStatusV1.PROVISIONING);
         stubProcessorsToDeployOrDelete(List.of(processor1));
 
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
@@ -190,7 +190,7 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
     public void testProcessorDeletingContinues() throws JsonProcessingException {
         // This replicates the Operator crashing after the Manager had been notified but before the resource was DELETED
         ProcessorDTO processor1 = TestSupport.newRequestedProcessorDTO();
-        processor1.setStatus(ManagedResourceStatus.DELETING);
+        processor1.setStatus(ManagedResourceStatusV1.DELETING);
         stubProcessorsToDeployOrDelete(List.of(processor1));
 
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));

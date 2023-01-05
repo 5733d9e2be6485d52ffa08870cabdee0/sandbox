@@ -11,7 +11,6 @@ import java.util.Properties;
 
 import org.awaitility.Awaitility;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
@@ -28,6 +27,7 @@ import io.cucumber.java.Before;
 import io.cucumber.java.BeforeAll;
 import io.cucumber.java.Scenario;
 
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -97,7 +97,7 @@ public class Hooks {
                     .forEach(bridgeContext -> {
                         final String bridgeId = bridgeContext.getId();
                         BridgeResponse bridge = BridgeResource.getBridgeDetails(token, bridgeId);
-                        if (bridge.getStatus() == ManagedResourceStatus.READY) {
+                        if (bridge.getStatus() == READY) {
                             ProcessorListResponse processorList = ProcessorResource.getProcessorList(
                                     token,
                                     bridgeId);

@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
@@ -92,7 +92,7 @@ public class BridgeSteps {
 
         BridgeResponse response = bridgeCreator.apply(context, systemBridgeName);
         assertThat(response.getName()).isEqualTo(systemBridgeName);
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatusV1.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
         assertThat(response.getHref()).isNotNull();
@@ -123,7 +123,7 @@ public class BridgeSteps {
         }
 
         assertThat(response.getKind()).isEqualTo("Bridge");
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatusV1.ACCEPTED);
     }
 
     @And("^the list of Bridge instances is containing the Bridge \"([^\"]*)\"$")

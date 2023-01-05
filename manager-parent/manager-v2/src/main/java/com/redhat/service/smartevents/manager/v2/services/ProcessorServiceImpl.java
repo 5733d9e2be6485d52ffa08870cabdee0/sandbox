@@ -22,17 +22,17 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Ite
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
@@ -82,8 +82,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
         Bridge bridge = bridgeService.getBridge(bridgeId, customerId);
-        ManagedResourceStatus status = StatusUtilities.getManagedResourceStatus(bridge);
-        if (status != ManagedResourceStatus.READY && status != ManagedResourceStatus.FAILED) {
+        ManagedResourceStatusV2 status = StatusUtilities.getManagedResourceStatus(bridge);
+        if (status != ManagedResourceStatusV2.READY && status != ManagedResourceStatusV2.FAILED) {
             throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
         }
         return processorDAO.findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo);
