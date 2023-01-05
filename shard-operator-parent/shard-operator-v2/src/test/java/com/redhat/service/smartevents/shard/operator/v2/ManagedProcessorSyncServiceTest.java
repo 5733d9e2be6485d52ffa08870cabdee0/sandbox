@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -109,5 +110,21 @@ public class ManagedProcessorSyncServiceTest {
         ConditionDTO conditionDTO = processorStatusDTO2.getConditions().iterator().next();
         Assertions.assertThat(conditionDTO.getType()).isEqualTo(DP_PROCESSOR_DELETED_NAME);
         Assertions.assertThat(conditionDTO.getStatus()).isEqualTo(ConditionStatus.TRUE);
+    }
+
+    @Test
+    public void testSyncManagedBridgeStatusBackToManager_whenNoProcessorExists() {
+        // setup
+        Mockito.when(managerClient.fetchBridgesForDataPlane()).thenReturn(Uni.createFrom().item(Collections.emptyList()));
+
+        // test
+        managedProcessorSyncService.syncManagedProcessorStatusBackToManager();
+
+        // assert
+        Mockito.verify(managedProcessorService, Mockito.never()).fetchAllManagedProcessors();
+        ArgumentCaptor<List<ResourceStatusDTO>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(managerClient).notifyProcessorStatus(argumentCaptor.capture());
+        List<ResourceStatusDTO> processorStatusDTOs = argumentCaptor.getValue();
+        Assertions.assertThat(processorStatusDTOs.isEmpty()).isTrue();
     }
 }

@@ -65,4 +65,13 @@ public class ResourceStatusDTO {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString() {
+        return "ResourceStatusDTO{" +
+                "id='" + id + '\'' +
+                ", generation=" + generation +
+                ", conditions=" + conditions +
+                '}';
+    }
 }

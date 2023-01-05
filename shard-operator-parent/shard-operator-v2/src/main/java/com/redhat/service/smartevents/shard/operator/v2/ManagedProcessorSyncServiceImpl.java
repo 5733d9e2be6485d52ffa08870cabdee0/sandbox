@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,10 +67,14 @@ public class ManagedProcessorSyncServiceImpl implements ManagedProcessorSyncServ
     }
 
     private List<ResourceStatusDTO> transformToProcessorStatus(List<ProcessorDTO> processorDTOList) {
+        if (processorDTOList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ResourceStatusDTO> resourceStatusDTOs = new ArrayList<>(processorDTOList.size());
         Map<String, ManagedProcessor> deployedManagedProcessors = managedProcessorService.fetchAllManagedProcessors()
                 .stream().collect(Collectors.toMap(m -> m.getSpec().getId(), m -> m));
 
-        List<ResourceStatusDTO> resourceStatusDTOs = new ArrayList<>(processorDTOList.size());
         for (ProcessorDTO processorDTO : processorDTOList) {
             ManagedProcessor deployedManagedProcessor = deployedManagedProcessors.get(processorDTO.getId());
             if (deployedManagedProcessor != null) {

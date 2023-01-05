@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
+import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
@@ -66,6 +67,9 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
 
     @Inject
     OperatorMetricsService metricsService;
+
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
 
     @Override
     public UpdateControl<ManagedBridge> reconcile(ManagedBridge managedBridge, Context context) {
@@ -128,8 +132,18 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
     }
 
     @Override
-    public DeleteControl cleanup(ManagedBridge resource, Context context) {
-        return null;
+    public DeleteControl cleanup(ManagedBridge managedBridge, Context context) {
+        LOGGER.info("Deleted ManagedBridge: '{}' in namespace '{}'", managedBridge.getMetadata().getName(), managedBridge.getMetadata().getNamespace());
+
+        // Linked resources are automatically deleted except for Authorization Policy and the ingress due to https://github.com/istio/istio/issues/37221
+        managedBridgeService.deleteBridgeAuthorizationPolicy(managedBridge);
+
+        // Since the ingress for the gateway has to be in the istio-system namespace
+        // we can not set the owner reference. We have to delete the resource manually.
+        networkingService.delete(managedBridge.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+
+        metricsService.onOperationComplete(managedBridge, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
+        return DeleteControl.defaultDelete();
     }
 
     @Override

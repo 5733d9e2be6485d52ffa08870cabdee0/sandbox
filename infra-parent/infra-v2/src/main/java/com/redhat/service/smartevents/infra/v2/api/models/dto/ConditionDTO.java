@@ -114,4 +114,16 @@ public class ConditionDTO {
     public int hashCode() {
         return Objects.hash(getType(), getStatus(), getReason(), getMessage(), getErrorCode(), getLastTransitionTime());
     }
+
+    @Override
+    public String toString() {
+        return "ConditionDTO{" +
+                "type='" + type + '\'' +
+                ", status=" + status +
+                ", reason='" + reason + '\'' +
+                ", message='" + message + '\'' +
+                ", errorCode='" + errorCode + '\'' +
+                ", lastTransitionTime=" + lastTransitionTime +
+                '}';
+    }
 }

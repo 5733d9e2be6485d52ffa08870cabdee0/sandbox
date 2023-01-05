@@ -118,7 +118,8 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     @Override
     public void deleteManagedBridge(BridgeDTO bridgeDTO) {
 
-        ManagedBridge mb = ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, null);
+        String bridgeNamespace = namespaceProvider.getNamespaceName(bridgeDTO.getId());
+        ManagedBridge mb = ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, bridgeNamespace);
 
         /*
          * Pull in the rest of the logic from BridgeIngressServiceImpl to delete the other resources
@@ -245,6 +246,16 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
         }
 
         return existing;
+    }
+
+    @Override
+    public void deleteBridgeAuthorizationPolicy(ManagedBridge managedBridge) {
+        // Since the authorizationPolicy has to be in the istio-system namespace due to https://github.com/istio/istio/issues/37221
+        // we can not set the owner reference. We have to delete the resource manually.
+        kubernetesClient.resources(AuthorizationPolicy.class)
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
+                .withName(managedBridge.getMetadata().getName())
+                .delete();
     }
 
     @Override

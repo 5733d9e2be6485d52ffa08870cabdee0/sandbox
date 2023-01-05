@@ -24,6 +24,8 @@ public interface ManagedBridgeService {
 
     AuthorizationPolicy fetchOrCreateBridgeAuthorizationPolicy(ManagedBridge managedBridge, String path);
 
+    void deleteBridgeAuthorizationPolicy(ManagedBridge managedBridge);
+
     boolean compareBridgeStatus(ManagedBridge oldBridge, ManagedBridge newBridge);
 
     ManagedBridge fetchManagedBridge(String name, String namespace);
