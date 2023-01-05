@@ -73,6 +73,16 @@ public class ObservabilitySetupServiceTest {
         this.handler = new ObservabilitySetupServiceForTests(client, templateProvider);
     }
 
+    @Test
+    void testDisabled() {
+        handler.setEnabled(false);
+
+        handler.createOrUpdateObservabilitySecret();
+
+        verifyNoInteractions(client);
+        verifyNoInteractions(templateProvider);
+    }
+
     @ParameterizedTest()
     @MethodSource("parameters")
     void testMissingParameter(String name, String namespace, String accessToken, String repository, String channel, String tag) {

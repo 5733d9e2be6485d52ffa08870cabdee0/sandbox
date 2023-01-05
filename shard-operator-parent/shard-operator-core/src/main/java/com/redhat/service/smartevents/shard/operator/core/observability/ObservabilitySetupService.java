@@ -142,11 +142,10 @@ public class ObservabilitySetupService {
     private void logParameters() {
         LOGGER.debug("Name={}\n" +
                 "Namespace={}\n" +
-                "AccessToken={}\n" +
                 "Repository={}\n" +
                 "Channel={}\n" +
                 "Tag={}",
-                name, namespace, accessToken, repository, channel, tag);
+                name, namespace, repository, channel, tag);
     }
 
     protected String getName() {
