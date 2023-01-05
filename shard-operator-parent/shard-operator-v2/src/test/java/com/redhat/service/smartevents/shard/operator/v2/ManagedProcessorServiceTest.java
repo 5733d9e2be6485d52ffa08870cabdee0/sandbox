@@ -14,16 +14,12 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcess
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 import com.redhat.service.smartevents.shard.operator.v2.utils.V2KubernetesResourcePatcher;
 
-import io.javaoperatorsdk.operator.Operator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 @QuarkusTest
 @WithOpenShiftTestServer
 public class ManagedProcessorServiceTest {
-
-    @Inject
-    Operator operator;
 
     @Inject
     ManagedProcessorService managedProcessorService;
@@ -34,7 +30,6 @@ public class ManagedProcessorServiceTest {
     @BeforeEach
     public void beforeEach() {
         kubernetesResourcePatcher.cleanUp();
-        operator.start();
     }
 
     @Test

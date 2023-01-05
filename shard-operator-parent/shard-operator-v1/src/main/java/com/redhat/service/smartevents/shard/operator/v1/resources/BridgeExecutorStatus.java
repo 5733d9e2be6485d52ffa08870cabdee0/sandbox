@@ -24,7 +24,6 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> EXECUTOR_CONDITIONS = new HashSet<>() {
         {
-            add(new Condition(ConditionTypeConstants.AUGMENTING, ConditionStatus.Unknown));
             add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
             add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
             add(new Condition(IMAGE_NAME_CORRECT, ConditionStatus.Unknown));
@@ -42,7 +41,12 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
         if (isReady()) {
             return ManagedResourceStatus.READY;
         }
-        if (!isAugmenting()) {
+        if (isConditionTypeFalse(ConditionTypeConstants.READY)
+                && !isConditionTypeTrue(SECRET_AVAILABLE)
+                && !isConditionTypeTrue(IMAGE_NAME_CORRECT)
+                && !isConditionTypeTrue(DEPLOYMENT_AVAILABLE)
+                && !isConditionTypeTrue(SERVICE_AVAILABLE)
+                && !isConditionTypeTrue(SERVICE_MONITOR_AVAILABLE)) {
             return ManagedResourceStatus.FAILED;
         }
         return ManagedResourceStatus.PROVISIONING;
@@ -99,4 +103,5 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
             }
         }
     }
+
 }

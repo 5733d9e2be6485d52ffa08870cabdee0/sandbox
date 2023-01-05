@@ -158,6 +158,7 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       responses:
         "200":
           description: Success.
@@ -202,6 +203,7 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       requestBody:
         content:
           application/json:
@@ -300,6 +302,7 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       - name: name
         in: query
         schema:
@@ -374,6 +377,7 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       requestBody:
         content:
           application/json:
@@ -430,12 +434,14 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       - name: processorId
         in: path
         required: true
         schema:
           minLength: 1
           type: string
+          nullable: false
       responses:
         "200":
           description: Success.
@@ -481,12 +487,14 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       - name: processorId
         in: path
         required: true
         schema:
           minLength: 1
           type: string
+          nullable: false
       requestBody:
         content:
           application/json:
@@ -623,6 +631,7 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       responses:
         "200":
           description: Success.
@@ -662,6 +671,7 @@ paths:
         schema:
           minLength: 1
           type: string
+          nullable: false
       - name: page
         in: query
         schema:
@@ -893,6 +903,7 @@ components:
       properties:
         type:
           type: string
+          nullable: false
         parameters:
           type: object
     BaseFilter:
@@ -905,6 +916,7 @@ components:
         key:
           minLength: 1
           type: string
+          nullable: false
     BridgeError:
       type: object
       properties:
@@ -946,6 +958,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -953,12 +966,15 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     BridgeRequest:
       required:
       - name
@@ -971,16 +987,19 @@ components:
           minLength: 1
           type: string
           example: bridge1
+          nullable: false
         cloud_provider:
           description: The cloud provider where the bridge resides
           minLength: 1
           type: string
           example: aws
+          nullable: false
         region:
           description: The cloud provider region where the bridge resides
           minLength: 1
           type: string
           example: us-east-1
+          nullable: false
         error_handler:
           $ref: '#/components/schemas/Action'
     BridgeResponse:
@@ -996,9 +1015,11 @@ components:
         kind:
           description: The kind (type) of this resource
           type: string
+          nullable: false
         id:
           description: The unique identifier of this resource
           type: string
+          nullable: false
         name:
           description: The name of this resource
           type: string
@@ -1007,21 +1028,28 @@ components:
           description: "The URL of this resource, without the protocol"
           type: string
           example: example.com/resource
+          nullable: false
         submitted_at:
-          $ref: '#/components/schemas/ZonedDateTime'
+          format: date-time
+          type: string
+          nullable: false
         published_at:
-          $ref: '#/components/schemas/ZonedDateTime'
+          format: date-time
+          type: string
         modified_at:
-          $ref: '#/components/schemas/ZonedDateTime'
+          format: date-time
+          type: string
         status:
           allOf:
           - $ref: '#/components/schemas/ManagedResourceStatus'
           - description: The status of this resource
             example: ready
+            nullable: false
         owner:
           description: The user that owns this resource
           type: string
           example: userName
+          nullable: false
         endpoint:
           type: string
         error_handler:
@@ -1042,6 +1070,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1049,12 +1078,15 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     CloudProviderResponse:
       required:
       - kind
@@ -1067,9 +1099,11 @@ components:
         kind:
           description: The kind (type) of this resource
           type: string
+          nullable: false
         id:
           description: The unique identifier of this resource
           type: string
+          nullable: false
         name:
           description: The name of this resource
           type: string
@@ -1078,10 +1112,13 @@ components:
           description: "The URL of this resource, without the protocol"
           type: string
           example: example.com/resource
+          nullable: false
         display_name:
           type: string
+          nullable: false
         enabled:
           type: boolean
+          nullable: false
     CloudRegionListResponse:
       required:
       - kind
@@ -1092,6 +1129,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1099,12 +1137,15 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     CloudRegionResponse:
       required:
       - kind
@@ -1115,12 +1156,16 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         name:
           type: string
+          nullable: false
         display_name:
           type: string
+          nullable: false
         enabled:
           type: boolean
+          nullable: false
     Error:
       required:
       - kind
@@ -1132,6 +1177,7 @@ components:
         kind:
           description: The kind (type) of this resource
           type: string
+          nullable: false
         name:
           description: The name of this resource
           type: string
@@ -1140,10 +1186,13 @@ components:
           type: string
         reason:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         href:
           type: string
+          nullable: false
     ErrorListResponse:
       required:
       - kind
@@ -1154,6 +1203,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1161,12 +1211,15 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     ErrorsList:
       required:
       - kind
@@ -1174,6 +1227,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1190,12 +1244,15 @@ components:
           page:
             format: int64
             type: integer
+            nullable: false
           size:
             format: int64
             type: integer
+            nullable: false
           total:
             format: int64
             type: integer
+            nullable: false
     ListResponse:
       required:
       - kind
@@ -1203,6 +1260,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1228,9 +1286,11 @@ components:
         kind:
           description: The kind (type) of this resource
           type: string
+          nullable: false
         id:
           description: The unique identifier of this resource
           type: string
+          nullable: false
         name:
           description: The name of this resource
           type: string
@@ -1239,6 +1299,7 @@ components:
           description: "The URL of this resource, without the protocol"
           type: string
           example: example.com/resource
+          nullable: false
     ProcessingErrorListResponse:
       required:
       - kind
@@ -1249,6 +1310,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1256,17 +1318,21 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     ProcessingErrorResponse:
       type: object
       properties:
         recorded_at:
-          $ref: '#/components/schemas/ZonedDateTime'
+          format: date-time
+          type: string
         headers:
           type: object
           additionalProperties:
@@ -1280,6 +1346,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1294,6 +1361,7 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1301,12 +1369,15 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     ProcessorRequest:
       required:
       - name
@@ -1315,6 +1386,7 @@ components:
         name:
           minLength: 1
           type: string
+          nullable: false
         filters:
           uniqueItems: true
           type: array
@@ -1340,9 +1412,11 @@ components:
         kind:
           description: The kind (type) of this resource
           type: string
+          nullable: false
         id:
           description: The unique identifier of this resource
           type: string
+          nullable: false
         name:
           description: The name of this resource
           type: string
@@ -1351,23 +1425,32 @@ components:
           description: "The URL of this resource, without the protocol"
           type: string
           example: example.com/resource
+          nullable: false
         submitted_at:
-          $ref: '#/components/schemas/ZonedDateTime'
+          format: date-time
+          type: string
+          nullable: false
         published_at:
-          $ref: '#/components/schemas/ZonedDateTime'
+          format: date-time
+          type: string
         modified_at:
-          $ref: '#/components/schemas/ZonedDateTime'
+          format: date-time
+          type: string
         status:
           allOf:
           - $ref: '#/components/schemas/ManagedResourceStatus'
           - description: The status of this resource
             example: ready
+            nullable: false
         owner:
           description: The user that owns this resource
           type: string
           example: userName
+          nullable: false
         type:
-          $ref: '#/components/schemas/ProcessorType'
+          allOf:
+          - $ref: '#/components/schemas/ProcessorType'
+          - nullable: false
         filters:
           uniqueItems: true
           type: array
@@ -1393,16 +1476,22 @@ components:
       properties:
         kind:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         name:
           type: string
+          nullable: false
         description:
           type: string
+          nullable: false
         type:
           type: string
+          nullable: false
         href:
           type: string
+          nullable: false
     ProcessorType:
       enum:
       - source
@@ -1417,12 +1506,9 @@ components:
       properties:
         type:
           type: string
+          nullable: false
         parameters:
           type: object
-    ZonedDateTime:
-      format: date-time
-      type: string
-      example: 2022-03-10T12:15:50-04:00
   securitySchemes:
     bearer:
       type: http

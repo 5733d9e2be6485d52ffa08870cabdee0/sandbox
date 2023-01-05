@@ -9,25 +9,22 @@ import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTyp
 public class BridgeExecutorStatusTest {
 
     @Test
-    public void inferManagedResourceStatusIsReady() {
+    public void testInferManagedResourceStatus_ready() {
         BridgeExecutorStatus resourceStatus = new BridgeExecutorStatus();
         resourceStatus.markConditionTrue(ConditionTypeConstants.READY);
         Assertions.assertThat(resourceStatus.inferManagedResourceStatus()).isEqualTo(ManagedResourceStatus.READY);
     }
 
     @Test
-    public void inferManagedResourceStatusIsFailed() {
+    public void testInferManagedResourceStatus_failed() {
         BridgeExecutorStatus resourceStatus = new BridgeExecutorStatus();
         resourceStatus.markConditionFalse(ConditionTypeConstants.READY);
-        resourceStatus.markConditionFalse(ConditionTypeConstants.AUGMENTING);
         Assertions.assertThat(resourceStatus.inferManagedResourceStatus()).isEqualTo(ManagedResourceStatus.FAILED);
     }
 
     @Test
-    public void inferManagedResourceStatusIsProvisioning() {
+    public void testInferManagedResourceStatus_provisioning() {
         BridgeExecutorStatus resourceStatus = new BridgeExecutorStatus();
-        resourceStatus.markConditionFalse(ConditionTypeConstants.READY);
-        resourceStatus.markConditionTrue(ConditionTypeConstants.AUGMENTING);
         Assertions.assertThat(resourceStatus.inferManagedResourceStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
     }
 }

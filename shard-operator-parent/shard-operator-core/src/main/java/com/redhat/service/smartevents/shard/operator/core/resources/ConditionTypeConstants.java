@@ -12,5 +12,4 @@ public class ConditionTypeConstants {
     }
 
     public static final String READY = "Ready";
-    public static final String AUGMENTING = "Augmenting";
 }

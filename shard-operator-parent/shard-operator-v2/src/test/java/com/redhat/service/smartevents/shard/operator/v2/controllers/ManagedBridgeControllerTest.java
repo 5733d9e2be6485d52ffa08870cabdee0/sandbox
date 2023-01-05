@@ -24,7 +24,6 @@ import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
@@ -41,9 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ManagedBridgeControllerTest {
 
     @Inject
-    Operator operator;
-
-    @Inject
     ManagedBridgeController managedBridgeController;
 
     @Inject
@@ -58,7 +54,6 @@ public class ManagedBridgeControllerTest {
     @BeforeEach
     public void beforeEach() {
         kubernetesResourcePatcher.cleanUp();
-        operator.start();
     }
 
     private ManagedBridge createManagedBridge() {

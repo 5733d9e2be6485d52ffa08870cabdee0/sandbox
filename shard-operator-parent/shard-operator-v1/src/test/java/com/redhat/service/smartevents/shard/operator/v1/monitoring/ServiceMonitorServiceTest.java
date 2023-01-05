@@ -22,7 +22,6 @@ import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
-import io.javaoperatorsdk.operator.Operator;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
@@ -33,9 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @WithKubernetesTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
 public class ServiceMonitorServiceTest {
-
-    @Inject
-    Operator operator;
 
     @Inject
     ServiceMonitorService serviceMonitorService;
@@ -49,7 +45,6 @@ public class ServiceMonitorServiceTest {
     @BeforeEach
     void setup() {
         kubernetesResourcePatcher.cleanUp();
-        operator.start();
     }
 
     @Test
