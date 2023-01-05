@@ -84,7 +84,7 @@ public class Fixtures {
         b.setOwner(TestConstants.DEFAULT_USER_NAME);
         b.setName(name);
         b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        b.setEndpoint("https://bridge.redhat.com");
+        b.setEndpoint(TestConstants.DEFAULT_BRIDGE_ENDPOINT);
         b.setCloudProvider(TestConstants.DEFAULT_CLOUD_PROVIDER);
         b.setRegion(TestConstants.DEFAULT_REGION);
         b.setSubscriptionId(UUID.randomUUID().toString());
