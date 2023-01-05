@@ -24,6 +24,7 @@ public class BridgeIngressStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> INGRESS_CONDITIONS = new HashSet<>() {
         {
+            add(new Condition(ConditionTypeConstants.AUGMENTING, ConditionStatus.Unknown));
             add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
             add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
             add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.Unknown));
@@ -41,15 +42,9 @@ public class BridgeIngressStatus extends CustomResourceStatus {
         if (isReady()) {
             return ManagedResourceStatusV1.READY;
         }
-        if (isConditionTypeFalse(ConditionTypeConstants.READY)
-                && !isConditionTypeTrue(SECRET_AVAILABLE)
-                && !isConditionTypeTrue(CONFIG_MAP_AVAILABLE)
-                && !isConditionTypeTrue(KNATIVE_BROKER_AVAILABLE)
-                && !isConditionTypeTrue(AUTHORISATION_POLICY_AVAILABLE)
-                && !isConditionTypeTrue(NETWORK_RESOURCE_AVAILABLE)) {
+        if (!isAugmentingTrueOrUnknown()) {
             return ManagedResourceStatusV1.FAILED;
         }
         return ManagedResourceStatusV1.PROVISIONING;
     }
-
 }

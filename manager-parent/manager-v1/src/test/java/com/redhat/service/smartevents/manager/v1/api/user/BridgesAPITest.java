@@ -21,6 +21,7 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Inv
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
@@ -90,6 +91,7 @@ public class BridgesAPITest {
     @Inject
     BridgeErrorDAO errorDAO;
 
+    @V1
     @InjectMock
     @SuppressWarnings("unused")
     // Effectively disable Work scheduling and execution without disabling Quarkus's Quartz.

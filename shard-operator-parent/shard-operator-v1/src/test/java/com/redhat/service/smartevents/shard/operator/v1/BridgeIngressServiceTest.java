@@ -33,6 +33,7 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.javaoperatorsdk.operator.Operator;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -55,6 +56,9 @@ import static org.mockito.Mockito.when;
 @WithOpenShiftTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
 public class BridgeIngressServiceTest {
+
+    @Inject
+    Operator operator;
 
     @Inject
     BridgeIngressService bridgeIngressService;
@@ -84,6 +88,7 @@ public class BridgeIngressServiceTest {
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesResourcePatcher.cleanUp();
+        operator.start();
 
         when(templateProvider.loadBridgeIngressSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressConfigMapTemplate(any(), any())).thenCallRealMethod();

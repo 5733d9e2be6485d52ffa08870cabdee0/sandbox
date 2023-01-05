@@ -9,6 +9,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -40,6 +41,7 @@ public class ProcessorWorkerTest {
 
     private static final String TEST_RESOURCE_ID = "123";
 
+    @V2
     @InjectMock
     WorkManager workManagerMock;
 
