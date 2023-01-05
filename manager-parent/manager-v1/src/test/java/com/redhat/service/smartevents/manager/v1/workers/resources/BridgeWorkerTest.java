@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
@@ -80,6 +81,7 @@ class BridgeWorkerTest {
     @InjectMock
     ProcessorService processorServiceMock;
 
+    @V1
     @InjectMock
     WorkManager workManagerMock;
 

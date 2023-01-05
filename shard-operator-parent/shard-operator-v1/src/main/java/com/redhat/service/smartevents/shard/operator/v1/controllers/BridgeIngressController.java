@@ -6,9 +6,8 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -43,26 +42,29 @@ import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressS
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration(name = BridgeIngressController.NAME, labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
         EventSourceInitializer<BridgeIngress>,
-        ErrorStatusHandler<BridgeIngress> {
+        ErrorStatusHandler<BridgeIngress>,
+        Cleaner<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
+    public static final String NAME = "bridgeingresscontroller";
 
     @ConfigProperty(name = "event-bridge.ingress.deployment.timeout-seconds")
     int ingressTimeoutSeconds;
@@ -92,16 +94,14 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     OperatorMetricsService metricsService;
 
     @Override
-    public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
-
-        List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(networkingService.buildInformerEventSource(LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
-
-        return eventSources;
+    public Map<String, EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
+        return EventSourceInitializer.nameEventSources(
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, Secret.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, ConfigMap.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, KnativeBroker.class),
+                // As the authorizationPolicy is not deployed in the same namespace of the CR we have to set the annotations with the primary resource references
+                EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME, AuthorizationPolicy.class),
+                networkingService.buildInformerEventSource(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeIngress.COMPONENT_NAME));
     }
 
     @Override
@@ -112,12 +112,18 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         BridgeIngressStatus status = bridgeIngress.getStatus();
 
+        // Always mark the AUGMENTING condition as TRUE at the beginning of the reconcile loop.
+        // If we are in timeout or in another dead path, override it as FALSE.
+        // If everything is already deployed and ready, the reconcile loop exits with no update.
+        status.markConditionTrue(ConditionTypeConstants.AUGMENTING);
+
         if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeIngress,
                     new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
                             bridgeIngress.getClass().getSimpleName(),
                             bridgeIngress.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
+            status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -192,6 +198,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         if (!status.isReady()) {
             metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
+            status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
@@ -202,7 +209,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     private boolean isTimedOut(BridgeIngressStatus status) {
         Optional<Date> lastTransitionDate = status.getConditions()
                 .stream()
-                .filter(c -> Objects.nonNull(c.getLastTransitionTime()))
+                // Ignore the Augmenting condition
+                .filter(c -> Objects.nonNull(c.getLastTransitionTime()) && !c.getType().equals(ConditionTypeConstants.AUGMENTING))
                 .reduce((c1, c2) -> c1.getLastTransitionTime().after(c2.getLastTransitionTime()) ? c1 : c2)
                 .map(Condition::getLastTransitionTime);
 
@@ -216,7 +224,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     @Override
-    public DeleteControl cleanup(BridgeIngress bridgeIngress, Context context) {
+    public DeleteControl cleanup(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted except for Authorization Policy and the ingress due to https://github.com/istio/istio/issues/37221
@@ -239,9 +247,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     @Override
-    public Optional<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, RetryInfo retryInfo, RuntimeException e) {
-        if (retryInfo.isLastAttempt()) {
-
+    public ErrorStatusUpdateControl<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, Context<BridgeIngress> context, Exception e) {
+        if (context.getRetryInfo().isPresent() && context.getRetryInfo().get().isLastAttempt()) {
             BridgeIngressStatus status = bridgeIngress.getStatus();
             status.markConditionFalse(ConditionTypeConstants.READY);
 
@@ -251,9 +258,11 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                     e.getMessage());
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeIngress.getStatus().setStatusFromBridgeError(bei);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManagerOfFailure(bridgeIngress, bei);
+            return ErrorStatusUpdateControl.updateStatus(bridgeIngress);
         }
-        return Optional.of(bridgeIngress);
+        return ErrorStatusUpdateControl.noStatusUpdate();
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
@@ -302,4 +311,5 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return null;
         }
     }
+
 }

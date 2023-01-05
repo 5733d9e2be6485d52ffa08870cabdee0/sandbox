@@ -22,7 +22,7 @@ class ErrorsAPITest {
     private static Collection<Class<?>> exceptionClasses;
 
     @BeforeAll
-    private static void init() {
+    static void init() {
         exceptionClasses = ExceptionHelper.getUserExceptions();
     }
 

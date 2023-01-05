@@ -25,6 +25,7 @@ import io.fabric8.kubernetes.api.model.networking.v1.IngressSpec;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressSpecBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.ServiceBackendPortBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 public class KubernetesNetworkingService implements NetworkingService {
@@ -41,8 +42,9 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public EventSource buildInformerEventSource(String operatorName, String component) {
-        return EventSourceFactory.buildIngressesInformer(client, operatorName, component);
+    public EventSource buildInformerEventSource(EventSourceContext<?> eventSourceContext, String operatorName, String component) {
+        // As the Ingress is targeting the istio-gateway and is not deployed in the same namespace of the CR we have to set the annotations with the primary resource references
+        return EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, operatorName, component, Ingress.class);
     }
 
     @Override

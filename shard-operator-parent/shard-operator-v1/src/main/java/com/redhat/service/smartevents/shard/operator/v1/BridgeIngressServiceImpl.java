@@ -96,11 +96,11 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @Override
     public void deleteBridgeIngress(BridgeDTO bridgeDTO) {
         final String namespace = customerNamespaceProvider.resolveName(bridgeDTO.getCustomerId());
-        final boolean bridgeDeleted =
-                kubernetesClient
-                        .resources(BridgeIngress.class)
-                        .inNamespace(namespace)
-                        .delete(BridgeIngress.fromDTO(bridgeDTO, namespace));
+        final boolean bridgeDeleted = kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(namespace)
+                .withName(BridgeIngress.resolveResourceName(bridgeDTO.getId()))
+                .delete();
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());
