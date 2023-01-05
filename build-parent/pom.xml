@@ -545,6 +545,7 @@
         </property>
       </activation>
       <properties>
+        <quarkus.platform.version>2.13.5.Final-redhat-00002</quarkus.platform.version>
         <quarkus.platform.group-id>com.redhat.quarkus.platform</quarkus.platform.group-id>
       </properties>
     </profile>
