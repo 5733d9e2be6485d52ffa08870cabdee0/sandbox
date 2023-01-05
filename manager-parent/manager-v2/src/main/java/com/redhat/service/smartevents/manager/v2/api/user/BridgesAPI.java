@@ -8,7 +8,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -97,22 +96,6 @@ public class BridgesAPI {
         String owner = identityResolver.resolveOwner(jwt);
         Bridge bridge = bridgeService.createBridge(customerId, organisationId, owner, bridgeRequest);
         return Response.accepted(bridgeService.toResponse(bridge)).build();
-    }
-
-    @APIResponses(value = {
-            @APIResponse(description = "Accepted.", responseCode = "202",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponse.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
-            @APIResponse(description = "Unauthorized.", responseCode = "401", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
-            @APIResponse(description = "Forbidden.", responseCode = "403", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
-            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
-    })
-    @Operation(summary = "Update a Bridge instance", description = "Update a Bridge instance for the authenticated user.")
-    @PUT
-    @Path("{bridgeId}")
-    public Response updateBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid BridgeRequest bridgeRequest) {
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Not implemented yet.").build();
     }
 
     @APIResponses(value = {
