@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
@@ -32,10 +31,11 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQ
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
@@ -161,8 +161,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setType(processorType);
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
-        newProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
+        newProcessor.setStatus(ManagedResourceStatusV1.ACCEPTED);
+        newProcessor.setDependencyStatus(ManagedResourceStatusV1.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShard(newProcessor.getId()).getId());
         newProcessor.setGeneration(generation);
@@ -313,8 +313,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Create new definition copying existing properties
         existingProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
-        existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
+        existingProcessor.setStatus(ManagedResourceStatusV1.ACCEPTED);
+        existingProcessor.setDependencyStatus(ManagedResourceStatusV1.ACCEPTED);
         existingProcessor.setDefinition(updatedDefinition);
         existingProcessor.setGeneration(nextGeneration);
         existingProcessor.setErrorId(null);
@@ -391,11 +391,11 @@ public class ProcessorServiceImpl implements ProcessorService {
                 // can lead to the Bridge being FAILED by the BridgeWorker if the Processor is an Error Handler.
                 // Therefore, if a subsequent READY state is emitted we may need to reflect this in the Bridge.
                 if (processor.getType() == ProcessorType.ERROR_HANDLER) {
-                    if (bridge.getDependencyStatus() == ManagedResourceStatus.FAILED) {
+                    if (bridge.getDependencyStatus() == ManagedResourceStatusV1.FAILED) {
                         bridge.setErrorId(null);
                         bridge.setErrorUUID(null);
-                        bridge.setDependencyStatus(ManagedResourceStatus.READY);
-                        bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.PREPARING));
+                        bridge.setDependencyStatus(ManagedResourceStatusV1.READY);
+                        bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatusV1.PREPARING));
                     }
                 }
                 metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
@@ -451,8 +451,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         // Processor and Connector deletion and related Work creation should always be in the same transaction
-        processor.setStatus(ManagedResourceStatus.DEPROVISION);
-        processor.setDependencyStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setStatus(ManagedResourceStatusV1.DEPROVISION);
+        processor.setDependencyStatus(ManagedResourceStatusV1.DEPROVISION);
         processor.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         connectorService.deleteConnectorEntity(processor);

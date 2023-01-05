@@ -25,7 +25,6 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Ite
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
@@ -35,6 +34,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
@@ -52,11 +52,12 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.FAILED;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.UPDATE_ACCEPTED;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -371,7 +372,7 @@ public class ProcessorServiceImplTest {
 
         Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request);
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
-        assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
+        assertThat(updatedResponse.getStatus()).isEqualTo(UPDATE_ACCEPTED);
 
         assertThat(updatedResponse.getFlows()).isNotNull();
         ObjectNode updatedFlows = updatedResponse.getFlows();
@@ -381,7 +382,7 @@ public class ProcessorServiceImplTest {
         verify(workManager, times(1)).schedule(processorCaptor.capture());
         assertThat(processorCaptor.getValue()).isEqualTo(existingProcessor);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(existingProcessor)).isEqualTo(ACCEPTED);
+        assertThat(StatusUtilities.getManagedResourceStatus(existingProcessor)).isEqualTo(UPDATE_ACCEPTED);
         assertThat(existingProcessor.getOperation().getType()).isEqualTo(OperationType.UPDATE);
         assertThat(existingProcessor.getOperation().getRequestedAt()).isNotNull();
     }

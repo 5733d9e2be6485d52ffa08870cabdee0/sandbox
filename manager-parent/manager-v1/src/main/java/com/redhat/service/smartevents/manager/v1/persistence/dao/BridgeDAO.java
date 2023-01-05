@@ -8,8 +8,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -49,7 +49,7 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         PanacheQuery<Bridge> query = find("#BRIDGE.findByCustomerId", parameters);
 
         String filterName = queryInfo.getFilterInfo().getFilterName();
-        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
+        Set<ManagedResourceStatusV1> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterName)) {
             query.filter("byName", Parameters.with("name", filterName + "%"));
         }

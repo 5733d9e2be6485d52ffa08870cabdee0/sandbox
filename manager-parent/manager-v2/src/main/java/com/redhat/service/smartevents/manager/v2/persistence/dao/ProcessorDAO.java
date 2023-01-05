@@ -13,8 +13,8 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
@@ -58,7 +58,7 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
         // performance issues we might move the filtering to the database adapting the database schema accordingly.
 
         List<Processor> filtered = query.list();
-        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
+        Set<ManagedResourceStatusV2> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             // Calculate the status of the resource and apply filter.
             filtered = filtered.stream().filter(x -> filterStatus.contains(StatusUtilities.getManagedResourceStatus(x))).collect(Collectors.toList());

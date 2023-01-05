@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
@@ -49,7 +49,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
                 processor.getId());
         // Transition resource to PREPARING status.
         // PROVISIONING is handled by the Operator.
-        processor.setStatus(ManagedResourceStatus.PREPARING);
+        processor.setStatus(ManagedResourceStatusV1.PREPARING);
         processor = persist(processor);
 
         if (hasZeroConnectors(processor)) {
@@ -57,7 +57,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
                     "No dependencies required for '{}' [{}]",
                     processor.getName(),
                     processor.getId());
-            processor.setDependencyStatus(ManagedResourceStatus.READY);
+            processor.setDependencyStatus(ManagedResourceStatusV1.READY);
             return persist(processor);
         }
 
@@ -67,8 +67,8 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         processor.setDependencyStatus(updatedConnectorEntity.getStatus());
 
         // If the Connector failed we should mark the Processor as failed too
-        if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
-            processor.setStatus(ManagedResourceStatus.FAILED);
+        if (updatedConnectorEntity.getStatus() == ManagedResourceStatusV1.FAILED) {
+            processor.setStatus(ManagedResourceStatusV1.FAILED);
             processor.setErrorId(updatedConnectorEntity.getErrorId());
             processor.setErrorUUID(updatedConnectorEntity.getErrorUUID());
         }
@@ -92,7 +92,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
             LOGGER.debug("No dependencies required for '{}' [{}]",
                     processor.getName(),
                     processor.getId());
-            processor.setDependencyStatus(ManagedResourceStatus.DELETED);
+            processor.setDependencyStatus(ManagedResourceStatusV1.DELETED);
             return persist(processor);
         }
 
@@ -101,8 +101,8 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         processor.setDependencyStatus(updatedConnectorEntity.getStatus());
 
         // If the Connector failed we should mark the Processor as failed too
-        if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
-            processor.setStatus(ManagedResourceStatus.FAILED);
+        if (updatedConnectorEntity.getStatus() == ManagedResourceStatusV1.FAILED) {
+            processor.setStatus(ManagedResourceStatusV1.FAILED);
             processor.setErrorId(updatedConnectorEntity.getErrorId());
             processor.setErrorUUID(updatedConnectorEntity.getErrorUUID());
         }

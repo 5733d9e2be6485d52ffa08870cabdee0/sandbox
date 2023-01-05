@@ -2,9 +2,9 @@ package com.redhat.service.smartevents.manager.v1.metrics;
 
 import java.util.Objects;
 
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
@@ -53,26 +53,26 @@ public final class ManagedResourceOperationMapper {
      * @return
      */
     public static ManagedResourceOperation inferOperation(ManagedResourceV1 managedResource, ManagedResourceStatusUpdateDTO updateDTO) {
-        ManagedResourceStatus updateStatus = updateDTO.getStatus();
-        ManagedResourceStatus resourceStatus = managedResource.getStatus();
-        if (resourceStatus.equals(ManagedResourceStatus.DEPROVISION)
-                || resourceStatus.equals(ManagedResourceStatus.DELETING)) {
-            if (updateStatus.equals(ManagedResourceStatus.DELETED)) {
+        ManagedResourceStatusV1 updateStatus = updateDTO.getStatus();
+        ManagedResourceStatusV1 resourceStatus = managedResource.getStatus();
+        if (resourceStatus.equals(ManagedResourceStatusV1.DEPROVISION)
+                || resourceStatus.equals(ManagedResourceStatusV1.DELETING)) {
+            if (updateStatus.equals(ManagedResourceStatusV1.DELETED)) {
                 return ManagedResourceOperation.DELETE;
-            } else if (updateStatus.equals(ManagedResourceStatus.FAILED)) {
+            } else if (updateStatus.equals(ManagedResourceStatusV1.FAILED)) {
                 return ManagedResourceOperation.FAILED_DELETE;
             }
         }
-        if (resourceStatus.equals(ManagedResourceStatus.PREPARING)
-                || resourceStatus.equals(ManagedResourceStatus.PROVISIONING)
-                || resourceStatus.equals(ManagedResourceStatus.FAILED)) {
-            if (updateStatus.equals(ManagedResourceStatus.READY)) {
+        if (resourceStatus.equals(ManagedResourceStatusV1.PREPARING)
+                || resourceStatus.equals(ManagedResourceStatusV1.PROVISIONING)
+                || resourceStatus.equals(ManagedResourceStatusV1.FAILED)) {
+            if (updateStatus.equals(ManagedResourceStatusV1.READY)) {
                 if (Objects.isNull(managedResource.getModifiedAt())) {
                     return ManagedResourceOperation.CREATE;
                 } else {
                     return ManagedResourceOperation.UPDATE;
                 }
-            } else if (updateStatus.equals(ManagedResourceStatus.FAILED)) {
+            } else if (updateStatus.equals(ManagedResourceStatusV1.FAILED)) {
                 if (Objects.isNull(managedResource.getModifiedAt())) {
                     return ManagedResourceOperation.FAILED_CREATE;
                 } else {

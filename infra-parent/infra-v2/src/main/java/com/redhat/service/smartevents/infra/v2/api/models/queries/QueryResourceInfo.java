@@ -1,10 +1,12 @@
-package com.redhat.service.smartevents.infra.core.models.queries;
+package com.redhat.service.smartevents.infra.v2.api.models.queries;
 
 import java.util.Objects;
 
 import javax.ws.rs.BeanParam;
 
-import static com.redhat.service.smartevents.infra.core.models.queries.QueryFilterInfo.QueryFilterInfoBuilder.filter;
+import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
+
+import static com.redhat.service.smartevents.infra.v2.api.models.queries.QueryFilterInfo.QueryFilterInfoBuilder.filter;
 
 public class QueryResourceInfo extends QueryPageInfo {
 

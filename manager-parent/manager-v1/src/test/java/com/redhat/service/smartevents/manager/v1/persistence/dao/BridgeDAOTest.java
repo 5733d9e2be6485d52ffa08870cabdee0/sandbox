@@ -11,8 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
@@ -20,9 +20,9 @@ import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
 
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.infra.core.models.queries.QueryFilterInfo.QueryFilterInfoBuilder.filter;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.queries.QueryFilterInfo.QueryFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -55,7 +55,7 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being completed
-        bridge.setStatus(ManagedResourceStatus.PREPARING);
+        bridge.setStatus(ManagedResourceStatusV1.PREPARING);
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
@@ -63,7 +63,7 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
         // Emulate dependencies being completed and Operator started provisioning
-        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridge.setStatus(ManagedResourceStatusV1.PROVISIONING);
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
@@ -71,7 +71,7 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
         // Emulate de-provision request
-        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setStatus(ManagedResourceStatusV1.DEPROVISION);
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
@@ -79,15 +79,15 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being deleted
-        bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
+        bridge.setDependencyStatus(ManagedResourceStatusV1.DELETED);
         bridgeDAO.persist(bridge);
 
         retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
         // Emulate dependencies being deleted and Operator started deleting
-        bridge.setStatus(ManagedResourceStatus.DELETING);
-        bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
+        bridge.setStatus(ManagedResourceStatusV1.DELETING);
+        bridge.setDependencyStatus(ManagedResourceStatusV1.DELETED);
         bridgeDAO.persist(bridge);
 
         retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);

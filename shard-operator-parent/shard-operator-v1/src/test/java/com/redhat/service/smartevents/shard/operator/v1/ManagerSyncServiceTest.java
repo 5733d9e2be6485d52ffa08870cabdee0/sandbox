@@ -13,9 +13,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
@@ -74,8 +74,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
     }
 
     private void doBridgeDeployment(boolean isSuccessful) throws JsonProcessingException, InterruptedException {
-        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.PREPARING, 1);
-        BridgeDTO bridge2 = makeBridgeDTO(ManagedResourceStatus.PREPARING, 2);
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatusV1.PREPARING, 1);
+        BridgeDTO bridge2 = makeBridgeDTO(ManagedResourceStatusV1.PREPARING, 2);
         stubBridgesToDeployOrDelete(List.of(bridge1, bridge2));
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
@@ -129,7 +129,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         doBridgeDeployment();
 
         // Second check provisioned Bridge is deleted
-        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatusV1.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
         String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
@@ -149,7 +149,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
     @Test
     public void testBridgesAreDeletedWhenNotDeployed() throws JsonProcessingException, InterruptedException {
-        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatusV1.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
         String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
@@ -211,7 +211,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
         if (isSuccessful) {
             assertJsonRequest(
-                    objectMapper.writeValueAsString(new ProcessorManagedResourceStatusUpdateDTO(processor.getId(), processor.getCustomerId(), processor.getBridgeId(), ManagedResourceStatus.READY)),
+                    objectMapper.writeValueAsString(new ProcessorManagedResourceStatusUpdateDTO(processor.getId(), processor.getCustomerId(), processor.getBridgeId(), ManagedResourceStatusV1.READY)),
                     V1APIConstants.V1_SHARD_API_BASE_PATH + "processors");
         }
     }
@@ -224,7 +224,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
         // Second check provisioned Processor is deleted
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
-        processor.setStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setStatus(ManagedResourceStatusV1.DEPROVISION);
 
         stubProcessorsToDeployOrDelete(List.of(processor));
         stubProcessorUpdate();
@@ -248,7 +248,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
     @Test
     public void testProcessorsAreDeletedWhenNotDeployed() throws JsonProcessingException, InterruptedException {
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
-        processor.setStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setStatus(ManagedResourceStatusV1.DEPROVISION);
 
         stubProcessorsToDeployOrDelete(List.of(processor));
         stubProcessorUpdate();

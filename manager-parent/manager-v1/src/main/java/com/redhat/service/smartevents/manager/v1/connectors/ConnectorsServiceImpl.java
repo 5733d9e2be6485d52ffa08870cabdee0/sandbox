@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
@@ -93,8 +93,8 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         newConnectorEntity.setType(connectorType);
         newConnectorEntity.setName(newConnectorName);
-        newConnectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
-        newConnectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
+        newConnectorEntity.setStatus(ManagedResourceStatusV1.ACCEPTED);
+        newConnectorEntity.setDependencyStatus(ManagedResourceStatusV1.ACCEPTED);
         newConnectorEntity.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setTopicName(topicName);
@@ -109,8 +109,8 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     // Connector should always be marked for destruction in the same transaction as a Processor
     public void deleteConnectorEntity(Processor processor) {
         Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId())).ifPresent(c -> {
-            c.setStatus(ManagedResourceStatus.DEPROVISION);
-            c.setDependencyStatus(ManagedResourceStatus.DEPROVISION);
+            c.setStatus(ManagedResourceStatusV1.DEPROVISION);
+            c.setDependencyStatus(ManagedResourceStatusV1.DEPROVISION);
         });
     }
 
@@ -135,8 +135,8 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         if (processor.getGeneration() > 0) {
             connectorEntity.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
-            connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
-            connectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
+            connectorEntity.setStatus(ManagedResourceStatusV1.ACCEPTED);
+            connectorEntity.setDependencyStatus(ManagedResourceStatusV1.ACCEPTED);
             connectorEntity.setDefinition(updatedConnectionDefinition);
         } else {
             LOGGER.info("ConnectorEntity definition for Processor {} unchanged. No update performed.", processor.getId());

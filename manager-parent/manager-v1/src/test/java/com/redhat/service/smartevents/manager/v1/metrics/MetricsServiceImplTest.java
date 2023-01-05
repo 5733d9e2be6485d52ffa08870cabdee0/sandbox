@@ -14,7 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
@@ -55,7 +55,7 @@ public class MetricsServiceImplTest {
     @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationStart(MetricsOperation metricsOperation) {
         ManagedResourceV1 resource = new ManagedResourceV1();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
+        ManagedResourceStatusV1 status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatusV1.DEPROVISION : ManagedResourceStatusV1.ACCEPTED;
         resource.setStatus(status);
         metricsService.onOperationStart(resource, metricsOperation);
 
@@ -67,7 +67,7 @@ public class MetricsServiceImplTest {
     @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationComplete_Success(MetricsOperation metricsOperation) {
         ManagedResourceV1 resource = new ManagedResourceV1();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
+        ManagedResourceStatusV1 status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatusV1.DELETED : ManagedResourceStatusV1.READY;
         resource.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(4));
         resource.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
         resource.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
@@ -84,7 +84,7 @@ public class MetricsServiceImplTest {
     @Test
     public void onOperationComplete_Failed() {
         ManagedResourceV1 resource = new ManagedResourceV1();
-        resource.setStatus(ManagedResourceStatus.FAILED);
+        resource.setStatus(ManagedResourceStatusV1.FAILED);
 
         metricsService.onOperationComplete(resource, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 

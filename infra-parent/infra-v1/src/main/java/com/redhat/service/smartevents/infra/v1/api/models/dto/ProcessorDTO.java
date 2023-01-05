@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
@@ -34,7 +34,7 @@ public class ProcessorDTO {
     private String owner;
 
     @JsonProperty("status")
-    private ManagedResourceStatus status;
+    private ManagedResourceStatusV1 status;
 
     @JsonProperty("kafkaConnection")
     private KafkaConnectionDTO kafkaConnection;
@@ -95,11 +95,11 @@ public class ProcessorDTO {
         this.owner = owner;
     }
 
-    public ManagedResourceStatus getStatus() {
+    public ManagedResourceStatusV1 getStatus() {
         return status;
     }
 
-    public void setStatus(ManagedResourceStatus status) {
+    public void setStatus(ManagedResourceStatusV1 status) {
         this.status = status;
     }
 

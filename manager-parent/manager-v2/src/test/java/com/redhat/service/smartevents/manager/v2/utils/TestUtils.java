@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
@@ -41,7 +41,7 @@ public class TestUtils {
                 .get(V2APIConstants.V2_USER_API_BASE_PATH + "?name=" + name);
     }
 
-    public static Response listBridgesFilterByStatus(ManagedResourceStatus... status) {
+    public static Response listBridgesFilterByStatus(ManagedResourceStatusV2... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?" + queryString);
     }
@@ -51,7 +51,7 @@ public class TestUtils {
         return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?" + queryString);
     }
 
-    public static Response listBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
+    public static Response listBridgesFilterByNameAndStatus(String name, ManagedResourceStatusV2... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
     }
@@ -87,7 +87,7 @@ public class TestUtils {
                 .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?name=" + name);
     }
 
-    public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatus... status) {
+    public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatusV2... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?" + queryString);
     }
@@ -97,7 +97,7 @@ public class TestUtils {
         return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors/?" + queryString);
     }
 
-    public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatus... status) {
+    public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatusV2... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest()
                 .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&" + queryString);

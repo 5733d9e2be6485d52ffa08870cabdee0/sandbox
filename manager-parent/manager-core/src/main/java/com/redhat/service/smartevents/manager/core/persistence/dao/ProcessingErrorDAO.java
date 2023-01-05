@@ -6,7 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.manager.core.persistence.models.ProcessingError;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -22,7 +22,7 @@ public class ProcessingErrorDAO implements PanacheRepositoryBase<ProcessingError
     private static final String CLEANUP_PROCEDURE = "cleanup_processing_error";
     private static final String CLEANUP_QUERY = String.format("CALL %s(?)", CLEANUP_PROCEDURE);
 
-    public ListResult<ProcessingError> findByBridgeIdOrdered(String bridgeId, QueryResourceInfo queryInfo) {
+    public ListResult<ProcessingError> findByBridgeIdOrdered(String bridgeId, QueryPageInfo queryInfo) {
         PanacheQuery<ProcessingError> query = find("#" + FIND_BY_BRIDGE_ID_ORDERED_QUERY, Parameters.with("bridgeId", bridgeId));
         long total = query.count();
         List<ProcessingError> processingErrors = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();

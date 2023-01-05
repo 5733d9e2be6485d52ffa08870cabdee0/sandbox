@@ -42,7 +42,7 @@ import com.redhat.service.smartevents.manager.v1.models.ManagedDefinedResourceV1
 @Entity
 @FilterDefs({
         @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
-        @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.core.persistence.EnumTypeManagedResourceStatus") })
+        @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.v1.persistence.EnumTypeManagedResourceStatus") })
 })
 @Filters({
         @Filter(name = "byName", condition = "name like :name"),

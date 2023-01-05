@@ -14,8 +14,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v2.api.V2;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
@@ -35,9 +35,9 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.DELETING;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PREPARING;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PROVISIONING;
 import static com.redhat.service.smartevents.manager.v2.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -95,7 +95,7 @@ class BridgeWorkerTest {
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
     void testProvisionWorkWithKnownResource(
-            ManagedResourceStatus status,
+            ManagedResourceStatusV2 status,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {
@@ -139,7 +139,7 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParams")
-    void testDeletionWorkWithKnownResource(ManagedResourceStatus status,
+    void testDeletionWorkWithKnownResource(ManagedResourceStatusV2 status,
             boolean throwRhoasError,
             boolean throwDnsError,
             boolean isWorkComplete) {

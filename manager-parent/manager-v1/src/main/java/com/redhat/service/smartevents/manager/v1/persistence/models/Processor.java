@@ -77,7 +77,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Entity
 @FilterDefs({
         @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
-        @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.core.persistence.EnumTypeManagedResourceStatus") }),
+        @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.v1.persistence.EnumTypeManagedResourceStatus") }),
         @FilterDef(name = "byType", parameters = { @ParamDef(name = "ptype", type = "com.redhat.service.smartevents.manager.v1.persistence.EnumTypeProcessorType") })
 })
 @Filters({
