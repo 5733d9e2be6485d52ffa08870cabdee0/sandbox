@@ -57,6 +57,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResource
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.FAILED;
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PROVISIONING;
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.UPDATE_ACCEPTED;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -371,7 +372,7 @@ public class ProcessorServiceImplTest {
 
         Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request);
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
-        assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
+        assertThat(updatedResponse.getStatus()).isEqualTo(UPDATE_ACCEPTED);
 
         assertThat(updatedResponse.getFlows()).isNotNull();
         ObjectNode updatedFlows = updatedResponse.getFlows();
@@ -381,7 +382,7 @@ public class ProcessorServiceImplTest {
         verify(workManager, times(1)).schedule(processorCaptor.capture());
         assertThat(processorCaptor.getValue()).isEqualTo(existingProcessor);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(existingProcessor)).isEqualTo(ACCEPTED);
+        assertThat(StatusUtilities.getManagedResourceStatus(existingProcessor)).isEqualTo(UPDATE_ACCEPTED);
         assertThat(existingProcessor.getOperation().getType()).isEqualTo(OperationType.UPDATE);
         assertThat(existingProcessor.getOperation().getRequestedAt()).isNotNull();
     }
