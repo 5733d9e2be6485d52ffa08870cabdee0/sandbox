@@ -2,7 +2,9 @@ package com.redhat.service.smartevents.shard.operator.v2.controllers;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,7 +17,6 @@ import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
-import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
@@ -26,15 +27,14 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeS
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
-import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
@@ -48,8 +48,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditio
 @ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
 public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         EventSourceInitializer<ManagedBridge>,
-        ErrorStatusHandler<ManagedBridge>,
-        Cleaner<ManagedBridge> {
+        ErrorStatusHandler<ManagedBridge> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedBridgeController.class);
 
@@ -134,19 +133,21 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
     }
 
     @Override
-    public Map<String, EventSource> prepareEventSources(EventSourceContext<ManagedBridge> eventSourceContext) {
-        return EventSourceInitializer.nameEventSources(
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, Secret.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, ConfigMap.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, KnativeBroker.class),
-                // As the authorizationPolicy is not deployed in the same namespace of the CR we have to set the annotations with the primary resource references
-                EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME, AuthorizationPolicy.class),
-                networkingService.buildInformerEventSource(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
+    public List<EventSource> prepareEventSources(EventSourceContext<ManagedBridge> context) {
+
+        List<EventSource> eventSources = new ArrayList<>();
+        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
+        eventSources.add(networkingService.buildInformerEventSource(LabelsBuilder.V2_OPERATOR_NAME, ManagedBridge.COMPONENT_NAME));
+
+        return eventSources;
     }
 
     @Override
-    public ErrorStatusUpdateControl<ManagedBridge> updateErrorStatus(ManagedBridge managedBridge, Context<ManagedBridge> context, Exception e) {
-        return ErrorStatusUpdateControl.noStatusUpdate();
+    public Optional<ManagedBridge> updateErrorStatus(ManagedBridge resource, RetryInfo retryInfo, RuntimeException e) {
+        return Optional.empty();
     }
 
     private String extractBrokerPath(KnativeBroker broker) {

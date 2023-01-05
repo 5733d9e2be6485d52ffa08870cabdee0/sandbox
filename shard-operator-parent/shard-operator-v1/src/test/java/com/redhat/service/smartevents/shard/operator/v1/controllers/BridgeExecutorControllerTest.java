@@ -22,7 +22,6 @@ import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
-import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -36,9 +35,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BridgeExecutorControllerTest {
 
     @Inject
-    Operator operator;
-
-    @Inject
     BridgeExecutorController bridgeExecutorController;
 
     @Inject
@@ -50,7 +46,6 @@ public class BridgeExecutorControllerTest {
     @BeforeEach
     void setup() {
         kubernetesResourcePatcher.cleanUp();
-        operator.start();
     }
 
     @Test

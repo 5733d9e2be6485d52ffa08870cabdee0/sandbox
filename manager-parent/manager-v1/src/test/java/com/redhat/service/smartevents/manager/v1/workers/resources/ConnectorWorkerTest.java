@@ -20,7 +20,6 @@ import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -62,7 +61,6 @@ class ConnectorWorkerTest {
     @InjectMock
     ConnectorsApiClient connectorsApiMock;
 
-    @V1
     @InjectMock
     WorkManager workManagerMock;
 

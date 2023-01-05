@@ -31,7 +31,6 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.javaoperatorsdk.operator.Operator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
@@ -41,9 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @QuarkusTest
 @WithOpenShiftTestServer
 public class ManagedBridgeServiceTest {
-
-    @Inject
-    Operator operator;
 
     @Inject
     ManagedBridgeService managedBridgeService;
@@ -65,7 +61,6 @@ public class ManagedBridgeServiceTest {
     @BeforeEach
     public void beforeEach() {
         kubernetesResourcePatcher.cleanUp();
-        operator.start();
     }
 
     @Test

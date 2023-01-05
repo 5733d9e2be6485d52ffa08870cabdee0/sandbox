@@ -4,8 +4,9 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -43,29 +44,25 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
-import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
-import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
-@ControllerConfiguration(name = BridgeExecutorController.NAME, labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration(labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
 public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
-        EventSourceInitializer<BridgeExecutor>,
-        ErrorStatusHandler<BridgeExecutor>,
-        Cleaner<BridgeExecutor> {
+        EventSourceInitializer<BridgeExecutor>, ErrorStatusHandler<BridgeExecutor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorController.class);
-    public static final String NAME = "bridgeexecutorcontroller";
 
     @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
     int executorTimeoutSeconds;
@@ -92,26 +89,24 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     OperatorMetricsService metricsService;
 
     @Override
-    public Map<String, EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
-        return EventSourceInitializer.nameEventSources(
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, Secret.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, Service.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, Deployment.class),
-                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME, ServiceMonitor.class));
+    public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
+
+        List<EventSource> eventSources = new ArrayList<>();
+        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, LabelsBuilder.V1_OPERATOR_NAME, BridgeExecutor.COMPONENT_NAME));
+
+        return eventSources;
     }
 
     @Override
-    public UpdateControl<BridgeExecutor> reconcile(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
+    public UpdateControl<BridgeExecutor> reconcile(BridgeExecutor bridgeExecutor, Context context) {
         LOGGER.info("Create or update BridgeProcessor: '{}' in namespace '{}'",
                 bridgeExecutor.getMetadata().getName(),
                 bridgeExecutor.getMetadata().getNamespace());
 
         BridgeExecutorStatus status = bridgeExecutor.getStatus();
-
-        // Always mark the AUGMENTING condition as TRUE at the beginning of the reconcile loop.
-        // If we are in timeout or in another dead path, override it as FALSE.
-        // If everything is already deployed and ready, the reconcile loop exits with no update.
-        status.markConditionTrue(ConditionTypeConstants.AUGMENTING);
 
         if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeExecutor,
@@ -119,7 +114,6 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                             bridgeExecutor.getClass().getSimpleName(),
                             bridgeExecutor.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
@@ -163,13 +157,11 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             status.setStatusFromDeployment(deployment);
 
             if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
                 notifyManagerOfFailure(bridgeExecutor,
                         new ProvisioningTimeOutException(DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment)));
                 // Don't reschedule reconciliation if we're in a FAILED state
                 return UpdateControl.updateStatus(bridgeExecutor);
             } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
                 notifyManagerOfFailure(bridgeExecutor,
                         new ProvisioningReplicaFailureException(DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment)));
                 // Don't reschedule reconciliation if we're in a FAILED state
@@ -215,7 +207,6 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             PrometheusNotInstalledException prometheusNotInstalledException = new PrometheusNotInstalledException(ConditionReasonConstants.PROMETHEUS_UNAVAILABLE);
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(prometheusNotInstalledException);
             status.setStatusFromBridgeError(bei);
-            status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManagerOfFailure(bridgeExecutor, bei);
 
             return UpdateControl.updateStatus(bridgeExecutor);
@@ -239,7 +230,6 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         if (!bridgeExecutor.getStatus().isReady()) {
             metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
-            status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
@@ -250,8 +240,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     private boolean isTimedOut(BridgeExecutorStatus status) {
         Optional<Date> lastTransitionDate = status.getConditions()
                 .stream()
-                // Ignore the Augmenting condition
-                .filter(c -> Objects.nonNull(c.getLastTransitionTime()) && !c.getType().equals(ConditionTypeConstants.AUGMENTING))
+                .filter(c -> Objects.nonNull(c.getLastTransitionTime()))
                 .reduce((c1, c2) -> c1.getLastTransitionTime().after(c2.getLastTransitionTime()) ? c1 : c2)
                 .map(Condition::getLastTransitionTime);
 
@@ -261,12 +250,11 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         ZonedDateTime zonedLastTransition = ZonedDateTime.ofInstant(lastTransitionDate.get().toInstant(), ZoneOffset.UTC);
         ZonedDateTime zonedNow = ZonedDateTime.now(ZoneOffset.UTC);
-
         return zonedNow.minus(Duration.of(executorTimeoutSeconds, ChronoUnit.SECONDS)).isAfter(zonedLastTransition);
     }
 
     @Override
-    public DeleteControl cleanup(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
+    public DeleteControl cleanup(BridgeExecutor bridgeExecutor, Context context) {
         LOGGER.info("Deleted BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted
@@ -278,15 +266,13 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     }
 
     @Override
-    public ErrorStatusUpdateControl<BridgeExecutor> updateErrorStatus(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context, Exception e) {
-        if (context.getRetryInfo().isPresent() && context.getRetryInfo().get().isLastAttempt()) {
+    public Optional<BridgeExecutor> updateErrorStatus(BridgeExecutor bridgeExecutor, RetryInfo retryInfo, RuntimeException e) {
+        if (retryInfo.isLastAttempt()) {
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
             bridgeExecutor.getStatus().setStatusFromBridgeError(bei);
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManagerOfFailure(bridgeExecutor, bei);
-            return ErrorStatusUpdateControl.updateStatus(bridgeExecutor);
         }
-        return ErrorStatusUpdateControl.noStatusUpdate();
+        return Optional.of(bridgeExecutor);
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
@@ -323,4 +309,5 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                         success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
     }
+
 }
