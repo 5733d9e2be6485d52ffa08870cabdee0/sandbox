@@ -37,6 +37,8 @@ public interface TemplateProvider {
 
     AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(HasMetadata resource, TemplateImportConfig config);
 
+    Secret loadObservabilitySecretTemplate(String name, String namespace);
+
     Gateway loadIstioGatewayTemplate();
 
     VirtualService loadIstioVirtualServiceTemplate();
