@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: event-bridge-prod
+images:
+- name: event-bridge-manager
+  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
+  newTag: 417db0459e7cbae48ced079c2dec72e8a702834f-jvm
+resources:
+- ../../base/manager
+- ../../base-openshift/manager
+- namespace.yaml
+- secrets
+- awssm-secret.yaml
+patchesStrategicMerge:
+- manager/patches/deploy.yaml
