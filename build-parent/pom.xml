@@ -58,6 +58,7 @@
     <version.json-schema-validator>1.0.69</version.json-schema-validator>
     <version.com.amazonaws>1.12.258</version.com.amazonaws>
     <version.assertj.core>3.23.1</version.assertj.core>
+    <version.io.quarkus.quarkus-jacoco>2.13.5.Final</version.io.quarkus.quarkus-jacoco>
 
     <version.io.cucumber>7.4.1</version.io.cucumber>
     <version.software.tnb>0.0.6</version.software.tnb>
@@ -255,7 +256,7 @@
       <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-jacoco</artifactId>
-        <version>${quarkus.platform.version}</version>
+        <version>${version.io.quarkus.quarkus-jacoco}</version>
         <scope>test</scope>
       </dependency>
 
@@ -304,12 +305,6 @@
 
         <plugin>
           <groupId>${quarkus.platform.group-id}</groupId>
-          <artifactId>quarkus-maven-plugin</artifactId>
-          <version>${quarkus.platform.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>io.quarkus</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>
           <version>${quarkus.platform.version}</version>
         </plugin>
