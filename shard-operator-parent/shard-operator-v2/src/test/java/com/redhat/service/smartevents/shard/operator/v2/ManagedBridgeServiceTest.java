@@ -204,6 +204,20 @@ public class ManagedBridgeServiceTest {
         Assertions.assertThat(deployedAuthPolicy).isNull();
     }
 
+    @Test
+    public void testDeleteManagedBridge() {
+        // Given
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        managedBridgeService.createManagedBridge(bridgeDTO);
+
+        // test
+        managedBridgeService.deleteManagedBridge(bridgeDTO);
+
+        // assert
+        List<ManagedBridge> deployedBridges = managedBridgeService.fetchAllManagedBridges();
+        Assertions.assertThat(deployedBridges).isEmpty();
+    }
+
     private <T extends HasMetadata> T assertV2Labels(T hasMetaData) {
         assertThat(hasMetaData).isNotNull();
         assertThat(hasMetaData.getMetadata().getLabels()).containsEntry(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.V2_OPERATOR_NAME);

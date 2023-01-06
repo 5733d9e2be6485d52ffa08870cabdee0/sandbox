@@ -5,4 +5,5 @@ resources:
   - resources/deploy-config.yaml
   - resources/bridgeingresses.com.redhat.service.bridge-v1.yml
   - resources/bridgeexecutors.com.redhat.service.bridge-v1.yml
+  - resources/managedbridges.com.redhat.service.smartevents-v1.yml
   - resources/service-account.yaml
