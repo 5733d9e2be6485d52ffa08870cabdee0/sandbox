@@ -4,23 +4,17 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
+import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
@@ -29,18 +23,20 @@ import com.redhat.service.smartevents.shard.operator.v2.ManagedProcessorService;
 import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessorStatus;
-
-import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
-import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
@@ -56,26 +52,21 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
     int executorPollIntervalMilliseconds;
 
     @Inject
-    KubernetesClient kubernetesClient;
-
-    @Inject
     ManagedProcessorService managedProcessorService;
-
-    @Inject
-    BridgeErrorHelper bridgeErrorHelper;
 
     @Inject
     OperatorMetricsService metricsService;
 
+    @Inject
+    NetworkingService networkingService;
+
     @Override
-    public List<EventSource> prepareEventSources(EventSourceContext<ManagedProcessor> eventSourceContext) {
-
-        List<EventSource> eventSources = new ArrayList<>();
-        eventSources.add(EventSourceFactory.buildResourceInformer(kubernetesClient, LabelsBuilder.V2_OPERATOR_NAME,
-                ManagedProcessor.COMPONENT_NAME,
-                CamelIntegration.class));
-
-        return eventSources;
+    public Map<String, EventSource> prepareEventSources(EventSourceContext<ManagedProcessor> eventSourceContext) {
+        return EventSourceInitializer.nameEventSources(
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedProcessor.COMPONENT_NAME, Secret.class),
+                EventSourceFactory.buildInformerFromOwnerReference(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedProcessor.COMPONENT_NAME, ConfigMap.class),
+                EventSourceFactory.buildInformerFromPrimaryResource(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedProcessor.COMPONENT_NAME, CamelIntegration.class),
+                networkingService.buildInformerEventSource(eventSourceContext, LabelsBuilder.V2_OPERATOR_NAME, ManagedProcessor.COMPONENT_NAME));
     }
 
     @Override
@@ -145,25 +136,15 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
     }
 
     @Override
-    public DeleteControl cleanup(ManagedProcessor ManagedProcessor, Context context) {
-        LOGGER.info("Deleted ManagedProcessor: '{}' in namespace '{}'", ManagedProcessor.getMetadata().getName(), ManagedProcessor.getMetadata().getNamespace());
+    public ErrorStatusUpdateControl<ManagedProcessor> updateErrorStatus(ManagedProcessor processor, Context<ManagedProcessor> context, Exception e) {
+//        if (retryInfo.isLastAttempt()) {
+//            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
+//            ManagedProcessor.getStatus().setStatusFromBridgeError(bei);
+//            // notify manager it's failed
+//        }
+//        return Optional.of(ManagedProcessor);
 
-        // Linked resources are automatically deleted
-
-        metricsService.onOperationComplete(ManagedProcessor, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
-        // notify manager it's been deleted
-
-        return DeleteControl.defaultDelete();
+        // TBD
+        return null;
     }
-
-    @Override
-    public Optional<ManagedProcessor> updateErrorStatus(ManagedProcessor ManagedProcessor, RetryInfo retryInfo, RuntimeException e) {
-        if (retryInfo.isLastAttempt()) {
-            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
-            ManagedProcessor.getStatus().setStatusFromBridgeError(bei);
-            // notify manager it's failed
-        }
-        return Optional.of(ManagedProcessor);
-    }
-
 }

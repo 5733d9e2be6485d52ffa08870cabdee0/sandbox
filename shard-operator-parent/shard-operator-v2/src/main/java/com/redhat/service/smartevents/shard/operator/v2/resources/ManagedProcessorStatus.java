@@ -22,9 +22,4 @@ public class ManagedProcessorStatus extends CustomResourceStatus {
     protected ManagedProcessorStatus() {
         super(CONDITIONS);
     }
-
-    @Override
-    public ManagedResourceStatus inferManagedResourceStatus() {
-        throw new IllegalStateException("This is not required in v2");
-    }
 }

@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
+import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BridgeDTO {
@@ -32,7 +32,7 @@ public class BridgeDTO {
     private String owner;
 
     @JsonProperty("status")
-    private ManagedResourceStatusV1 status;
+    private ManagedResourceStatus status;
 
     @JsonProperty("kafkaConnection")
     private KafkaConnectionDTO kafkaConnection;
@@ -47,7 +47,7 @@ public class BridgeDTO {
             String tlsKey,
             String customerId,
             String owner,
-            ManagedResourceStatusV1 status,
+            ManagedResourceStatus status,
             KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
@@ -68,7 +68,7 @@ public class BridgeDTO {
         this.owner = owner;
     }
 
-    public void setStatus(ManagedResourceStatusV1 status) {
+    public void setStatus(ManagedResourceStatus status) {
         this.status = status;
     }
 
@@ -124,7 +124,7 @@ public class BridgeDTO {
         return name;
     }
 
-    public ManagedResourceStatusV1 getStatus() {
+    public ManagedResourceStatus getStatus() {
         return status;
     }
 

@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +40,9 @@ public class ManagedProcessorServiceImplTest {
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    NamespaceProvider namespaceProvider;
+
     @BeforeEach
     public void setup() {
 
@@ -55,44 +59,47 @@ public class ManagedProcessorServiceImplTest {
     @Test
     public void testCamelIntegrationIsProvisioned() throws JsonProcessingException {
 
-        String namespace = "namespace";
         ObjectNode flow = objectMapper.readValue("{\"from\":{\"uri\":\"fromURI\",\"steps\":[{\"to\":\"toURI\"}]}}", ObjectNode.class);
         ProcessorDTO processorDTO = new ProcessorDTO("processorId", "processorName", flow, "bridgeId", "customerId", "owner", OperationType.CREATE);
 
-        bridgeIngressService.createManagedProcessor(processorDTO, namespace);
-        waitUntiManagedProcessorExists(processorDTO, namespace);
-        ManagedProcessor managedProcessor = fetchManagedProcessorByDTONamespace(processorDTO, namespace);
+        bridgeIngressService.createManagedProcessor(processorDTO);
+        waitUntiManagedProcessorExists(processorDTO);
+        ManagedProcessor managedProcessor = fetchManagedProcessorByDTONamespace(processorDTO);
 
         CamelIntegration camelIntegration = bridgeIngressService.fetchOrCreateCamelIntegration(managedProcessor);
 
         assertThat(camelIntegration).isNotNull();
         assertThat(camelIntegration.getSpec().getFlows().get(0)).isEqualTo(flow);
-        waitUntiCamelIntegrationExists(namespace, processorDTO.getName());
+        waitUntiCamelIntegrationExists(processorDTO);
     }
 
-    private void waitUntiCamelIntegrationExists(String namespace, String name) {
+    private void waitUntiCamelIntegrationExists(ProcessorDTO processor) {
+        String namespace = namespaceProvider.getNamespaceName(processor.getBridgeId());
+
         await(Duration.ofSeconds(30),
                 Duration.ofMillis(200),
                 () -> {
                     CamelIntegration bridgeIngress = kubernetesClient
                             .resources(CamelIntegration.class)
                             .inNamespace(namespace)
-                            .withName(name)
+                            .withName(ManagedProcessor.resolveResourceName(processor.getId()))
                             .get();
                     assertThat(bridgeIngress).isNotNull();
                 });
     }
 
-    private void waitUntiManagedProcessorExists(ProcessorDTO processor, String namespace) {
+    private void waitUntiManagedProcessorExists(ProcessorDTO processor) {
         await(Duration.ofSeconds(30),
                 Duration.ofMillis(200),
                 () -> {
-                    ManagedProcessor managedProcessor = fetchManagedProcessorByDTONamespace(processor, namespace);
+                    ManagedProcessor managedProcessor = fetchManagedProcessorByDTONamespace(processor);
                     assertThat(managedProcessor).isNotNull();
                 });
     }
 
-    private ManagedProcessor fetchManagedProcessorByDTONamespace(ProcessorDTO processor, String namespace) {
+    private ManagedProcessor fetchManagedProcessorByDTONamespace(ProcessorDTO processor) {
+        String namespace = namespaceProvider.getNamespaceName(processor.getBridgeId());
+
         return kubernetesClient
                 .resources(ManagedProcessor.class)
                 .inNamespace(namespace)

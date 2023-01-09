@@ -5,40 +5,27 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
+import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProviderImplV2;
 import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
-
 import io.fabric8.kubernetes.client.KubernetesClient;
-import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
-import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
-
-import io.fabric8.kubernetes.client.KubernetesClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ManagedProcessorServiceImpl implements ManagedProcessorService {
-
-    @Inject
-    KubernetesClient kubernetesClient;
-
-    @Inject
-    NamespaceProvider namespaceProvider;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedProcessorServiceImpl.class);
 
     @Inject
     KubernetesClient kubernetesClient;
 
     @Inject
-    ObjectMapper objectMapper;
+    NamespaceProvider namespaceProvider;
 
     @Override
     public void createManagedProcessor(ProcessorDTO processorDTO) {
@@ -103,10 +90,5 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
                 .resources(CamelIntegration.class)
                 .inNamespace(processorNamespace)
                 .createOrReplace(expected);
-    }
-
-    @Override
-    public void deleteManagedProcessor(ProcessorDTO processorDTO) {
-        // TBD
     }
 }

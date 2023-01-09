@@ -8,7 +8,7 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegrati
 
 public interface ManagedProcessorService {
 
-    void createManagedProcessor(ProcessorDTO bridgeDTO, String namespace);
+    void createManagedProcessor(ProcessorDTO bridgeDTO);
 
     CamelIntegration fetchOrCreateCamelIntegration(ManagedProcessor processor);
 
