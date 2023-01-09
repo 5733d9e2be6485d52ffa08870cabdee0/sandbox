@@ -16,8 +16,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
@@ -57,9 +55,6 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
     ManagedProcessorService managedProcessorService;
 
     @Inject
-    OperatorMetricsService metricsService;
-
-    @Inject
     NetworkingService networkingService;
 
     @Override
@@ -83,7 +78,6 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
         ManagedProcessorStatus processorStatus = managedProcessor.getStatus();
 
         if (!processorStatus.isReady() && isTimedOut(processorStatus)) {
-            // notifyManagerOfFailure
             processorStatus.markConditionFalse(ConditionTypeConstants.READY);
             return UpdateControl.updateStatus(managedProcessor);
         }
@@ -108,17 +102,7 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
                 managedProcessorName,
                 managedProcessorNamespace);
 
-        // Only issue a Status Update once.
-        // This is a work-around for non-deterministic Unit Tests.
-        // See https://issues.redhat.com/browse/MGDOBR-1002
-        if (!managedProcessor.getStatus().allConditionsAreReady()) {
-            metricsService.onOperationComplete(managedProcessor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
-            processorStatus.markConditionTrue(ConditionTypeConstants.READY);
-            // Notify Manager is Ready
-            return UpdateControl.updateStatus(managedProcessor);
-        }
-
-        return UpdateControl.noUpdate();
+        return UpdateControl.updateStatus(managedProcessor);
     }
 
     private boolean isTimedOut(ManagedProcessorStatus status) {
@@ -139,13 +123,6 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
 
     @Override
     public ErrorStatusUpdateControl<ManagedProcessor> updateErrorStatus(ManagedProcessor processor, Context<ManagedProcessor> context, Exception e) {
-        //        if (retryInfo.isLastAttempt()) {
-        //            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
-        //            ManagedProcessor.getStatus().setStatusFromBridgeError(bei);
-        //            // notify manager it's failed
-        //        }
-        //        return Optional.of(ManagedProcessor);
-
         // TBD
         return null;
     }

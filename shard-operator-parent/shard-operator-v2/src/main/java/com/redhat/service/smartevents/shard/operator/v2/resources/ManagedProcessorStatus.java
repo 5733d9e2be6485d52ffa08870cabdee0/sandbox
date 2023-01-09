@@ -4,7 +4,6 @@ import java.util.HashSet;
 
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
 public class ManagedProcessorStatus extends CustomResourceStatus {
@@ -13,7 +12,6 @@ public class ManagedProcessorStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> CONDITIONS = new HashSet<>() {
         {
-            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
             add(new Condition(CAMEL_INTEGRATION_AVAILABLE, ConditionStatus.Unknown));
         }
     };

@@ -46,7 +46,7 @@ public class ManagedProcessorServiceImplTest {
     @BeforeEach
     public void setup() {
 
-        // Far from ideal... but each test assumes there are no other BridgeIngress instances in existence.
+        // Far from ideal... but each test assumes there are no other ManagedBridge instances in existence.
         // Unfortunately, however, some tests only check that provisioning either progressed to a certain
         // point of failed completely. There is therefore a good chance there's an incomplete BridgeIngress
         // in k8s when a subsequent test starts. This leads to non-deterministic behaviour of tests.
