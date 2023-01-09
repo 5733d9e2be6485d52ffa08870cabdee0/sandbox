@@ -82,15 +82,15 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
                 .withName(integrationName)
                 .get();
 
-        if (integration != null && integration.getSpec().equals(expected.getSpec())) {
+        if (integration == null || !integration.getSpec().equals(expected.getSpec())) {
+            LOGGER.info("Create/Update CamelIntegration with name '{}' in namespace '{}' for ManagedProcessor with id '{}'",
+                        integrationName, processorNamespace, processorName);
+            return kubernetesClient
+                    .resources(CamelIntegration.class)
+                    .inNamespace(processorNamespace)
+                    .createOrReplace(expected);
+        } else {
             return integration;
         }
-
-        LOGGER.info("Create/Update CamelIntegration with name '{}' in namespace '{}' for ManagedProcessor with id '{}'",
-                integrationName, processorNamespace, processorName);
-        return kubernetesClient
-                .resources(CamelIntegration.class)
-                .inNamespace(processorNamespace)
-                .createOrReplace(expected);
     }
 }
