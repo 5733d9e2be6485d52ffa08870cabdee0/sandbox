@@ -18,7 +18,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
-import com.redhat.service.smartevents.shard.operator.core.EventBridgeOidcClient;
+import com.redhat.service.smartevents.shard.operator.v2.auth.EventBridgeOidcClient;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Fixtures;
 
 import io.quarkus.test.junit.QuarkusTest;

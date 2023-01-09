@@ -31,6 +31,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
@@ -58,6 +59,7 @@ public class ProcessorsAPI {
     @Inject
     ProcessorService processorService;
 
+    @V2
     @Inject
     IdentityResolver identityResolver;
 

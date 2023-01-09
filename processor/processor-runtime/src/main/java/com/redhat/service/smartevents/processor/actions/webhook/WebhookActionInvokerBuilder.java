@@ -8,7 +8,7 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.core.auth.OidcClient;
 import com.redhat.service.smartevents.infra.core.auth.OidcClientConstants;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;

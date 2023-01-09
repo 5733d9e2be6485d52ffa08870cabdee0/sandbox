@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
@@ -55,6 +56,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     BridgeExecutorService bridgeExecutorService;
 
+    @V1
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 

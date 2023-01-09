@@ -15,7 +15,9 @@ import com.redhat.service.smartevents.manager.core.TestConstants;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.core.utils.DatabaseManagerUtils;
+import com.redhat.service.smartevents.test.resource.PostgresResource;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +29,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
+// This annotation also bootstraps Quarkus into using DevServices for ALL @QuarkusTest's
+@QuarkusTestResource(PostgresResource.class)
 public class DnsServiceOpenshiftImplTest {
 
     private static final String SUBDOMAIN = ".smartevents.bf2.dev";

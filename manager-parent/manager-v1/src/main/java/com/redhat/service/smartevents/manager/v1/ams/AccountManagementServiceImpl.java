@@ -8,8 +8,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.v1.api.V1;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
 
 import io.smallrye.mutiny.Uni;

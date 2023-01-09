@@ -20,18 +20,18 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.AMSFailException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.AMSFailException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.BadRequestException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.TermsNotAcceptedYetException;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
@@ -103,6 +103,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     ProcessingErrorService processingErrorService;
 
+    @V1
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 

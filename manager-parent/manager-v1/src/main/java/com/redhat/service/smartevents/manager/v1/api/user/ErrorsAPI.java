@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.v1.api.user;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -8,6 +9,8 @@ import javax.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.manager.core.api.user.AbstractErrorsAPI;
 
@@ -17,7 +20,13 @@ import com.redhat.service.smartevents.manager.core.api.user.AbstractErrorsAPI;
 @Produces(MediaType.APPLICATION_JSON)
 @RegisterRestClient
 public class ErrorsAPI extends AbstractErrorsAPI {
+
     public ErrorsAPI() {
-        super(V1APIConstants.V1_ERROR_API_BASE_PATH);
+        //CDI proxy
+    }
+
+    @Inject
+    public ErrorsAPI(@V1 BridgeErrorService service) {
+        super(V1APIConstants.V1_ERROR_API_BASE_PATH, service);
     }
 }

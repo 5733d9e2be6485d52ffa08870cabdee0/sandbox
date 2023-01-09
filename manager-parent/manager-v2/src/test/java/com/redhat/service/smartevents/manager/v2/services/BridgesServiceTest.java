@@ -10,9 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;

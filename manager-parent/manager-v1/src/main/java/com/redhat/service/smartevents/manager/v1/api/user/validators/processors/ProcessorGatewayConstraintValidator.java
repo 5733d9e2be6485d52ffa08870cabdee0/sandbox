@@ -6,9 +6,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorMissingGatewayException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorMultipleGatewayException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorTransformationTemplateUnsupportedException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorMissingGatewayException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorMultipleGatewayException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorTransformationTemplateUnsupportedException;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;

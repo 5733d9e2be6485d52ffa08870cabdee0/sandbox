@@ -7,7 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.GatewayProviderException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.GatewayProviderException;
 
 @ApplicationScoped
 public class ActionRuntimeImpl implements ActionRuntime {

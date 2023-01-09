@@ -23,10 +23,10 @@ import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.Error;
 import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
 import com.openshift.cloud.api.connector.models.ServiceAccount;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorCreationException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorDeletionException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorGetException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ConnectorUpdateException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ConnectorCreationException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ConnectorDeletionException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ConnectorGetException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ConnectorUpdateException;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
 
 @RequestScoped
