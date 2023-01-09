@@ -60,8 +60,8 @@ class ManagedProcessorControllerTest {
         UpdateControl<ManagedProcessor> updateControl = managedProcessorController.reconcile(managedProcessor, null);
 
         // Then
-        assertThat(updateControl.isUpdateStatus()).isFalse();
-        assertThat(managedProcessor.getStatus().isReady()).isTrue();
+        assertThat(updateControl.isUpdateStatus()).isTrue();
+        assertThat(managedProcessor.getStatus().isReady()).isFalse();
     }
 
     @Test
@@ -72,13 +72,11 @@ class ManagedProcessorControllerTest {
         // When
         UpdateControl<ManagedProcessor> updateControl = managedProcessorController.reconcile(managedProcessor, null);
 
-        String integrationName = String.format("integration-%s", managedProcessor.getMetadata().getName());
-
         // Then
         CamelIntegration camelIntegration = kubernetesClient
                 .resources(CamelIntegration.class)
                 .inNamespace(managedProcessor.getMetadata().getNamespace())
-                .withName(integrationName)
+                .withName(managedProcessor.getMetadata().getName())
                 .get();
 
         assertThat(camelIntegration).isNotNull();
