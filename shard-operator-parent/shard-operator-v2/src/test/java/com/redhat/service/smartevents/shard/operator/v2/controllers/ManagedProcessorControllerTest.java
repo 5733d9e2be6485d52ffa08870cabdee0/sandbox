@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator.v2.controllers;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,9 +10,11 @@ import com.redhat.service.smartevents.shard.operator.v2.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
+import com.redhat.service.smartevents.shard.operator.v2.utils.V2KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -25,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ManagedProcessorControllerTest {
 
     @Inject
+    Operator operator;
+
+    @Inject
     ManagedProcessorController managedProcessorController;
 
     @Inject
@@ -35,6 +41,15 @@ class ManagedProcessorControllerTest {
 
     @Inject
     ObjectMapper objectMapper;
+
+    @Inject
+    V2KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @BeforeEach
+    public void beforeEach() {
+        kubernetesResourcePatcher.cleanUp();
+        operator.start();
+    }
 
     @Test
     void testCreateNewManagedProcessor() {

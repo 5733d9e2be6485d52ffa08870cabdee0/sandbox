@@ -12,6 +12,10 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
@@ -23,6 +27,7 @@ import com.redhat.service.smartevents.shard.operator.v2.ManagedProcessorService;
 import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessorStatus;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -34,9 +39,6 @@ import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
@@ -137,12 +139,12 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
 
     @Override
     public ErrorStatusUpdateControl<ManagedProcessor> updateErrorStatus(ManagedProcessor processor, Context<ManagedProcessor> context, Exception e) {
-//        if (retryInfo.isLastAttempt()) {
-//            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
-//            ManagedProcessor.getStatus().setStatusFromBridgeError(bei);
-//            // notify manager it's failed
-//        }
-//        return Optional.of(ManagedProcessor);
+        //        if (retryInfo.isLastAttempt()) {
+        //            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
+        //            ManagedProcessor.getStatus().setStatusFromBridgeError(bei);
+        //            // notify manager it's failed
+        //        }
+        //        return Optional.of(ManagedProcessor);
 
         // TBD
         return null;

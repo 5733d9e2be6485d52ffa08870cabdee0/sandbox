@@ -137,7 +137,6 @@ public class ManagedProcessor extends CustomResource<ManagedProcessorSpec, Manag
             managedProcessorSpec.setName(processorName);
             managedProcessorSpec.setGeneration(generation);
 
-
             managedProcessorSpec.setFlows(new JsonNode[] { processorDefinition });
 
             ManagedProcessor managedProcessor = new ManagedProcessor();
