@@ -42,11 +42,12 @@ import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
-@ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
+@ControllerConfiguration(name = ManagedProcessorController.NAME, labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
 public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
         EventSourceInitializer<ManagedProcessor>, ErrorStatusHandler<ManagedProcessor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedProcessorController.class);
+    public static final String NAME = "managedprocessorcontroller";
 
     @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
     int executorTimeoutSeconds;
