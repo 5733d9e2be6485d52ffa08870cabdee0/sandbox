@@ -5,8 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.QueryParam;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryFilterInfo;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.FILTER_PROCESSOR_TYPE;
@@ -16,14 +15,22 @@ public class QueryProcessorFilterInfo extends QueryFilterInfo {
     @QueryParam(FILTER_PROCESSOR_TYPE)
     private ProcessorType filterType;
 
+    protected QueryProcessorFilterInfo() {
+    }
+
+    protected QueryProcessorFilterInfo(String filterName, Set<ManagedResourceStatusV1> filterStatus, ProcessorType filterType) {
+        super(filterName, filterStatus);
+        this.filterType = filterType;
+    }
+
     public static class QueryProcessorFilterInfoBuilder {
 
-        public static QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder filter() {
-            return new QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder();
+        public static QueryProcessorFilterInfoBuilder filter() {
+            return new QueryProcessorFilterInfoBuilder();
         }
 
         private String filterName;
-        private Set<ManagedResourceStatus> filterStatus = new HashSet<>();
+        private Set<ManagedResourceStatusV1> filterStatus = new HashSet<>();
         private ProcessorType filterType;
 
         public QueryProcessorFilterInfoBuilder by(String filterName) {
@@ -31,12 +38,12 @@ public class QueryProcessorFilterInfo extends QueryFilterInfo {
             return this;
         }
 
-        public QueryProcessorFilterInfoBuilder by(ManagedResourceStatus filterStatus) {
+        public QueryProcessorFilterInfoBuilder by(ManagedResourceStatusV1 filterStatus) {
             this.filterStatus.add(filterStatus);
             return this;
         }
 
-        public QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder by(ProcessorType filterType) {
+        public QueryProcessorFilterInfoBuilder by(ProcessorType filterType) {
             this.filterType = filterType;
             return this;
         }
@@ -45,15 +52,6 @@ public class QueryProcessorFilterInfo extends QueryFilterInfo {
             return new QueryProcessorFilterInfo(filterName, filterStatus, filterType);
         }
 
-    }
-
-    protected QueryProcessorFilterInfo() {
-
-    }
-
-    protected QueryProcessorFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus, ProcessorType filterType) {
-        super(filterName, filterStatus);
-        this.filterType = filterType;
     }
 
     public ProcessorType getFilterType() {
@@ -68,4 +66,5 @@ public class QueryProcessorFilterInfo extends QueryFilterInfo {
                 ", filterType=" + filterType +
                 '}';
     }
+
 }

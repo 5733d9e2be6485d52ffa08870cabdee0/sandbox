@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
@@ -45,7 +45,7 @@ public class ConnectorsDAOTest {
     }
 
     private Processor createPersistProcessor(Bridge bridge) {
-        Processor p = Fixtures.createProcessor(bridge, ManagedResourceStatus.ACCEPTED);
+        Processor p = Fixtures.createProcessor(bridge, ManagedResourceStatusV1.ACCEPTED);
 
         Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
@@ -67,7 +67,7 @@ public class ConnectorsDAOTest {
         return b;
     }
 
-    private ConnectorEntity createPersistConnector(Processor p, ManagedResourceStatus status) {
+    private ConnectorEntity createPersistConnector(Processor p, ManagedResourceStatusV1 status) {
         ConnectorEntity c = Fixtures.createSinkConnector(p, status);
         connectorsDAO.persist(c);
         return c;
@@ -77,7 +77,7 @@ public class ConnectorsDAOTest {
     public void findByProcessorIdName() {
         Bridge b = createPersistBridge();
         Processor p = createPersistProcessor(b);
-        ConnectorEntity c = createPersistConnector(p, ManagedResourceStatus.READY);
+        ConnectorEntity c = createPersistConnector(p, ManagedResourceStatusV1.READY);
 
         assertThat(connectorsDAO.findByProcessorIdAndName(p.getId(), c.getName())).isEqualTo(c);
     }

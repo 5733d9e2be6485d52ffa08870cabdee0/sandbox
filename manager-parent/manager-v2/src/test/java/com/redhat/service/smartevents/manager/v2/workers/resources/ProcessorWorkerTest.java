@@ -9,7 +9,8 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v2.api.V2;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
@@ -40,6 +41,7 @@ public class ProcessorWorkerTest {
 
     private static final String TEST_RESOURCE_ID = "123";
 
+    @V2
     @InjectMock
     WorkManager workManagerMock;
 
@@ -78,7 +80,7 @@ public class ProcessorWorkerTest {
 
         Processor retrieved = processorDAO.findByIdWithConditions(processor.getId());
 
-        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatusV2.PROVISIONING);
         verify(workManagerMock, never()).reschedule(any());
     }
 
@@ -103,7 +105,7 @@ public class ProcessorWorkerTest {
 
         Processor retrieved = processorDAO.findByIdWithConditions(processor.getId());
 
-        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatus.DELETING);
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatusV2.DELETING);
         verify(workManagerMock, never()).reschedule(any());
     }
 

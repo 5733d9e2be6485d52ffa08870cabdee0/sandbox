@@ -10,9 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
@@ -23,9 +23,9 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.infra.core.models.queries.QueryFilterInfo.QueryFilterInfoBuilder.filter;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
+import static com.redhat.service.smartevents.infra.v2.api.models.queries.QueryFilterInfo.QueryFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createCondition;

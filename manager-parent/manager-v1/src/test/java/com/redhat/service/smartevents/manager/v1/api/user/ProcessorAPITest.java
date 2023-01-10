@@ -16,11 +16,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.api.APIConstants;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.StringEquals;
@@ -55,8 +55,8 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType.SOURCE;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_USER_NAME;
@@ -627,7 +627,7 @@ public class ProcessorAPITest {
         TestUtils.deleteProcessor(bridge.getId(), processor.getId()).then().statusCode(202);
         ProcessorResponse processorResponse = TestUtils.getProcessor(bridge.getId(), processor.getId()).as(ProcessorResponse.class);
 
-        assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatusV1.DEPROVISION);
     }
 
     @Test
@@ -655,7 +655,7 @@ public class ProcessorAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void updateProcessorWhenBridgeNotInReadyState() {
         Bridge bridge = Fixtures.createBridge();
-        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridge.setStatus(ManagedResourceStatusV1.PROVISIONING);
         bridgeDAO.persist(bridge);
 
         Response response = TestUtils.updateProcessor(bridge.getId(),
@@ -682,7 +682,7 @@ public class ProcessorAPITest {
         Bridge bridge = Fixtures.createBridge();
         bridgeDAO.persist(bridge);
 
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.PROVISIONING);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatusV1.PROVISIONING);
         processorDAO.persist(processor);
 
         Response response = TestUtils.updateProcessor(bridge.getId(),
@@ -896,7 +896,7 @@ public class ProcessorAPITest {
     }
 
     @Transactional
-    protected void setProcessorStatus(String processorId, ManagedResourceStatus status) {
+    protected void setProcessorStatus(String processorId, ManagedResourceStatusV1 status) {
         Processor processor = processorDAO.findById(processorId);
         processor.setStatus(status);
     }

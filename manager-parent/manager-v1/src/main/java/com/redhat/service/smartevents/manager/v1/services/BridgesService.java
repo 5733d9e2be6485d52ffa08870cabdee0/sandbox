@@ -2,10 +2,10 @@ package com.redhat.service.smartevents.manager.v1.services;
 
 import java.util.List;
 
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v1.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;

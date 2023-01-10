@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.api.APIConstants;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
@@ -37,8 +37,8 @@ import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -428,7 +428,7 @@ public class ProcessorAPITest {
         TestUtils.deleteProcessor(bridge.getId(), processor.getId()).then().statusCode(202);
         ProcessorResponse processorResponse = TestUtils.getProcessor(bridge.getId(), processor.getId()).as(ProcessorResponse.class);
 
-        assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatusV2.DEPROVISION);
     }
 
     @Test

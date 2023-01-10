@@ -15,7 +15,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorType;
@@ -24,9 +23,10 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Bri
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
@@ -43,11 +43,11 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_ENDPOINT;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_NAME;
@@ -134,7 +134,7 @@ public class BridgesServiceTest {
         assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
         assertThat(retrievedBridge.getCustomerId()).isEqualTo(bridge.getCustomerId());
         // Bridges are moved to the PREPARING status by Workers
-        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatusV1.PREPARING);
         assertThat(retrievedBridge.getShardId()).isEqualTo(SHARD_ID);
     }
 
@@ -162,7 +162,7 @@ public class BridgesServiceTest {
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatusV1.PREPARING);
         assertThat(bridge.getEndpoint()).isNotNull();
 
         ListResult<Bridge> bridges = bridgesService.getBridges(DEFAULT_CUSTOMER_ID, new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE));
@@ -185,7 +185,7 @@ public class BridgesServiceTest {
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatusV1.PREPARING);
 
         // Emulate Shard setting Bridge status to PROVISIONING
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
@@ -246,7 +246,7 @@ public class BridgesServiceTest {
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatusV1.PREPARING);
 
         // Emulate Shard setting Bridge status to FAILED with Error
         BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
@@ -267,7 +267,7 @@ public class BridgesServiceTest {
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatusV1.PREPARING);
 
         // Emulate Shard setting Bridge status to FAILED with Error
         BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
@@ -458,14 +458,14 @@ public class BridgesServiceTest {
         assertThatExceptionOfType(NoQuotaAvailable.class).isThrownBy(() -> bridgesService.createBridge(DEFAULT_CUSTOMER_ID, "organisation_with_no_quota", DEFAULT_USER_NAME, request));
     }
 
-    protected Bridge createPersistBridge(ManagedResourceStatus status) {
+    protected Bridge createPersistBridge(ManagedResourceStatusV1 status) {
         Bridge b = Fixtures.createBridge();
         b.setStatus(status);
         bridgeDAO.persist(b);
         return b;
     }
 
-    protected Bridge createPersistBridge(String bridgeId, ManagedResourceStatus status) {
+    protected Bridge createPersistBridge(String bridgeId, ManagedResourceStatusV1 status) {
         Bridge b = Fixtures.createBridge();
         b.setId(bridgeId);
         b.setStatus(status);

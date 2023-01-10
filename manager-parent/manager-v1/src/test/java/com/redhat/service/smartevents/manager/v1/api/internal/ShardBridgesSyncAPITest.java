@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
@@ -42,12 +42,12 @@ import io.restassured.http.ContentType;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DELETED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PREPARING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DEPROVISION;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PREPARING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -374,7 +374,7 @@ public class ShardBridgesSyncAPITest {
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
 
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isZero();
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatusV1.ACCEPTED)).count()).isZero();
             assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(DEPROVISION)).count()).isEqualTo(1);
         });
     }

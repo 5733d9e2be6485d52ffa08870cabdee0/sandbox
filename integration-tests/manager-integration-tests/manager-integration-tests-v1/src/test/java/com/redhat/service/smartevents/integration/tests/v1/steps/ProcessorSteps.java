@@ -11,7 +11,7 @@ import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
@@ -82,7 +82,7 @@ public class ProcessorSteps {
         assertThat(response.getName()).isEqualTo(processorName);
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatusV1.ACCEPTED);
     }
 
     @When("^add a fake Processor \"([^\"]*)\" to the Bridge \"([^\"]*)\"$")
@@ -129,7 +129,7 @@ public class ProcessorSteps {
         assertThat(response.getName()).isEqualTo(processorName);
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatusV1.ACCEPTED);
     }
 
     @And("^get Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")

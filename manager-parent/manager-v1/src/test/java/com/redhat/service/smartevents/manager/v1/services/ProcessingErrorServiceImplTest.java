@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
@@ -93,7 +93,7 @@ class ProcessingErrorServiceImplTest {
 
         when(bridgesServiceMock.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
 
-        QueryResourceInfo queryInfo = new QueryResourceInfo();
+        QueryPageInfo queryInfo = new QueryPageInfo();
 
         assertThatNoException().isThrownBy(
                 () -> processingErrorService.getProcessingErrors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, queryInfo));
@@ -106,7 +106,7 @@ class ProcessingErrorServiceImplTest {
         when(bridgesServiceMock.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
                 .thenThrow(new ItemNotFoundException("Item not found"));
 
-        QueryResourceInfo queryInfo = new QueryResourceInfo();
+        QueryPageInfo queryInfo = new QueryPageInfo();
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(
                 () -> processingErrorService.getProcessingErrors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, queryInfo));
@@ -125,7 +125,7 @@ class ProcessingErrorServiceImplTest {
 
         when(bridgesServiceMock.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
 
-        QueryResourceInfo queryInfo = new QueryResourceInfo();
+        QueryPageInfo queryInfo = new QueryPageInfo();
 
         assertThatExceptionOfType(BadRequestException.class).isThrownBy(
                 () -> processingErrorService.getProcessingErrors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, queryInfo));

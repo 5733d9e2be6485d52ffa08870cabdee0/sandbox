@@ -10,8 +10,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.api.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
@@ -75,9 +75,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             // create or update the secrets for the bridgeIngress
             createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
         } else {
-            ManagedResourceStatus inferredStatus = existing.getStatus().inferManagedResourceStatus();
+            ManagedResourceStatusV1 inferredStatus = existing.getStatus().inferManagedResourceStatus();
             // The Controller would have notified the Manager with PROVISIONING before it first started.
-            if (inferredStatus == ManagedResourceStatus.PROVISIONING) {
+            if (inferredStatus == ManagedResourceStatusV1.PROVISIONING) {
                 return;
             }
             LOGGER.info("BridgeIngress '{}' already exists and is '{}'. Notifying manager that it is '{}'.",
@@ -96,15 +96,15 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @Override
     public void deleteBridgeIngress(BridgeDTO bridgeDTO) {
         final String namespace = customerNamespaceProvider.resolveName(bridgeDTO.getCustomerId());
-        final boolean bridgeDeleted =
-                kubernetesClient
-                        .resources(BridgeIngress.class)
-                        .inNamespace(namespace)
-                        .delete(BridgeIngress.fromDTO(bridgeDTO, namespace));
+        final boolean bridgeDeleted = kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(namespace)
+                .withName(BridgeIngress.resolveResourceName(bridgeDTO.getId()))
+                .delete();
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());
-            ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.DELETED);
+            ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatusV1.DELETED);
             managerClient.notifyBridgeStatusChange(updateDTO)
                     .subscribe().with(
                             success -> LOGGER.debug("Deleted notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),

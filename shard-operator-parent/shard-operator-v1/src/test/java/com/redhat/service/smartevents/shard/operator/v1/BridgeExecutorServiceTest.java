@@ -13,8 +13,8 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
@@ -34,14 +34,15 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
+import io.javaoperatorsdk.operator.Operator;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.PROVISIONING;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.PROVISIONING;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.shard.operator.v1.utils.AwaitilityUtil.await;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,6 +59,9 @@ import static org.mockito.Mockito.when;
 @WithOpenShiftTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
 public class BridgeExecutorServiceTest {
+
+    @Inject
+    Operator operator;
 
     @Inject
     BridgeExecutorService bridgeExecutorService;
@@ -87,6 +91,7 @@ public class BridgeExecutorServiceTest {
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesResourcePatcher.cleanUp();
+        operator.start();
 
         when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenCallRealMethod();
@@ -305,7 +310,7 @@ public class BridgeExecutorServiceTest {
             String expectedId,
             String expectedCustomerId,
             String expectedBridgeId,
-            ManagedResourceStatus expectedStatus) {
+            ManagedResourceStatusV1 expectedStatus) {
         assertThat(update.getId()).isEqualTo(expectedId);
         assertThat(update.getCustomerId()).isEqualTo(expectedCustomerId);
         assertThat(update.getBridgeId()).isEqualTo(expectedBridgeId);
@@ -443,8 +448,8 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        // Since the DTO remained in PROVISIONING the manager is not notified again.
-        verify(managerClient).notifyProcessorStatusChange(updateDTO.capture());
+        // Since the DTO remained in PROVISIONING the manager is notified again as the resource is in a FAILED state.
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> assertProcessorManagedResourceStatusUpdateDTOUpdate(d,
                 dto.getId(),
                 dto.getCustomerId(),

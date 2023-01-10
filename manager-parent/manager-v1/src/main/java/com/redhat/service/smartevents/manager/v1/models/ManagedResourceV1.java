@@ -8,7 +8,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 
 import com.redhat.service.smartevents.infra.core.exceptions.HasErrorInformation;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 
 @MappedSuperclass
@@ -16,11 +16,11 @@ public class ManagedResourceV1 extends ManagedResource implements HasErrorInform
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    protected ManagedResourceStatus status;
+    protected ManagedResourceStatusV1 status;
 
     @Column(name = "dependency_status")
     @Enumerated(EnumType.STRING)
-    protected ManagedResourceStatus dependencyStatus;
+    protected ManagedResourceStatusV1 dependencyStatus;
 
     @Column(name = "modified_at", columnDefinition = "TIMESTAMP")
     private ZonedDateTime modifiedAt;
@@ -34,19 +34,19 @@ public class ManagedResourceV1 extends ManagedResource implements HasErrorInform
     @Column(name = "error_uuid")
     private String errorUUID;
 
-    public ManagedResourceStatus getStatus() {
+    public ManagedResourceStatusV1 getStatus() {
         return status;
     }
 
-    public void setStatus(ManagedResourceStatus status) {
+    public void setStatus(ManagedResourceStatusV1 status) {
         this.status = status;
     }
 
-    public ManagedResourceStatus getDependencyStatus() {
+    public ManagedResourceStatusV1 getDependencyStatus() {
         return dependencyStatus;
     }
 
-    public void setDependencyStatus(ManagedResourceStatus dependencyStatus) {
+    public void setDependencyStatus(ManagedResourceStatusV1 dependencyStatus) {
         this.dependencyStatus = dependencyStatus;
     }
 
@@ -86,7 +86,7 @@ public class ManagedResourceV1 extends ManagedResource implements HasErrorInform
 
     public boolean isActionable() {
         // A ManagedResource can only be modified or deleted if it's in READY or FAILED state
-        return getStatus() == ManagedResourceStatus.READY || getStatus() == ManagedResourceStatus.FAILED;
+        return getStatus() == ManagedResourceStatusV1.READY || getStatus() == ManagedResourceStatusV1.FAILED;
     }
 
 }

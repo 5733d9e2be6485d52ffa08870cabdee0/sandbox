@@ -24,10 +24,10 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
 import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
-import com.redhat.service.smartevents.infra.core.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.api.models.responses.ProcessingErrorListResponse;
 import com.redhat.service.smartevents.manager.core.persistence.models.ProcessingError;
 

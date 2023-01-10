@@ -1,5 +1,18 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
@@ -17,20 +30,10 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigura
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Constants;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ManagedBridgeServiceImpl implements ManagedBridgeService {
@@ -120,7 +123,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                 .inNamespace(mb.getMetadata().getNamespace())
                 .withName(mb.getMetadata().getName())
                 .delete();
-            namespaceProvider.deleteNamespace(mb);
+        namespaceProvider.deleteNamespace(mb);
     }
 
     @Override

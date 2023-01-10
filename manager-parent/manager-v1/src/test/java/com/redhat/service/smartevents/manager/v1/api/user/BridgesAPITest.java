@@ -19,10 +19,11 @@ import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.Alr
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
@@ -49,10 +50,10 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.ACCEPTED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.v1.api.V1APIConstants.V1_USER_API_BASE_PATH;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.READY;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_TLS_CERTIFICATE;
 import static com.redhat.service.smartevents.manager.v1.TestConstants.DEFAULT_BRIDGE_TLS_KEY;
@@ -90,6 +91,7 @@ public class BridgesAPITest {
     @Inject
     BridgeErrorDAO errorDAO;
 
+    @V1
     @InjectMock
     @SuppressWarnings("unused")
     // Effectively disable Work scheduling and execution without disabling Quarkus's Quartz.
@@ -451,7 +453,7 @@ public class BridgesAPITest {
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
         BridgeResponse response = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
 
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatusV1.DEPROVISION);
     }
 
     @Test
@@ -740,7 +742,7 @@ public class BridgesAPITest {
                 .contains("http_server_requests_seconds_sum{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}");
     }
 
-    private void createErrorHandler(BridgeResponse bridgeResponse, Action errorHandler, ManagedResourceStatus errorHandlerStatus) {
+    private void createErrorHandler(BridgeResponse bridgeResponse, Action errorHandler, ManagedResourceStatusV1 errorHandlerStatus) {
         Bridge bridge = bridgeDAO.findById(bridgeResponse.getId());
         ProcessorRequest processorRequest = new ProcessorRequest(DEFAULT_ERROR_HANDLER_PROCESSOR_NAME, errorHandler);
         Processor processor = processorService.createErrorHandlerProcessor(bridge.getId(), DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest);

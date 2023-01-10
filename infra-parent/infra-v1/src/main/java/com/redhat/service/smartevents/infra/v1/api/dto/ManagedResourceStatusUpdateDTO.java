@@ -1,9 +1,9 @@
-package com.redhat.service.smartevents.infra.core.api.dto;
+package com.redhat.service.smartevents.infra.v1.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ManagedResourceStatusUpdateDTO {
@@ -15,7 +15,7 @@ public class ManagedResourceStatusUpdateDTO {
     private String customerId;
 
     @JsonProperty("status")
-    private ManagedResourceStatus status;
+    private ManagedResourceStatusV1 status;
 
     @JsonProperty("bridgeErrorInstance")
     private BridgeErrorInstance bridgeErrorInstance;
@@ -25,13 +25,13 @@ public class ManagedResourceStatusUpdateDTO {
 
     public ManagedResourceStatusUpdateDTO(String id,
             String customerId,
-            ManagedResourceStatus status) {
+            ManagedResourceStatusV1 status) {
         this(id, customerId, status, null);
     }
 
     public ManagedResourceStatusUpdateDTO(String id,
             String customerId,
-            ManagedResourceStatus status,
+            ManagedResourceStatusV1 status,
             BridgeErrorInstance bridgeErrorInstance) {
         this.id = id;
         this.customerId = customerId;
@@ -55,11 +55,11 @@ public class ManagedResourceStatusUpdateDTO {
         this.customerId = customerId;
     }
 
-    public ManagedResourceStatus getStatus() {
+    public ManagedResourceStatusV1 getStatus() {
         return status;
     }
 
-    public void setStatus(ManagedResourceStatus status) {
+    public void setStatus(ManagedResourceStatusV1 status) {
         this.status = status;
     }
 

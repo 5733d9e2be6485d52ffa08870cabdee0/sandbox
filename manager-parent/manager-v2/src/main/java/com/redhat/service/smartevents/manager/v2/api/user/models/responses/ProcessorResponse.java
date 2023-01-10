@@ -7,11 +7,12 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.core.api.models.responses.BaseManagedResourceResponse;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema
-public class ProcessorResponse extends BaseManagedResourceResponse {
+public class ProcessorResponse extends BaseManagedResourceResponse<ManagedResourceStatusV2> {
 
     public ProcessorResponse() {
         super("Processor");

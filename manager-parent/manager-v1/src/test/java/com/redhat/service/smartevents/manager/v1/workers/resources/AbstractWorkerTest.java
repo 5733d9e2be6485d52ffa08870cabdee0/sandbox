@@ -10,7 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.BridgeDAO;
@@ -65,7 +65,7 @@ public class AbstractWorkerTest {
 
         worker.handleWork(work);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatusV1.FAILED);
         assertThat(bridge.getErrorId()).isNotNull();
         assertThat(bridge.getErrorUUID()).isNotNull();
     }
@@ -81,7 +81,7 @@ public class AbstractWorkerTest {
 
         worker.handleWork(work);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatusV1.FAILED);
         assertThat(bridge.getErrorId()).isNotNull();
         assertThat(bridge.getErrorUUID()).isNotNull();
     }

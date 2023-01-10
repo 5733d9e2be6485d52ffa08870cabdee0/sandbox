@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v1.resources;
 import java.util.HashSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
@@ -24,6 +24,7 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> EXECUTOR_CONDITIONS = new HashSet<>() {
         {
+            add(new Condition(ConditionTypeConstants.AUGMENTING, ConditionStatus.Unknown));
             add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
             add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
             add(new Condition(IMAGE_NAME_CORRECT, ConditionStatus.Unknown));
@@ -37,19 +38,14 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
         super(EXECUTOR_CONDITIONS);
     }
 
-    public ManagedResourceStatus inferManagedResourceStatus() {
+    public ManagedResourceStatusV1 inferManagedResourceStatus() {
         if (isReady()) {
-            return ManagedResourceStatus.READY;
+            return ManagedResourceStatusV1.READY;
         }
-        if (isConditionTypeFalse(ConditionTypeConstants.READY)
-                && !isConditionTypeTrue(SECRET_AVAILABLE)
-                && !isConditionTypeTrue(IMAGE_NAME_CORRECT)
-                && !isConditionTypeTrue(DEPLOYMENT_AVAILABLE)
-                && !isConditionTypeTrue(SERVICE_AVAILABLE)
-                && !isConditionTypeTrue(SERVICE_MONITOR_AVAILABLE)) {
-            return ManagedResourceStatus.FAILED;
+        if (!isAugmentingTrueOrUnknown()) {
+            return ManagedResourceStatusV1.FAILED;
         }
-        return ManagedResourceStatus.PROVISIONING;
+        return ManagedResourceStatusV1.PROVISIONING;
     }
 
     @JsonIgnore
@@ -103,5 +99,4 @@ public class BridgeExecutorStatus extends CustomResourceStatus {
             }
         }
     }
-
 }

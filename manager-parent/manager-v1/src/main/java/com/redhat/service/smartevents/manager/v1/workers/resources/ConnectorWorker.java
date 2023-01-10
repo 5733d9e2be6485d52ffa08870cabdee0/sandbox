@@ -18,7 +18,7 @@ import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ManagedConnectorException;
-import com.redhat.service.smartevents.infra.core.models.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
@@ -74,10 +74,10 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                 connectorEntity.getId());
         // Transition resource to PREPARING status.
         // There is no work handled by the Operator. Connectors move from PREPARING to READY.
-        connectorEntity.setStatus(ManagedResourceStatus.PREPARING);
+        connectorEntity.setStatus(ManagedResourceStatusV1.PREPARING);
 
         // This is idempotent as it gets overridden later depending on actual state
-        connectorEntity.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
+        connectorEntity.setDependencyStatus(ManagedResourceStatusV1.PROVISIONING);
         connectorEntity = persist(connectorEntity);
 
         // Step 1 - Create Kafka Topic
@@ -131,9 +131,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
             // Connector is ready. We can proceed with the deployment of the Processor in the Shard
             // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
-            connectorEntity.setStatus(ManagedResourceStatus.READY);
+            connectorEntity.setStatus(ManagedResourceStatusV1.READY);
             connectorEntity.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-            connectorEntity.setDependencyStatus(ManagedResourceStatus.READY);
+            connectorEntity.setDependencyStatus(ManagedResourceStatusV1.READY);
             return persist(connectorEntity);
         }
 
@@ -144,8 +144,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                     status.getError());
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
-            connectorEntity.setStatus(ManagedResourceStatus.FAILED);
-            connectorEntity.setDependencyStatus(ManagedResourceStatus.FAILED);
+            connectorEntity.setStatus(ManagedResourceStatusV1.FAILED);
+            connectorEntity.setDependencyStatus(ManagedResourceStatusV1.FAILED);
             persist(connectorEntity);
             return recordError(work, new ManagedConnectorException(status.getError()));
         }
@@ -184,8 +184,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                 connectorEntity.getId());
 
         // This is idempotent as it gets overridden later depending on actual state
-        connectorEntity.setStatus(ManagedResourceStatus.DELETING);
-        connectorEntity.setDependencyStatus(ManagedResourceStatus.DELETING);
+        connectorEntity.setStatus(ManagedResourceStatusV1.DELETING);
+        connectorEntity.setDependencyStatus(ManagedResourceStatusV1.DELETING);
         connectorEntity = persist(connectorEntity);
 
         // Steps, in reverse order...
@@ -238,8 +238,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     @Transactional
     protected ConnectorEntity doDeleteDependencies(ConnectorEntity connectorEntity) {
         getDao().deleteById(connectorEntity.getId());
-        connectorEntity.setStatus(ManagedResourceStatus.DELETED);
-        connectorEntity.setDependencyStatus(ManagedResourceStatus.DELETED);
+        connectorEntity.setStatus(ManagedResourceStatusV1.DELETED);
+        connectorEntity.setDependencyStatus(ManagedResourceStatusV1.DELETED);
         return connectorEntity;
     }
 
