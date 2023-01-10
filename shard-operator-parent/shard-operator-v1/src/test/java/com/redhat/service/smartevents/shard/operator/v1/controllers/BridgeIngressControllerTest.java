@@ -80,7 +80,7 @@ public class BridgeIngressControllerTest {
         // Then
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeIngress.getStatus()).isNotNull();
-        assertThat(bridgeIngress.getStatus().isReadyV1()).isFalse();
+        assertThat(bridgeIngress.getStatus().isReady()).isFalse();
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
         });

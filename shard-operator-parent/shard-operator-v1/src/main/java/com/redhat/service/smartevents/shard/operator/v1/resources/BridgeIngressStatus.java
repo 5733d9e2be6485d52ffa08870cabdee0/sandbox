@@ -39,7 +39,7 @@ public class BridgeIngressStatus extends CustomResourceStatus {
     }
 
     public ManagedResourceStatusV1 inferManagedResourceStatus() {
-        if (isReadyV1()) {
+        if (isReady()) {
             return ManagedResourceStatusV1.READY;
         }
         if (!isAugmentingTrueOrUnknown()) {

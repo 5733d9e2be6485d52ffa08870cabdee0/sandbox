@@ -265,7 +265,7 @@ public class BridgeIngressServiceTest {
                 Duration.ofSeconds(5),
                 () -> {
                     BridgeIngress fetched = fetchBridgeIngress(dto);
-                    assertThat(fetched.getStatus().isReadyV1()).isTrue();
+                    assertThat(fetched.getStatus().isReady()).isTrue();
                 });
 
         ArgumentCaptor<ManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);

@@ -61,7 +61,7 @@ class ManagedProcessorControllerTest {
 
         // Then
         assertThat(updateControl.isUpdateStatus()).isTrue();
-        assertThat(managedProcessor.getStatus().isReadyV1()).isFalse();
+        assertThat(managedProcessor.getStatus().isReady()).isFalse();
 
         CamelIntegration camelIntegration = kubernetesClient
                 .resources(CamelIntegration.class)

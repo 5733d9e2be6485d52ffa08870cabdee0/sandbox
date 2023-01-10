@@ -16,7 +16,7 @@ public class CustomResourceStatusTest {
         resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
 
         // Then
-        assertThat(resourceStatus.isReadyV1()).isTrue();
+        assertThat(resourceStatus.isReady()).isTrue();
     }
 
     @Test
@@ -29,7 +29,7 @@ public class CustomResourceStatusTest {
         resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
 
         // Then
-        assertThat(resourceStatus.isReadyV1()).isFalse();
+        assertThat(resourceStatus.isReady()).isFalse();
         assertThat(resourceStatus.getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getLastTransitionTime()).isNotNull();
             assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);

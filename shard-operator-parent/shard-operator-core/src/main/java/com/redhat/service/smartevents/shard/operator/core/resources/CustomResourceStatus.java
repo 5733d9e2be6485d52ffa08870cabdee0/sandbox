@@ -39,7 +39,7 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     }
 
     @JsonIgnore
-    public final boolean isReadyV1() { // READY constant doesn't exist in v2
+    public final boolean isReady() { // Don't use this in V2 as READY constant doesn't exist
         return conditions.stream().anyMatch(c -> ConditionTypeConstants.READY.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
     }
 

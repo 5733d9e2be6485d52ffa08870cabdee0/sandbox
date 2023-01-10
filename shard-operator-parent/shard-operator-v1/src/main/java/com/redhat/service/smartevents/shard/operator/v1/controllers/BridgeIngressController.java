@@ -117,7 +117,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // If everything is already deployed and ready, the reconcile loop exits with no update.
         status.markConditionTrue(ConditionTypeConstants.AUGMENTING);
 
-        if (!status.isReadyV1() && isTimedOut(status)) {
+        if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeIngress,
                     new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
                             bridgeIngress.getClass().getSimpleName(),
@@ -195,7 +195,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // Only issue a Status Update once.
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
-        if (!status.isReadyV1()) {
+        if (!status.isReady()) {
             metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
             status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
