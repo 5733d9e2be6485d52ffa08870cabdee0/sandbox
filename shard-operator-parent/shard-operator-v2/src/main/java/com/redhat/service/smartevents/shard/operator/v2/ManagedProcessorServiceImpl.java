@@ -72,7 +72,6 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
         String processorName = processor.getMetadata().getName();
         String integrationName = processor.getMetadata().getName();
 
-        expected.getMetadata().setName(integrationName);
         expected.getSpec().setFlows(List.of(processor.getSpec().getFlows()));
 
         String processorNamespace = processor.getMetadata().getNamespace();
