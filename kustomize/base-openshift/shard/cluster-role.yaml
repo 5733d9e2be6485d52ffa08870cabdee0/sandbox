@@ -19,6 +19,19 @@ rules:
       - patch
       - update
   - apiGroups:
+      - com.redhat.service.smartevents
+    resources:
+      - managedbridges
+      - managedbridges/status
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
+  - apiGroups:
       - apiextensions.k8s.io
     resources:
       - customresourcedefinitions
