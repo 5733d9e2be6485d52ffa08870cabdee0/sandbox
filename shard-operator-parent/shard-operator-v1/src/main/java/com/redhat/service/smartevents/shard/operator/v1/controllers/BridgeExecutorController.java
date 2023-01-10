@@ -113,7 +113,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         // If everything is already deployed and ready, the reconcile loop exits with no update.
         status.markConditionTrue(ConditionTypeConstants.AUGMENTING);
 
-        if (!status.isReady() && isTimedOut(status)) {
+        if (!status.isReadyV1() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeExecutor,
                     new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
                             bridgeExecutor.getClass().getSimpleName(),
@@ -236,7 +236,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         // Only issue a Status Update once.
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
-        if (!bridgeExecutor.getStatus().isReady()) {
+        if (!bridgeExecutor.getStatus().isReadyV1()) {
             metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
             status.markConditionFalse(ConditionTypeConstants.AUGMENTING);

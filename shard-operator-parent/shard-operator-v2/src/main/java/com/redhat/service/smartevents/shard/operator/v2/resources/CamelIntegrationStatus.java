@@ -43,7 +43,6 @@ public class CamelIntegrationStatus {
 
     @JsonIgnore
     public final Optional<Condition> getConditionByType(final String conditionType) {
-        // o(1) operation since we are fetching by our hash key
         return conditions.stream().filter(c -> conditionType.equals(c.getType())).findFirst();
     }
 }

@@ -52,7 +52,7 @@ class ManagedProcessorControllerTest {
     }
 
     @Test
-    void testCreateNewManagedProcessor() {
+    void operatorFirstReconcileRun() {
         // Given
         ManagedProcessor managedProcessor = buildManagedProcessor();
 
@@ -61,18 +61,8 @@ class ManagedProcessorControllerTest {
 
         // Then
         assertThat(updateControl.isUpdateStatus()).isTrue();
-        assertThat(managedProcessor.getStatus().isReady()).isFalse();
-    }
+        assertThat(managedProcessor.getStatus().isReadyV1()).isFalse();
 
-    @Test
-    void testCreateCamelIntegration() {
-        // Given
-        ManagedProcessor managedProcessor = buildManagedProcessor();
-
-        // When
-        UpdateControl<ManagedProcessor> updateControl = managedProcessorController.reconcile(managedProcessor, null);
-
-        // Then
         CamelIntegration camelIntegration = kubernetesClient
                 .resources(CamelIntegration.class)
                 .inNamespace(managedProcessor.getMetadata().getNamespace())

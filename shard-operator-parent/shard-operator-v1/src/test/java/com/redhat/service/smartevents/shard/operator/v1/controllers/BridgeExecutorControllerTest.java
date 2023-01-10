@@ -77,7 +77,7 @@ public class BridgeExecutorControllerTest {
         // Then
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeExecutor.getStatus()).isNotNull();
-        assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
+        assertThat(bridgeExecutor.getStatus().isReadyV1()).isFalse();
         assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
             assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE);

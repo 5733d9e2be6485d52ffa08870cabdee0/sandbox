@@ -290,7 +290,7 @@ public class BridgeExecutorServiceTest {
                 Duration.ofSeconds(5),
                 () -> {
                     BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
-                    assertThat(bridgeExecutor.getStatus().isReady()).isTrue();
+                    assertThat(bridgeExecutor.getStatus().isReadyV1()).isTrue();
                 });
 
         ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
@@ -348,7 +348,7 @@ public class BridgeExecutorServiceTest {
                 Duration.ofSeconds(5),
                 () -> {
                     BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
-                    assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
+                    assertThat(bridgeExecutor.getStatus().isReadyV1()).isFalse();
                 });
 
         ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);

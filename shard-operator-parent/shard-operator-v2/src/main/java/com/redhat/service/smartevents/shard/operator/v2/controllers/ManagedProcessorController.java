@@ -16,9 +16,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.ManagedProcessorService;
@@ -57,6 +60,12 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
     @Inject
     NetworkingService networkingService;
 
+    @Inject
+    OperatorMetricsService metricsService;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
+
     @Override
     public Map<String, EventSource> prepareEventSources(EventSourceContext<ManagedProcessor> eventSourceContext) {
         return EventSourceInitializer.nameEventSources(
@@ -77,8 +86,9 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
 
         ManagedProcessorStatus processorStatus = managedProcessor.getStatus();
 
-        if (!processorStatus.isReady() && isTimedOut(processorStatus)) {
-            processorStatus.markConditionFalse(ConditionTypeConstants.READY);
+        if (!processorStatus.isReadyV2() && isTimedOut(processorStatus)) {
+            // The only resource that can be in timeout state is Camel so let's use this to invalidate the ManagedProcessor
+            processorStatus.markConditionFalse(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE);
             return UpdateControl.updateStatus(managedProcessor);
         }
 
@@ -96,13 +106,22 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
                     managedProcessorName,
                     managedProcessorNamespace);
             processorStatus.markConditionTrue(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE);
+
+            // End of provisioning - if more resources will be created in the future the reconcile loop should move forward
+
+            LOGGER.info("Managed Processor: '{}' in namespace '{}' is ready",
+                    managedProcessorName,
+                    managedProcessorNamespace);
+
+            metricsService.onOperationComplete(managedProcessor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
+            return UpdateControl.updateStatus(managedProcessor);
         }
 
-        LOGGER.info("Managed Processor: '{}' in namespace '{}' is ready",
+        LOGGER.info("Managed Processor: '{}' in namespace '{}' is already provisioned, nothing to do",
                 managedProcessorName,
                 managedProcessorNamespace);
 
-        return UpdateControl.updateStatus(managedProcessor);
+        return UpdateControl.noUpdate();
     }
 
     private boolean isTimedOut(ManagedProcessorStatus status) {
@@ -123,7 +142,11 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
 
     @Override
     public ErrorStatusUpdateControl<ManagedProcessor> updateErrorStatus(ManagedProcessor processor, Context<ManagedProcessor> context, Exception e) {
-        // TBD
-        return null;
+        if (context.getRetryInfo().isPresent() && context.getRetryInfo().get().isLastAttempt()) {
+            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
+            processor.getStatus().setStatusFromBridgeError(bei);
+            return ErrorStatusUpdateControl.updateStatus(processor);
+        }
+        return ErrorStatusUpdateControl.noStatusUpdate();
     }
 }
