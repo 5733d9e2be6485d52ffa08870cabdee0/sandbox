@@ -18,13 +18,6 @@ public class ProcessorResponse extends BaseManagedResourceResponse<ManagedResour
         super("Processor");
     }
 
-    @JsonProperty("name")
-    @NotNull
-    @Schema(
-            description = "The name of the processor",
-            example = "processor1")
-    protected String name;
-
     @JsonProperty("flows")
     // ObjectNode is not rendered properly by swagger
     @Schema(implementation = Object.class, required = true,
@@ -34,16 +27,6 @@ public class ProcessorResponse extends BaseManagedResourceResponse<ManagedResour
 
     @JsonProperty("status_message")
     private String statusMessage;
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public ObjectNode getFlows() {
         return flows;

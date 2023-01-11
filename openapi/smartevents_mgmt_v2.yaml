@@ -792,11 +792,11 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - submitted_at
       - status
       - owner
-      - name
       type: object
       properties:
         kind:
@@ -805,6 +805,10 @@ components:
         id:
           description: The unique identifier of this resource
           type: string
+        name:
+          description: The name of this resource
+          type: string
+          example: resourceName1
         href:
           description: "The URL of this resource, without the protocol"
           type: string
@@ -824,10 +828,6 @@ components:
           description: The user that owns this resource
           type: string
           example: userName
-        name:
-          description: The name of the bridge
-          type: string
-          example: bridge1
         endpoint:
           description: The HTTPS endpoint on which the bridge accepts events
           type: string
@@ -871,6 +871,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - display_name
       - enabled
@@ -936,25 +937,29 @@ components:
     Error:
       required:
       - kind
-      - reason
       - id
+      - name
       - href
+      - reason
       type: object
       properties:
         kind:
           description: The kind (type) of this resource
           type: string
+        id:
+          description: The unique identifier of this resource
+          type: string
         name:
           description: The name of this resource
           type: string
           example: resourceName1
+        href:
+          description: "The URL of this resource, without the protocol"
+          type: string
+          example: example.com/resource
         code:
           type: string
         reason:
-          type: string
-        id:
-          type: string
-        href:
           type: string
     ErrorListResponse:
       required:
@@ -1037,6 +1042,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       type: object
       properties:
@@ -1130,11 +1136,11 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - submitted_at
       - status
       - owner
-      - name
       - flows
       type: object
       properties:
@@ -1144,6 +1150,10 @@ components:
         id:
           description: The unique identifier of this resource
           type: string
+        name:
+          description: The name of this resource
+          type: string
+          example: resourceName1
         href:
           description: "The URL of this resource, without the protocol"
           type: string
@@ -1163,10 +1173,6 @@ components:
           description: The user that owns this resource
           type: string
           example: userName
-        name:
-          description: The name of the processor
-          type: string
-          example: processor1
         flows:
           description: "The Camel YAML DSL code, formatted as JSON, that defines the\
             \ flows in the processor"
