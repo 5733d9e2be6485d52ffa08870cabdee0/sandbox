@@ -35,7 +35,7 @@ import com.redhat.service.smartevents.manager.v2.api.user.models.responses.Sourc
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Source Connectors", description = "The API that allow the user to retrieve, create or delete Source Managed Connectors to be used with smart-events.")
+@Tag(name = "Source Connectors", description = "The API that allow the user to retrieve, create or delete Source Connectors to be used with smart-events.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -74,7 +74,7 @@ public class SourceConnectorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
-    @Operation(summary = "Get the list of Sink Connectors for a Bridge", description = "Get the list of Source Connector instances for the authenticated user.")
+    @Operation(summary = "Get the list of Sink Connectors for a Bridge", description = "Get the list of Source Connector instances of a Bridge instance instance for the authenticated user.")
     @GET
     @Path("{bridgeId}/sources")
     public Response getSourceConnectors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {

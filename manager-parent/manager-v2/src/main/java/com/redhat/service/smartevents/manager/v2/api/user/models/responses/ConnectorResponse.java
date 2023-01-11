@@ -13,11 +13,6 @@ import com.redhat.service.smartevents.manager.core.api.models.responses.BaseMana
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class ConnectorResponse extends BaseManagedResourceResponse<ManagedResourceStatusV2> {
 
-    @JsonProperty("name")
-    @NotNull
-    @Schema(description = "The name of the Connector", example = "my-connector")
-    protected String name;
-
     @JsonProperty("connector_type_id")
     @NotNull
     @Schema(description = "The connector type", example = "slack_sink_0.1")
@@ -35,16 +30,6 @@ public abstract class ConnectorResponse extends BaseManagedResourceResponse<Mana
 
     protected ConnectorResponse(String kind) {
         super(kind);
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getConnectorTypeId() {

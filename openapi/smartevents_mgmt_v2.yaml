@@ -26,11 +26,11 @@ tags:
   description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
 - name: Sink Connectors
-  description: "The API that allow the user to retrieve, create or delete Sink Managed\
-    \ Connectors to be used with smart-events."
+  description: "The API that allow the user to retrieve, create or delete Sink Connectors\
+    \ to be used with smart-events."
 - name: Source Connectors
-  description: "The API that allow the user to retrieve, create or delete Source Managed\
-    \ Connectors to be used with smart-events."
+  description: "The API that allow the user to retrieve, create or delete Source Connectors\
+    \ to be used with smart-events."
 paths:
   /api/smartevents_mgmt/v2/bridges:
     get:
@@ -513,8 +513,8 @@ paths:
       tags:
       - Sink Connectors
       summary: Get the list of Sink Connectors for a Bridge
-      description: Get the list of Sink Connector instances for the authenticated
-        user.
+      description: Get the list of Sink Connectors instances of a Bridge instance
+        for the authenticated user.
       operationId: SinkConnectorsAPI_getSinkConnectors
       parameters:
       - name: bridgeId
@@ -801,8 +801,8 @@ paths:
       tags:
       - Source Connectors
       summary: Get the list of Sink Connectors for a Bridge
-      description: Get the list of Source Connector instances for the authenticated
-        user.
+      description: Get the list of Source Connector instances of a Bridge instance
+        instance for the authenticated user.
       operationId: SourceConnectorsAPI_getSourceConnectors
       parameters:
       - name: bridgeId
@@ -1806,7 +1806,6 @@ components:
       - submitted_at
       - status
       - owner
-      - name
       - connector_type_id
       - connector
       - uri_dsl
@@ -1818,6 +1817,10 @@ components:
         id:
           description: The unique identifier of this resource
           type: string
+        name:
+          description: The name of this resource
+          type: string
+          example: resourceName1
         href:
           description: "The URL of this resource, without the protocol"
           type: string
@@ -1837,10 +1840,6 @@ components:
           description: The user that owns this resource
           type: string
           example: userName
-        name:
-          description: The name of the Connector
-          type: string
-          example: my-connector
         connector_type_id:
           description: The connector type
           type: string
@@ -1887,7 +1886,6 @@ components:
       - submitted_at
       - status
       - owner
-      - name
       - connector_type_id
       - connector
       type: object
@@ -1898,6 +1896,10 @@ components:
         id:
           description: The unique identifier of this resource
           type: string
+        name:
+          description: The name of this resource
+          type: string
+          example: resourceName1
         href:
           description: "The URL of this resource, without the protocol"
           type: string
@@ -1917,10 +1919,6 @@ components:
           description: The user that owns this resource
           type: string
           example: userName
-        name:
-          description: The name of the Connector
-          type: string
-          example: my-connector
         connector_type_id:
           description: The connector type
           type: string

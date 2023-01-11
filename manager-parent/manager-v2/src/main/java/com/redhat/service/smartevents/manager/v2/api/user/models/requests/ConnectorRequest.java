@@ -18,7 +18,7 @@ public class ConnectorRequest {
     @NotEmpty(message = "Connector type cannot be null or empty")
     @JsonProperty("connector_type_id")
     @Schema(description = "The name of the connector", example = "slack_sink_0.1")
-    protected String connector_type_id;
+    protected String connectorTypeId;
 
     @JsonProperty("connector")
     // ObjectNode is not rendered properly by swagger
@@ -34,12 +34,12 @@ public class ConnectorRequest {
         this.name = name;
     }
 
-    public String getConnector_type_id() {
-        return connector_type_id;
+    public String getConnectorTypeId() {
+        return connectorTypeId;
     }
 
-    public void setConnector_type_id(String connector_type_id) {
-        this.connector_type_id = connector_type_id;
+    public void setConnectorTypeId(String connectorTypeId) {
+        this.connectorTypeId = connectorTypeId;
     }
 
     public ObjectNode getConnector() {

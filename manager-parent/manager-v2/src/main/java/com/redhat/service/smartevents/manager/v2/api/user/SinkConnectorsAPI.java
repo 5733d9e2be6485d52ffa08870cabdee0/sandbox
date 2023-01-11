@@ -35,7 +35,7 @@ import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkC
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Sink Connectors", description = "The API that allow the user to retrieve, create or delete Sink Managed Connectors to be used with smart-events.")
+@Tag(name = "Sink Connectors", description = "The API that allow the user to retrieve, create or delete Sink Connectors to be used with smart-events.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -74,7 +74,7 @@ public class SinkConnectorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
-    @Operation(summary = "Get the list of Sink Connectors for a Bridge", description = "Get the list of Sink Connector instances for the authenticated user.")
+    @Operation(summary = "Get the list of Sink Connectors for a Bridge", description = "Get the list of Sink Connectors instances of a Bridge instance for the authenticated user.")
     @GET
     @Path("{bridgeId}/sinks")
     public Response getSinkConnectors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {
