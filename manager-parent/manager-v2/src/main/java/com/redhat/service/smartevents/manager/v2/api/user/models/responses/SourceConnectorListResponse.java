@@ -5,10 +5,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
 
 @Schema
-public class ConnectorListResponse extends PagedListResponse<ConnectorResponse> {
+public class SourceConnectorListResponse extends PagedListResponse<SourceConnectorResponse> {
 
-    public ConnectorListResponse() {
-        super("ConnectorList");
+    public SourceConnectorListResponse() {
+        super("SourceConnectorList");
     }
-
 }

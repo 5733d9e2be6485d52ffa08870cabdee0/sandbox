@@ -11,7 +11,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV
 import com.redhat.service.smartevents.manager.core.api.models.responses.BaseManagedResourceResponse;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ConnectorResponse extends BaseManagedResourceResponse<ManagedResourceStatusV2> {
+public abstract class ConnectorResponse extends BaseManagedResourceResponse<ManagedResourceStatusV2> {
 
     @JsonProperty("name")
     @NotNull
@@ -33,8 +33,8 @@ public class ConnectorResponse extends BaseManagedResourceResponse<ManagedResour
     @Schema(description = "A detailed status message in case there is a problem with the connector")
     private String statusMessage;
 
-    public ConnectorResponse() {
-        super("Connector");
+    protected ConnectorResponse(String kind) {
+        super(kind);
     }
 
     @Override

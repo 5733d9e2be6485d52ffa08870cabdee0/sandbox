@@ -549,7 +549,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorListResponse'
+                $ref: '#/components/schemas/SinkConnectorListResponse'
         "400":
           description: Bad request.
           content:
@@ -607,7 +607,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorResponse'
+                $ref: '#/components/schemas/SinkConnectorResponse'
         "400":
           description: Bad request.
           content:
@@ -665,7 +665,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorResponse'
+                $ref: '#/components/schemas/SinkConnectorResponse'
         "400":
           description: Bad request.
           content:
@@ -720,7 +720,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorResponse'
+                $ref: '#/components/schemas/SinkConnectorResponse'
         "400":
           description: Bad request.
           content:
@@ -831,7 +831,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorListResponse'
+                $ref: '#/components/schemas/SourceConnectorListResponse'
         "400":
           description: Bad request.
           content:
@@ -889,7 +889,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorResponse'
+                $ref: '#/components/schemas/SourceConnectorResponse'
         "400":
           description: Bad request.
           content:
@@ -947,7 +947,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorResponse'
+                $ref: '#/components/schemas/SourceConnectorResponse'
         "400":
           description: Bad request.
           content:
@@ -1002,7 +1002,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConnectorResponse'
+                $ref: '#/components/schemas/SourceConnectorResponse'
         "400":
           description: Bad request.
           content:
@@ -1503,29 +1503,6 @@ components:
           type: string
         enabled:
           type: boolean
-    ConnectorListResponse:
-      required:
-      - kind
-      - page
-      - size
-      - total
-      type: object
-      properties:
-        kind:
-          type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ConnectorResponse'
-        page:
-          format: int64
-          type: integer
-        size:
-          format: int64
-          type: integer
-        total:
-          format: int64
-          type: integer
     ConnectorRequest:
       required:
       - name
@@ -1546,59 +1523,6 @@ components:
         connector:
           description: The Connector configuration payload
           type: object
-    ConnectorResponse:
-      required:
-      - kind
-      - id
-      - href
-      - submitted_at
-      - status
-      - owner
-      - name
-      - connector_type_id
-      - connector
-      type: object
-      properties:
-        kind:
-          description: The kind (type) of this resource
-          type: string
-        id:
-          description: The unique identifier of this resource
-          type: string
-        href:
-          description: "The URL of this resource, without the protocol"
-          type: string
-          example: example.com/resource
-        submitted_at:
-          $ref: '#/components/schemas/ZonedDateTime'
-        published_at:
-          $ref: '#/components/schemas/ZonedDateTime'
-        modified_at:
-          $ref: '#/components/schemas/ZonedDateTime'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/ManagedResourceStatus'
-          - description: The status of this resource
-            example: ready
-        owner:
-          description: The user that owns this resource
-          type: string
-          example: userName
-        name:
-          description: The name of the Connector
-          type: string
-          example: my-connector
-        connector_type_id:
-          description: The connector type
-          type: string
-          example: slack_sink_0.1
-        connector:
-          description: The Connector configuration payload
-          type: object
-        status_message:
-          description: A detailed status message in case there is a problem with the
-            connector
-          type: string
     Error:
       required:
       - kind
@@ -1838,6 +1762,163 @@ components:
             \ flows in the processor"
           type: object
         status_message:
+          type: string
+    SinkConnectorListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SinkConnectorResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+    SinkConnectorResponse:
+      required:
+      - kind
+      - id
+      - href
+      - submitted_at
+      - status
+      - owner
+      - name
+      - connector_type_id
+      - connector
+      - uri_dsl
+      type: object
+      properties:
+        kind:
+          description: The kind (type) of this resource
+          type: string
+        id:
+          description: The unique identifier of this resource
+          type: string
+        href:
+          description: "The URL of this resource, without the protocol"
+          type: string
+          example: example.com/resource
+        submitted_at:
+          $ref: '#/components/schemas/ZonedDateTime'
+        published_at:
+          $ref: '#/components/schemas/ZonedDateTime'
+        modified_at:
+          $ref: '#/components/schemas/ZonedDateTime'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ManagedResourceStatus'
+          - description: The status of this resource
+            example: ready
+        owner:
+          description: The user that owns this resource
+          type: string
+          example: userName
+        name:
+          description: The name of the Connector
+          type: string
+          example: my-connector
+        connector_type_id:
+          description: The connector type
+          type: string
+          example: slack_sink_0.1
+        connector:
+          description: The Connector configuration payload
+          type: object
+        status_message:
+          description: A detailed status message in case there is a problem with the
+            connector
+          type: string
+        uri_dsl:
+          description: The URI to be used in Camel DSL to send data to this sink
+          type: string
+          example: knative:my-id
+    SourceConnectorListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceConnectorResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+    SourceConnectorResponse:
+      required:
+      - kind
+      - id
+      - href
+      - submitted_at
+      - status
+      - owner
+      - name
+      - connector_type_id
+      - connector
+      type: object
+      properties:
+        kind:
+          description: The kind (type) of this resource
+          type: string
+        id:
+          description: The unique identifier of this resource
+          type: string
+        href:
+          description: "The URL of this resource, without the protocol"
+          type: string
+          example: example.com/resource
+        submitted_at:
+          $ref: '#/components/schemas/ZonedDateTime'
+        published_at:
+          $ref: '#/components/schemas/ZonedDateTime'
+        modified_at:
+          $ref: '#/components/schemas/ZonedDateTime'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ManagedResourceStatus'
+          - description: The status of this resource
+            example: ready
+        owner:
+          description: The user that owns this resource
+          type: string
+          example: userName
+        name:
+          description: The name of the Connector
+          type: string
+          example: my-connector
+        connector_type_id:
+          description: The connector type
+          type: string
+          example: slack_sink_0.1
+        connector:
+          description: The Connector configuration payload
+          type: object
+        status_message:
+          description: A detailed status message in case there is a problem with the
+            connector
           type: string
     ZonedDateTime:
       format: date-time

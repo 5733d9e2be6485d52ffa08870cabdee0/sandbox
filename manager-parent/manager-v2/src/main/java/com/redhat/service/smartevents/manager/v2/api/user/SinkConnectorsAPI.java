@@ -30,8 +30,8 @@ import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
-import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorListResponse;
-import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorListResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorResponse;
 
 import io.quarkus.security.Authenticated;
 
@@ -51,7 +51,7 @@ public class SinkConnectorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ConnectorResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = SinkConnectorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
@@ -67,7 +67,7 @@ public class SinkConnectorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ConnectorListResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = SinkConnectorListResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Forbidden.", responseCode = "403", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
@@ -83,7 +83,7 @@ public class SinkConnectorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ConnectorResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = SinkConnectorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Not enough quota.", responseCode = "402", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
@@ -100,7 +100,7 @@ public class SinkConnectorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ConnectorResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = SinkConnectorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
