@@ -8,12 +8,16 @@ import com.redhat.service.smartevents.manager.core.TestConstants;
 import com.redhat.service.smartevents.manager.core.persistence.dao.ShardDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.Shard;
 import com.redhat.service.smartevents.manager.core.utils.DatabaseManagerUtils;
+import com.redhat.service.smartevents.test.resource.PostgresResource;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
+// This annotation also bootstraps Quarkus into using DevServices for ALL @QuarkusTest's
+@QuarkusTestResource(value = PostgresResource.class)
 public class ShardServiceTest {
 
     @Inject
