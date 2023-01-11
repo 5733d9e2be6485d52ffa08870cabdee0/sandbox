@@ -46,6 +46,7 @@ import static com.redhat.service.smartevents.shard.operator.v1.utils.AwaitilityU
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -96,6 +97,7 @@ public class BridgeIngressServiceTest {
         when(templateProvider.loadBridgeIngressBrokerTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressKubernetesIngressTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressOpenshiftRouteTemplate(any(), any())).thenCallRealMethod();
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // Far from ideal... but each test assumes there are no other BridgeIngress instances in existence.
         // Unfortunately, however, some tests only check that provisioning either progressed to a certain
