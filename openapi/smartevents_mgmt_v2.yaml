@@ -517,6 +517,12 @@ paths:
         user.
       operationId: SinkConnectorsAPI_getSinkConnectors
       parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
       - name: name
         in: query
         schema:
@@ -799,6 +805,12 @@ paths:
         user.
       operationId: SourceConnectorsAPI_getSourceConnectors
       parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
       - name: name
         in: query
         schema:

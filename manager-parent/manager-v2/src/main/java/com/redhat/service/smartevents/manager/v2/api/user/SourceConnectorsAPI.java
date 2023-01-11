@@ -77,7 +77,7 @@ public class SourceConnectorsAPI {
     @Operation(summary = "Get the list of Sink Connectors for a Bridge", description = "Get the list of Source Connector instances for the authenticated user.")
     @GET
     @Path("{bridgeId}/sources")
-    public Response getSourceConnectors(@Valid @BeanParam QueryResourceInfo queryInfo) {
+    public Response getSourceConnectors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {
         return Response.status(500, "Not implemented yet.").build();
     }
 
