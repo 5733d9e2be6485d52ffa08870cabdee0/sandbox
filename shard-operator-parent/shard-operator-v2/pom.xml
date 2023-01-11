@@ -69,11 +69,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>processor-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.epam.reportportal</groupId>
       <artifactId>agent-java-junit5</artifactId>
       <scope>test</scope>
