@@ -155,4 +155,14 @@ public class TestUtils {
                 .body(statusDTOs)
                 .put(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors");
     }
+
+    public static Response listSourceConnectors() {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + "sources");
+    }
+
+    public static Response listSinkConnectors() {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + "sinks");
+    }
 }
