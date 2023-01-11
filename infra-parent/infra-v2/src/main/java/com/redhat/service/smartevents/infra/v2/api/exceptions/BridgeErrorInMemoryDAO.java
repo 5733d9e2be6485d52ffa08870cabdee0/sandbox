@@ -12,10 +12,9 @@ import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.I
 @ApplicationScoped
 public class BridgeErrorInMemoryDAO extends AbstractBridgeErrorInMemoryDAO {
 
-    @Override
     @PostConstruct
     protected void init() {
-        super.init();
+        super.init("exceptionInfo-v2.json");
     }
 
     @Override

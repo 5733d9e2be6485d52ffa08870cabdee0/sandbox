@@ -66,8 +66,8 @@ public abstract class AbstractBridgeErrorInMemoryDAO implements BridgeErrorDAO {
     private final Map<String, BridgeError> errorsFromExc = new HashMap<>();
     private final List<BridgeError> bridgeErrorList = new ArrayList<>();
 
-    protected void init() {
-        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("exception/exceptionInfo.json")) {
+    protected void init(String fileName) {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("exception/" + fileName)) {
             if (is != null) {
                 MAPPER.readValue(is, new TypeReference<List<ErrorInfo>>() {
                 }).forEach(this::populate);
