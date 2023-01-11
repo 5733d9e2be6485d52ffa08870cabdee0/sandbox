@@ -106,6 +106,18 @@ rules:
       - patch
       - update
   - apiGroups:
+      - camel.apache.org
+    resources:
+      - integrations
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
+  - apiGroups:
       - security.istio.io
     resources:
       - requestauthentications
