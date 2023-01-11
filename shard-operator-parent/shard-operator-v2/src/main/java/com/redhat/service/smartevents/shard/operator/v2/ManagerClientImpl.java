@@ -57,7 +57,7 @@ public class ManagerClientImpl implements ManagerClient {
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatus(List<ResourceStatusDTO> resourceStatusDTOs) {
-        LOGGER.debug("Notifying manager about the new status of the Bridges");
+        LOGGER.debug("Notifying manager about the new status of the Bridges : {}", resourceStatusDTOs);
         return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_BASE_PATH), request -> request.sendJson(resourceStatusDTOs))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
@@ -74,7 +74,7 @@ public class ManagerClientImpl implements ManagerClient {
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatus(List<ResourceStatusDTO> resourceStatusDTOs) {
-        LOGGER.debug("Notifying manager about the new status of the processors");
+        LOGGER.debug("Notifying manager about the new status of the processors : {}", resourceStatusDTOs);
         return getAuthenticatedRequest(webClientManager.put(V2APIConstants.V2_SHARD_API_PROCESSORS_PATH), request -> request.sendJson(resourceStatusDTOs))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))

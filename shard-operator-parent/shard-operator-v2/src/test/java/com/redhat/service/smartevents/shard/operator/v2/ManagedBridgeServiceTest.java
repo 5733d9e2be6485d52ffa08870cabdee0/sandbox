@@ -188,6 +188,41 @@ public class ManagedBridgeServiceTest {
         Assertions.assertThat(managedBridges.size()).isEqualTo(2);
     }
 
+    @Test
+    public void testDeleteBridgeAuthorizationPolicy() {
+        // Given
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        managedBridgeService.createManagedBridge(bridgeDTO);
+
+        ManagedBridge managedBridge = managedBridgeService.fetchManagedBridge(bridgeDTO.getId(), namespaceProvider.getNamespaceName(bridgeDTO.getId()));
+        AuthorizationPolicy authorizationPolicy = managedBridgeService.fetchOrCreateBridgeAuthorizationPolicy(managedBridge, "/testPath");
+        Assertions.assertThat(authorizationPolicy).isNotNull();
+
+        // test
+        managedBridgeService.deleteBridgeAuthorizationPolicy(managedBridge);
+
+        // assert
+        AuthorizationPolicy deployedAuthPolicy = kubernetesClient.resources(AuthorizationPolicy.class)
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
+                .withName(managedBridge.getMetadata().getName())
+                .get();
+        Assertions.assertThat(deployedAuthPolicy).isNull();
+    }
+
+    @Test
+    public void testDeleteManagedBridge() {
+        // Given
+        BridgeDTO bridgeDTO = Fixtures.createBridge(OperationType.CREATE);
+        managedBridgeService.createManagedBridge(bridgeDTO);
+
+        // test
+        managedBridgeService.deleteManagedBridge(bridgeDTO);
+
+        // assert
+        List<ManagedBridge> deployedBridges = managedBridgeService.fetchAllManagedBridges();
+        Assertions.assertThat(deployedBridges).isEmpty();
+    }
+
     private <T extends HasMetadata> T assertV2Labels(T hasMetaData) {
         assertThat(hasMetaData).isNotNull();
         assertThat(hasMetaData.getMetadata().getLabels()).containsEntry(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.V2_OPERATOR_NAME);

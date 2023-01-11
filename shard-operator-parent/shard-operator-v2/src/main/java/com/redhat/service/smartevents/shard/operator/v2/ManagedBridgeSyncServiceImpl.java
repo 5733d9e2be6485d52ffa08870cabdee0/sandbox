@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v2;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,6 +67,10 @@ public class ManagedBridgeSyncServiceImpl implements ManagedBridgeSyncService {
     }
 
     private List<ResourceStatusDTO> transformToBridgeStatus(List<BridgeDTO> bridgeDTOList) {
+        if (bridgeDTOList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         Map<String, ManagedBridge> deployedManagedBridges = managedBridgeService.fetchAllManagedBridges()
                 .stream().collect(Collectors.toMap(m -> m.getSpec().getId(), m -> m));
 
