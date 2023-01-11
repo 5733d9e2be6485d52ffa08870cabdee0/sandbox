@@ -74,7 +74,7 @@ public class SinkConnectorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
-    @Operation(summary = "Get the list of Sink Connectors for a Bridge", description = "Get the list of Sink Connectors instances of a Bridge instance for the authenticated user.")
+    @Operation(summary = "Get the list of Sink Connectors for a Bridge", description = "Get the list of Sink Connector instances of a Bridge instance for the authenticated user.")
     @GET
     @Path("{bridgeId}/sinks")
     public Response getSinkConnectors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {
