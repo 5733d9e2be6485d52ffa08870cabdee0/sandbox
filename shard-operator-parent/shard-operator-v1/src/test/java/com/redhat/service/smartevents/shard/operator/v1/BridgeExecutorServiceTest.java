@@ -388,6 +388,7 @@ public class BridgeExecutorServiceTest {
         reset(templateProvider);
         when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);

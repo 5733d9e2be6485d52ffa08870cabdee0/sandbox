@@ -299,6 +299,7 @@ public class BridgeIngressServiceTest {
         reset(templateProvider);
         when(templateProvider.loadBridgeIngressSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressConfigMapTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
