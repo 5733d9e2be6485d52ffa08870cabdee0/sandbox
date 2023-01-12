@@ -48,6 +48,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -96,6 +97,7 @@ public class BridgeExecutorServiceTest {
         when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorServiceTemplate(any(), any())).thenCallRealMethod();
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // Far from ideal... but each test assumes there are no other BridgeExecutor instances in existence.
         // Unfortunately, however, some tests only check that provisioning either progressed to a certain
@@ -386,6 +388,7 @@ public class BridgeExecutorServiceTest {
         reset(templateProvider);
         when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);

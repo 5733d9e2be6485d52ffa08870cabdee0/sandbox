@@ -8,6 +8,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.knative.Knat
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -44,4 +45,6 @@ public interface TemplateProvider {
     VirtualService loadIstioVirtualServiceTemplate();
 
     RequestAuthentication loadJWTRequestAuthenticationTemplate();
+
+    void updateMetadata(HasMetadata resource, ObjectMeta meta, TemplateImportConfig config);
 }

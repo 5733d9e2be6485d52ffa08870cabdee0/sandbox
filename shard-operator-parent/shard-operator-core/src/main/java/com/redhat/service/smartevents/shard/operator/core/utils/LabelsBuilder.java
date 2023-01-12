@@ -32,6 +32,8 @@ public final class LabelsBuilder {
     public static final String V2_CUSTOMER_ID_LABEL = "smartevents.services.redhat.com/customer-id";
     public static final String BRIDGE_ID_LABEL = "smartevents.service.redhat.com/bridge-id";
     public static final String BRIDGE_NAME_LABEL = "smartevents.service.redhat.com/bridge-name";
+    public static final String PROCESSOR_ID_LABEL = "smartevents.service.redhat.com/processor-id";
+    public static final String PROCESSOR_NAME_LABEL = "smartevents.service.redhat.com/processor-name";
     public static final String V1_RECONCILER_LABEL_SELECTOR = LabelsBuilder.MANAGED_BY_LABEL + "=" + LabelsBuilder.V1_OPERATOR_NAME;
     public static final String V2_RECONCILER_LABEL_SELECTOR = LabelsBuilder.MANAGED_BY_LABEL + "=" + LabelsBuilder.V2_OPERATOR_NAME;
 
@@ -55,6 +57,16 @@ public final class LabelsBuilder {
 
     public LabelsBuilder withBridgeName(String bridgeName) {
         this.labels.put(BRIDGE_NAME_LABEL, sanitizeAndCheckLabelValue(bridgeName));
+        return this;
+    }
+
+    public LabelsBuilder withProcessorId(String processorId) {
+        this.labels.put(PROCESSOR_ID_LABEL, sanitizeAndCheckLabelValue(processorId));
+        return this;
+    }
+
+    public LabelsBuilder withProcessorName(String processorName) {
+        this.labels.put(PROCESSOR_NAME_LABEL, sanitizeAndCheckLabelValue(processorName));
         return this;
     }
 

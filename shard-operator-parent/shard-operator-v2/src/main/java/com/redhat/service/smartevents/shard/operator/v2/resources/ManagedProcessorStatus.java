@@ -1,18 +1,22 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
+import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
 public class ManagedProcessorStatus extends CustomResourceStatus {
 
-    private static Set<Condition> getCreationConditions() {
-        return new HashSet<>();
-    }
+    public static final String CAMEL_INTEGRATION_AVAILABLE = "CamelIntegrationAvailable";
 
-    public ManagedProcessorStatus() {
-        super(getCreationConditions());
+    private static final HashSet<Condition> CONDITIONS = new HashSet<>() {
+        {
+            add(new Condition(CAMEL_INTEGRATION_AVAILABLE, ConditionStatus.Unknown));
+        }
+    };
+
+    protected ManagedProcessorStatus() {
+        super(CONDITIONS);
     }
 }
