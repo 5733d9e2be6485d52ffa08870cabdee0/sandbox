@@ -33,26 +33,6 @@ public class ErrorResponse extends BaseResponse {
         super("Error");
     }
 
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @Override
-    public String getHref() {
-        return href;
-    }
-
-    @Override
-    public void setHref(String href) {
-        this.href = href;
-    }
-
     public String getCode() {
         return code;
     }
