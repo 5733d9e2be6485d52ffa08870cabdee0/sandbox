@@ -1808,6 +1808,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - submitted_at
       - status
@@ -1888,6 +1889,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - submitted_at
       - status
