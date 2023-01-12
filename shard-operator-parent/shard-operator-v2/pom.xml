@@ -158,6 +158,11 @@
                       <type>yml</type>
                       <classifier>crd-managedbridges</classifier>
                     </artifact>
+                    <artifact>
+                      <file>${project.build.directory}/kubernetes/managedprocessors.com.redhat.service.smartevents-v1.yml</file>
+                      <type>yml</type>
+                      <classifier>crd-managedprocessors</classifier>
+                    </artifact>
                   </artifacts>
                 </configuration>
               </execution>
