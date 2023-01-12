@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.v2.utils;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
@@ -39,7 +42,16 @@ public class Fixtures {
             KAFKA_ERROR_TOPIC);
 
     public static BridgeDTO createBridge(OperationType operation) {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, BRIDGE_TLS_CERTIFICATE, BRIDGE_TLS_KEY, CUSTOMER_ID, USER_NAME, KAFKA_CONNECTION_DTO, operation);
+        return new BridgeDTO(BRIDGE_ID,
+                BRIDGE_NAME,
+                BRIDGE_ENDPOINT,
+                BRIDGE_TLS_CERTIFICATE,
+                BRIDGE_TLS_KEY,
+                CUSTOMER_ID,
+                USER_NAME,
+                KAFKA_CONNECTION_DTO,
+                operation,
+                ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     public static ManagedBridge createManagedBridge(BridgeDTO bridgeDTO, String namespace) {
@@ -47,7 +59,14 @@ public class Fixtures {
     }
 
     public static ProcessorDTO createProcessor(OperationType operation) {
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, JsonNodeFactory.instance.objectNode(), BRIDGE_ID, CUSTOMER_ID, USER_NAME, operation);
+        return new ProcessorDTO(PROCESSOR_ID,
+                PROCESSOR_NAME,
+                JsonNodeFactory.instance.objectNode(),
+                BRIDGE_ID,
+                CUSTOMER_ID,
+                USER_NAME,
+                operation,
+                ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     public static ManagedProcessor createManagedProcessor(ProcessorDTO processorDTO, String namespace) {

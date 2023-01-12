@@ -258,6 +258,7 @@ public class BridgeServiceTest {
         assertThat(bridgeDTO.getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
         assertThat(bridgeDTO.getGeneration()).isEqualTo(bridge.getGeneration());
         assertThat(bridgeDTO.getOperationType()).isEqualTo(bridge.getOperation().getType());
+        assertThat(bridgeDTO.getExpiry()).isAfter(bridge.getSubmittedAt());
     }
 
     @Test

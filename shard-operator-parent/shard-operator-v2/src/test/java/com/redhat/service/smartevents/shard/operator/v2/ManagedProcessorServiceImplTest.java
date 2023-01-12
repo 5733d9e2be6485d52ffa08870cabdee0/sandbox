@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.v2;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
 
@@ -60,7 +62,14 @@ public class ManagedProcessorServiceImplTest {
     public void testCamelIntegrationIsProvisioned() throws JsonProcessingException {
 
         ObjectNode flow = objectMapper.readValue("{\"from\":{\"uri\":\"fromURI\",\"steps\":[{\"to\":\"toURI\"}]}}", ObjectNode.class);
-        ProcessorDTO processorDTO = new ProcessorDTO("processorId", "processorName", flow, "bridgeId", "customerId", "owner", OperationType.CREATE);
+        ProcessorDTO processorDTO = new ProcessorDTO("processorId",
+                "processorName",
+                flow,
+                "bridgeId",
+                "customerId",
+                "owner",
+                OperationType.CREATE,
+                ZonedDateTime.now(ZoneOffset.UTC));
 
         bridgeIngressService.createManagedProcessor(processorDTO);
         waitUntiManagedProcessorExists(processorDTO);

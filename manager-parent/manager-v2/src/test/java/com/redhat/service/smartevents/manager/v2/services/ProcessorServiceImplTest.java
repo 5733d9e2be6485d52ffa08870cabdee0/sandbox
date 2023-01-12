@@ -834,6 +834,7 @@ public class ProcessorServiceImplTest {
         assertThat(dto.getFlows().asText()).isEqualTo(flows.asText());
         assertThat(dto.getOperationType()).isEqualTo(processor.getOperation().getType());
         assertThat(dto.getGeneration()).isEqualTo(processor.getGeneration());
+        assertThat(dto.getExpiry()).isAfter(processor.getSubmittedAt());
     }
 
     @Test
