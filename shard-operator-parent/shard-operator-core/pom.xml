@@ -41,7 +41,7 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>infra-v1</artifactId>
+      <artifactId>infra-core</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkiverse.operatorsdk</groupId>
