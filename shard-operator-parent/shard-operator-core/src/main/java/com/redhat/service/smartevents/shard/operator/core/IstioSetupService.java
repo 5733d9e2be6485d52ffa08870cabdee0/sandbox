@@ -58,15 +58,15 @@ public class IstioSetupService {
                 .withName(ISTIO_GATEWAY_NAME)
                 .get();
 
-        if (existing == null) {
-            Gateway expected = templateProvider.loadIstioGatewayTemplate();
-            expected.getMetadata().setName(ISTIO_GATEWAY_NAME);
-            expected.getMetadata().setNamespace(ISTIO_GATEWAY_NAMESPACE);
+        Gateway expected = templateProvider.loadIstioGatewayTemplate();
+        expected.getMetadata().setName(ISTIO_GATEWAY_NAME);
+        expected.getMetadata().setNamespace(ISTIO_GATEWAY_NAMESPACE);
 
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             try {
                 kubernetesClient.resources(Gateway.class)
                         .inNamespace(ISTIO_GATEWAY_NAMESPACE)
-                        .create(expected);
+                        .createOrReplace(expected);
             } catch (RuntimeException e) {
                 LOGGER.error(
                         "Failed to create Istio Gateway resource. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/MGDOBR-940 but the functionalitis are compromised.");
