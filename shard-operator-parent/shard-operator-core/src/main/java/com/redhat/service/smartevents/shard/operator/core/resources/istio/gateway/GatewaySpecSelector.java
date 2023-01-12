@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GatewaySpecSelector {
@@ -19,8 +19,10 @@ public class GatewaySpecSelector {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         GatewaySpecSelector that = (GatewaySpecSelector) o;
         return Objects.equals(istio, that.istio);
     }

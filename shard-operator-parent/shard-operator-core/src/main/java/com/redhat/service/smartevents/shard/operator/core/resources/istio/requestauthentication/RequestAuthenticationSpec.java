@@ -1,9 +1,9 @@
 package com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RequestAuthenticationSpec {
@@ -20,8 +20,10 @@ public class RequestAuthenticationSpec {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         RequestAuthenticationSpec that = (RequestAuthenticationSpec) o;
         return Objects.equals(jwtRules, that.jwtRules);
     }

@@ -1,19 +1,21 @@
 package com.redhat.service.smartevents.shard.operator.core;
 
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
-import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
-import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
-import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.quarkus.arc.profile.UnlessBuildProfile;
-import io.quarkus.runtime.StartupEvent;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
+import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
+import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
+
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.quarkus.arc.profile.UnlessBuildProfile;
+import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
 @UnlessBuildProfile(value = "test") // We don't need to create bean for this service in test.

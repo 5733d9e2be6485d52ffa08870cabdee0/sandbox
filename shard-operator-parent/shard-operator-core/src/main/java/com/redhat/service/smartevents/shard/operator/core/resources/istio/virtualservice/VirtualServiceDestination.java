@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualServiceDestination {
@@ -29,8 +29,10 @@ public class VirtualServiceDestination {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         VirtualServiceDestination that = (VirtualServiceDestination) o;
         return Objects.equals(host, that.host) && Objects.equals(port, that.port);
     }
