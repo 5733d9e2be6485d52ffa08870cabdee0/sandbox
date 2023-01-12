@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.shard.operator.core.resources.istio.virtu
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Objects;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualServiceURI {
 
@@ -13,5 +15,18 @@ public class VirtualServiceURI {
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VirtualServiceURI that = (VirtualServiceURI) o;
+        return Objects.equals(prefix, that.prefix);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(prefix);
     }
 }

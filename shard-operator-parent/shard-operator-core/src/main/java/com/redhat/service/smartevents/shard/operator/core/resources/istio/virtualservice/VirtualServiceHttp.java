@@ -1,8 +1,9 @@
 package com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.List;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualServiceHttp {
@@ -25,5 +26,18 @@ public class VirtualServiceHttp {
 
     public void setRoute(List<VirtualServiceRoute> route) {
         this.route = route;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VirtualServiceHttp that = (VirtualServiceHttp) o;
+        return Objects.equals(match, that.match) && Objects.equals(route, that.route);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(match, route);
     }
 }
