@@ -1,21 +1,19 @@
 package com.redhat.service.smartevents.shard.operator.core;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
-
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.arc.profile.UnlessBuildProfile;
 import io.quarkus.runtime.StartupEvent;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 
 @ApplicationScoped
 @UnlessBuildProfile(value = "test") // We don't need to create bean for this service in test.
@@ -58,15 +56,15 @@ public class IstioSetupService {
                 .withName(ISTIO_GATEWAY_NAME)
                 .get();
 
-        if (existing == null) {
-            Gateway expected = templateProvider.loadIstioGatewayTemplate();
-            expected.getMetadata().setName(ISTIO_GATEWAY_NAME);
-            expected.getMetadata().setNamespace(ISTIO_GATEWAY_NAMESPACE);
+        Gateway expected = templateProvider.loadIstioGatewayTemplate();
+        expected.getMetadata().setName(ISTIO_GATEWAY_NAME);
+        expected.getMetadata().setNamespace(ISTIO_GATEWAY_NAMESPACE);
 
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             try {
                 kubernetesClient.resources(Gateway.class)
                         .inNamespace(ISTIO_GATEWAY_NAMESPACE)
-                        .create(expected);
+                        .createOrReplace(expected);
             } catch (RuntimeException e) {
                 LOGGER.error(
                         "Failed to create Istio Gateway resource. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/MGDOBR-940 but the functionalitis are compromised.");
