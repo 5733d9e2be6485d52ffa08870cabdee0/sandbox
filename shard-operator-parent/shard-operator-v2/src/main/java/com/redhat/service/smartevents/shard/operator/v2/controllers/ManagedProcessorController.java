@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
@@ -64,6 +65,7 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
     @Inject
     OperatorMetricsService metricsService;
 
+    @V2
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
