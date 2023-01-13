@@ -289,14 +289,13 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Set the updated conditions to the existing Manager conditions to begin; then copy in the new Operator conditions
         List<Condition> updatedConditions = conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).collect(Collectors.toList());
         statusDTO.getConditions().forEach(c -> updatedConditions.add(Condition.from(c, ComponentType.SHARD)));
+        processor.setConditions(updatedConditions);
 
         // Don't do anything if the Operation is complete.
         if (Objects.nonNull(operation.getCompletedAt())) {
             LOGGER.info("Update for Processor with id '{}' was discarded. The Operation has already been completed.", processor.getId());
             return processor;
         }
-
-        processor.setConditions(updatedConditions);
 
         switch (operation.getType()) {
             case CREATE:

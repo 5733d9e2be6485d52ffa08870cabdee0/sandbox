@@ -243,14 +243,13 @@ public class BridgeServiceImpl implements BridgeService {
         // Set the updated conditions to the existing Manager conditions to begin; then copy in the new Operator conditions
         List<Condition> updatedConditions = conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).collect(Collectors.toList());
         statusDTO.getConditions().forEach(c -> updatedConditions.add(Condition.from(c, ComponentType.SHARD)));
+        bridge.setConditions(updatedConditions);
 
         // Don't do anything if the Operation is complete.
         if (Objects.nonNull(operation.getCompletedAt())) {
             LOGGER.info("Update for Bridge with id '{}' was discarded. The Operation has already been completed.", bridge.getId());
             return bridge;
         }
-
-        bridge.setConditions(updatedConditions);
 
         switch (operation.getType()) {
             case CREATE:

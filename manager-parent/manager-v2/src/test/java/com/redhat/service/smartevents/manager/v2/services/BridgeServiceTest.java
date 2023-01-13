@@ -300,6 +300,13 @@ public class BridgeServiceTest {
 
         assertThat(updated2.getPublishedAt()).isEqualTo(updated.getPublishedAt());
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
+
+        // Check the second Condition update was stored.
+        assertThat(updated2.getConditions()
+                .stream()
+                .filter(c -> c.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME) && c.getStatus().equals(ConditionStatus.TRUE))
+                .findFirst())
+                        .isPresent();
     }
 
     @Test
@@ -366,6 +373,13 @@ public class BridgeServiceTest {
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
         verify(metricsService).onOperationComplete(eq(bridge), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
         verify(metricsService, never()).onOperationFailed(any(), any());
+
+        // Check the second Condition update was stored.
+        assertThat(updated2.getConditions()
+                .stream()
+                .filter(c -> c.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME) && c.getStatus().equals(ConditionStatus.TRUE))
+                .findFirst())
+                        .isPresent();
     }
 
     @Test
@@ -482,6 +496,13 @@ public class BridgeServiceTest {
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
         verify(metricsService, never()).onOperationComplete(any(), any());
         verify(metricsService).onOperationFailed(eq(bridge), eq(MetricsOperation.MANAGER_RESOURCE_PROVISION));
+
+        // Check the second Condition update was stored.
+        assertThat(updated2.getConditions()
+                .stream()
+                .filter(c -> c.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME) && c.getStatus().equals(ConditionStatus.FAILED))
+                .findFirst())
+                        .isPresent();
     }
 
     @Test
