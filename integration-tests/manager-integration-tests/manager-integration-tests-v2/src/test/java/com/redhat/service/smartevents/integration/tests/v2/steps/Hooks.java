@@ -4,18 +4,26 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Properties;
 
+import org.awaitility.Awaitility;
+
+import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
-import com.redhat.service.smartevents.integration.tests.resources.AwsSqsResource;
-import com.redhat.service.smartevents.integration.tests.resources.kafka.KafkaResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
+import com.redhat.service.smartevents.integration.tests.v2.resources.BridgeResource;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 
+import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.BeforeAll;
 import io.cucumber.java.Scenario;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Cucumber hooks for setup and cleanup
@@ -60,85 +68,86 @@ public class Hooks {
         context.setStartTime(Instant.now());
     }
 
+    @After
+    public void cleanUp() {
+        boolean disabledCleanup = Boolean.parseBoolean(DISABLE_CLEANUP);
+        boolean disabledFailedCleanup = Boolean.parseBoolean(DISABLE_FAIL_CLEANUP);
+        boolean scenarioFailed = context.getScenario().isFailed();
+        if (disabledCleanup) {
+            context.getScenario().log("Cleanup disabled, all resources stays in the cluster");
+        } else if (disabledFailedCleanup && scenarioFailed) {
+            context.getScenario().log("Failed scenario cleanup disabled and the scenario failed, all resources stays in the cluster");
+        } else {
+            // Delete AWS SQS queues
+            //cleanAwsSQSQueues();
+
+            // Delete Kafka topics and related ACLs
+            //cleanKafkaTopics();
+
+            String token = BridgeUtils.retrieveBridgeToken();
+            // Remove all bridges/processors created
+            context.getAllBridges().values()
+                    .parallelStream()
+                    .filter(bridgeContext -> !bridgeContext.isDeleted())
+                    .forEach(bridgeContext -> {
+                        final String bridgeId = bridgeContext.getId();
+                        BridgeResponse bridge = BridgeResource.getBridgeDetails(token, bridgeId);
+                        // Skipping processor deletion steps for now as implementation of v2 API is still in progress for processor
+                        /*
+                         * if (bridge.getStatus() == ManagedResourceStatus.READY) {
+                         * ProcessorListResponse processorList = ProcessorResource.getProcessorList(
+                         * token,
+                         * bridgeId);
+                         * if (processorList.getSize() > 0) {
+                         * processorList.getItems().parallelStream().forEach(
+                         * p -> {
+                         * String processorId = p.getId();
+                         * ProcessorResource.deleteProcessor(token, bridgeId, processorId);
+                         * Awaitility.await()
+                         * .atMost(Duration.ofMinutes(4))
+                         * .pollInterval(Duration.ofSeconds(5))
+                         * .untilAsserted(
+                         * () -> assertThat(ProcessorResource.getProcessorList(token, bridgeId).getItems())
+                         * .as("waiting until Processor `%s` of the Bridge `%s` is deleted", processorId, bridgeId)
+                         * .noneMatch(processor -> Objects.equals(processor.getId(), processorId)));
+                         * });
+                         * }
+                         * }
+                         */
+                        switch (bridge.getStatus()) {
+                            case ACCEPTED:
+                            case PROVISIONING:
+                            case READY:
+                            case FAILED:
+                                try {
+                                    BridgeResource.deleteBridge(token, bridgeId);
+                                    Awaitility.await()
+                                            .atMost(Duration.ofMinutes(4))
+                                            .pollInterval(Duration.ofSeconds(5))
+                                            .untilAsserted(
+                                                    () -> assertThat(BridgeResource.getBridgeList(token).getItems()).as("waiting until Bridge `%s` is deleted", bridgeId)
+                                                            .noneMatch(b -> Objects.equals(b.getId(), bridgeId)));
+                                } catch (Exception e) {
+                                    throw new RuntimeException("Unable to delete bridge with id " + bridgeId, e);
+                                }
+                            default:
+                                break;
+                        }
+                    });
+        }
+    }
+
     /*
-     * // Skipping this for now as implementation of v2 API is still in progress
+     * private void cleanKafkaTopics() {
+     * for (String topic : context.allKafkaTopics()) {
+     * KafkaResource.deleteKafkaTopic(topic);
+     * }
+     * }
      * 
-     * @After
-     * public void cleanUp() {
-     * boolean disabledCleanup = Boolean.parseBoolean(DISABLE_CLEANUP);
-     * boolean disabledFailedCleanup = Boolean.parseBoolean(DISABLE_FAIL_CLEANUP);
-     * boolean scenarioFailed = context.getScenario().isFailed();
-     * if (disabledCleanup) {
-     * context.getScenario().log("Cleanup disabled, all resources stays in the cluster");
-     * } else if (disabledFailedCleanup && scenarioFailed) {
-     * context.getScenario().log("Failed scenario cleanup disabled and the scenario failed, all resources stays in the cluster");
-     * } else {
-     * // Delete AWS SQS queues
-     * cleanAwsSQSQueues();
-     * 
-     * // Delete Kafka topics and related ACLs
-     * cleanKafkaTopics();
-     * 
-     * String token = BridgeUtils.retrieveBridgeToken();
-     * // Remove all bridges/processors created
-     * context.getAllBridges().values()
-     * .parallelStream()
-     * .filter(bridgeContext -> !bridgeContext.isDeleted())
-     * .forEach(bridgeContext -> {
-     * final String bridgeId = bridgeContext.getId();
-     * BridgeResponse bridge = BridgeResource.getBridgeDetails(token, bridgeId);
-     * if (bridge.getStatus() == ManagedResourceStatus.READY) {
-     * ProcessorListResponse processorList = ProcessorResource.getProcessorList(
-     * token,
-     * bridgeId);
-     * if (processorList.getSize() > 0) {
-     * processorList.getItems().parallelStream().forEach(
-     * p -> {
-     * String processorId = p.getId();
-     * ProcessorResource.deleteProcessor(token, bridgeId, processorId);
-     * Awaitility.await()
-     * .atMost(Duration.ofMinutes(4))
-     * .pollInterval(Duration.ofSeconds(5))
-     * .untilAsserted(
-     * () -> assertThat(ProcessorResource.getProcessorList(token, bridgeId).getItems())
-     * .as("waiting until Processor `%s` of the Bridge `%s` is deleted", processorId, bridgeId)
-     * .noneMatch(processor -> Objects.equals(processor.getId(), processorId)));
-     * });
-     * }
-     * }
-     * switch (bridge.getStatus()) {
-     * case ACCEPTED:
-     * case PROVISIONING:
-     * case READY:
-     * case FAILED:
-     * try {
-     * BridgeResource.deleteBridge(token, bridgeId);
-     * Awaitility.await()
-     * .atMost(Duration.ofMinutes(4))
-     * .pollInterval(Duration.ofSeconds(5))
-     * .untilAsserted(
-     * () -> assertThat(BridgeResource.getBridgeList(token).getItems()).as("waiting until Bridge `%s` is deleted", bridgeId)
-     * .noneMatch(b -> Objects.equals(b.getId(), bridgeId)));
-     * } catch (Exception e) {
-     * throw new RuntimeException("Unable to delete bridge with id " + bridgeId, e);
-     * }
-     * default:
-     * break;
-     * }
-     * });
+     * private void cleanAwsSQSQueues() {
+     * for (String queueName : context.allSqsQueues()) {
+     * AwsSqsResource.deleteQueue(queueName);
      * }
      * }
      */
-
-    private void cleanKafkaTopics() {
-        for (String topic : context.allKafkaTopics()) {
-            KafkaResource.deleteKafkaTopic(topic);
-        }
-    }
-
-    private void cleanAwsSQSQueues() {
-        for (String queueName : context.allSqsQueues()) {
-            AwsSqsResource.deleteQueue(queueName);
-        }
-    }
 }
