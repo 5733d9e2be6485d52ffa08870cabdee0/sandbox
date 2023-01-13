@@ -23,17 +23,15 @@ public class IstioSetupService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IstioSetupService.class);
 
-    private static final String ISTIO_GATEWAY_NAMESPACE = "knative-eventing";
-    private static final String ISTIO_GATEWAY_NAME = "broker-gateway";
-    private static final String ISTIO_VIRTUAL_SERVICE_NAMESPACE = "knative-eventing";
-    private static final String ISTIO_VIRTUAL_SERVICE_NAME = "broker-virtual-service";
-    private static final String JWT_REQUEST_AUTHENTICATION_NAMESPACE = "istio-system";
-    private static final String JWT_REQUEST_AUTHENTICATION_NAME = "jwt-rh-sso";
+    protected static final String ISTIO_GATEWAY_NAMESPACE = "knative-eventing";
+    protected static final String ISTIO_GATEWAY_NAME = "broker-gateway";
+    protected static final String ISTIO_VIRTUAL_SERVICE_NAMESPACE = "knative-eventing";
+    protected static final String ISTIO_VIRTUAL_SERVICE_NAME = "broker-virtual-service";
+    protected static final String JWT_REQUEST_AUTHENTICATION_NAMESPACE = "istio-system";
+    protected static final String JWT_REQUEST_AUTHENTICATION_NAME = "jwt-rh-sso";
 
-    @Inject
     KubernetesClient kubernetesClient;
 
-    @Inject
     TemplateProvider templateProvider;
 
     @ConfigProperty(name = "event-bridge.istio.jwt.issuer")
@@ -41,6 +39,12 @@ public class IstioSetupService {
 
     @ConfigProperty(name = "event-bridge.istio.jwt.jwksUri")
     String jwksUri;
+
+    @Inject
+    IstioSetupService(KubernetesClient kubernetesClient, TemplateProvider templateProvider) {
+        this.kubernetesClient = kubernetesClient;
+        this.templateProvider = templateProvider;
+    }
 
     void setupIstioComponent(@Observes StartupEvent event) {
 
@@ -51,7 +55,7 @@ public class IstioSetupService {
         createJWTRequestAuthentication();
     }
 
-    private void createIstioGateway() {
+    protected void createIstioGateway() {
 
         Gateway existing = kubernetesClient.resources(Gateway.class)
                 .inNamespace(ISTIO_GATEWAY_NAMESPACE)
@@ -74,7 +78,7 @@ public class IstioSetupService {
         }
     }
 
-    private void createIstioVirtualService() {
+    protected void createIstioVirtualService() {
 
         VirtualService existing = kubernetesClient.resources(VirtualService.class)
                 .inNamespace(ISTIO_VIRTUAL_SERVICE_NAMESPACE)
@@ -97,7 +101,7 @@ public class IstioSetupService {
         }
     }
 
-    private void createJWTRequestAuthentication() {
+    protected void createJWTRequestAuthentication() {
 
         RequestAuthentication existing = kubernetesClient.resources(RequestAuthentication.class)
                 .inNamespace(JWT_REQUEST_AUTHENTICATION_NAMESPACE)
