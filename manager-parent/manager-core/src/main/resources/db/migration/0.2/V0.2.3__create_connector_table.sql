@@ -1,12 +1,13 @@
 CREATE TABLE CONNECTOR_V2 (
     id                             varchar(255) NOT NULL PRIMARY KEY,
-    bridge_id                      varchar(255) NOT NULL,
     name                           varchar(255) NOT NULL,
     type                           varchar(255) NOT NULL, -- The discriminator for sources/sinks
     connector_type_id              varchar(255) NOT NULL,
-    connector_external_id          varchar(255) NOT NULL,
-    topic_name                     varchar(255) NOT NULL,
+    connector_external_id          varchar(255),
+    topic_name                     varchar(255),
     error                          text,
+
+    bridge_id                      varchar(255) NOT NULL,
 
     submitted_at                   timestamp    NOT NULL,
     published_at                   timestamp,
@@ -16,11 +17,11 @@ CREATE TABLE CONNECTOR_V2 (
 
     owner                          varchar(255) NOT NULL,
 
-    version                        integer      NOT NULL default 0,
+    definition                     jsonb        NOT NULL,
 
+    version                        integer      NOT NULL default 0,
     generation                     integer      NOT NULL default 0,
 
-    definition                     jsonb        NOT NULL,
     unique (bridge_id, name),
     constraint fk_processor foreign key (bridge_id) references BRIDGE_V2 (id)
 );

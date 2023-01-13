@@ -66,7 +66,7 @@ public class Connector extends ManagedDefinedResourceV2<ConnectorDefinition> {
     @Column(name = "connector_external_id")
     protected String connectorExternalId;
 
-    @Column(name = "connector_type_id")
+    @Column(name = "connector_type_id", nullable = false)
     protected String connectorTypeId;
 
     @Column(name = "topic_name")
