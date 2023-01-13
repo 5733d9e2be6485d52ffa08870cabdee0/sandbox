@@ -28,8 +28,8 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationResult;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.DeserializationException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.DeserializationException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.models.ProcessorCatalogEntry;
 

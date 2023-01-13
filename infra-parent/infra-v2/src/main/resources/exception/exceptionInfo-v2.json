@@ -1,0 +1,116 @@
+[
+  {
+    "exception": "com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException",
+    "id": 1,
+    "reason": "There was an internal exception. This is supposed not to be fixable by the user, so you should open a bug with all the information you have.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException",
+    "id": 2,
+    "reason": "We were unable to process your request. Please contact Red Hat support if the error persists.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.AlreadyExistingItemException",
+    "id": 3,
+    "reason": "You tried to create an object which already exist in our repository",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BridgeLifecycleException",
+    "id": 4,
+    "reason": "You tried a life cycle transition which is not allowed",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ItemNotFoundException",
+    "id": 5,
+    "reason": "You tried to retrieve an object that does not exist in our repository",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BadRequestException",
+    "id": 6,
+    "reason": "The request is not valid.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.OidcTokensNotInitializedException",
+    "id": 7,
+    "reason": "Oidc Tokens have not been initialized.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.HTTPResponseException",
+    "id": 8,
+    "reason": "The HTTP response status code was not 2xx.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.VaultException",
+    "id": 9,
+    "reason": "An error occurred fetching the secrets from the vault.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ForbiddenRequestException",
+    "id": 10,
+    "reason": "The user is not authorized to access the resource",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ProcessorLifecycleException",
+    "id": 11,
+    "reason": "You tried a life cycle transition which is not allowed",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.DeserializationException",
+    "id": 12,
+    "reason": "Error during the deserialization of a resource.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.InvalidCloudProviderException",
+    "id": 13,
+    "reason": "The selected Cloud Provider is not valid.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.InvalidRegionException",
+    "id": 14,
+    "reason": "The selected Region is not valid.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.InvalidURLException",
+    "id": 15,
+    "reason": "Shard Operator received an invalid URL for the BridgeIngress endpoint.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable",
+    "id": 16,
+    "reason": "The requested resource could not be deployed because you are out of available quota.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.TermsNotAcceptedYetException",
+    "id": 17,
+    "reason": "Terms not accepted yet.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.AMSFailException",
+    "id": 18,
+    "reason": "An error with AMS occurred.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.UnclassifiedConstraintViolationException",
+    "id": 19,
+    "reason": "A ConstraintViolation has not been mapped to an ExternalUserException. The raw violation is shown.",
+    "type": "PLATFORM"
+  }
+]

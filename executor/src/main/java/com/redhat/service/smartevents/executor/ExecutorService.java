@@ -29,8 +29,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.DeserializationException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.CloudEventDeserializationException;
+import com.redhat.service.smartevents.infra.v1.api.V1;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.DeserializationException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
 import io.cloudevents.CloudEvent;
@@ -82,6 +83,7 @@ public class ExecutorService {
     @Inject
     ObjectMapper mapper;
 
+    @V1
     @Inject
     BridgeErrorService bridgeErrorService;
 

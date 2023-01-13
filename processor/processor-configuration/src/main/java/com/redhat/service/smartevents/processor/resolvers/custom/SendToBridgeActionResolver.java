@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.GatewayProviderException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;

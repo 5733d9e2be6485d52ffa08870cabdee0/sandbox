@@ -13,7 +13,7 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.GatewayProviderException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;

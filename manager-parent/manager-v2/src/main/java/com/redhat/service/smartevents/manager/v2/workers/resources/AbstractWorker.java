@@ -43,11 +43,12 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
     @Inject
     WorkManager workManager;
 
-    @Inject
-    ConditionDAO conditionDAO;
-
+    @V2
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
+
+    @Inject
+    ConditionDAO conditionDAO;
 
     @Override
     public T handleWork(Work work) {

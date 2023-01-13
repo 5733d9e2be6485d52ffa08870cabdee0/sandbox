@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
-import static com.redhat.service.smartevents.infra.core.utils.JacksonUtils.mapToObjectNode;
+import static com.redhat.service.smartevents.infra.v1.api.utils.JacksonUtils.mapToObjectNode;
 
 /**
  * A Gateway represents the touching point between a Processor and

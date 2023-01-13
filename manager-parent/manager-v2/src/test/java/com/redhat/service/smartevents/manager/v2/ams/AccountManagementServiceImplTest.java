@@ -6,8 +6,8 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.v2.api.V2;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 
 import io.quarkus.test.junit.QuarkusTest;

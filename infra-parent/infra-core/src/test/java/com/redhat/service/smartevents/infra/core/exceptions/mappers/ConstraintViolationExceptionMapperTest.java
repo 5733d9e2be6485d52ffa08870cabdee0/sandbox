@@ -17,11 +17,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorType;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
+import com.redhat.service.smartevents.infra.core.exceptions.CompositeBridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.models.responses.BaseResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
@@ -46,14 +45,14 @@ public class ConstraintViolationExceptionMapperTest {
     private HibernateConstraintViolation<?> hibernateConstraintViolation;
 
     @Mock
-    private BridgeErrorService bridgeErrorService;
+    private CompositeBridgeErrorService bridgeErrorService;
 
     private ConstraintViolationExceptionMapper mapper;
 
     @BeforeEach
     void setup() {
-        this.mapper = new ConstraintViolationExceptionMapper(bridgeErrorService, TestMappersUtils.getDefaultBuildersMock());
-        when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
+        this.mapper = new ConstraintViolationExceptionMapper(bridgeErrorService, TestMappersUtils.getDefaultBuilderMock());
+        when(bridgeErrorService.getError(InternalPlatformException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
         this.mapper.init();
 
         lenient().when(constraintViolation.getMessage()).thenReturn("message");
@@ -90,8 +89,8 @@ public class ConstraintViolationExceptionMapperTest {
 
     @Test
     void testSingleHibernateViolationWithDynamicPayloadUnmapped() {
-        when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ItemNotFoundException("not-found"));
-        when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.empty());
+        when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ExternalUserException("not-found"));
+        when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.empty());
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
@@ -107,8 +106,8 @@ public class ConstraintViolationExceptionMapperTest {
 
     @Test
     void testSingleHibernateViolationWithDynamicPayloadMapped() {
-        when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ItemNotFoundException("not-found"));
-        when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.of(MAPPED_ERROR));
+        when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ExternalUserException("not-found"));
+        when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.of(MAPPED_ERROR));
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
@@ -124,8 +123,8 @@ public class ConstraintViolationExceptionMapperTest {
 
     @Test
     void testMultipleAllScenarios() {
-        when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ItemNotFoundException("not-found"));
-        when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.of(MAPPED_ERROR));
+        when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ExternalUserException("not-found"));
+        when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.of(MAPPED_ERROR));
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(constraintViolation, hibernateConstraintViolation));
 

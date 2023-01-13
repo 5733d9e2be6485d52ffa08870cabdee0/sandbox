@@ -1,14 +1,13 @@
 package com.redhat.service.smartevents.infra.core.exceptions.mappers;
 
-import javax.enterprise.inject.Instance;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
+import com.redhat.service.smartevents.infra.core.exceptions.CompositeBridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionBuilder;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException;
 
 public class ExternalUserExceptionMapper extends BaseExceptionMapper<ExternalUserException> {
@@ -19,8 +18,8 @@ public class ExternalUserExceptionMapper extends BaseExceptionMapper<ExternalUse
         //CDI proxy
     }
 
-    public ExternalUserExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
-        super(bridgeErrorService, ExternalUserException.class, builders);
+    public ExternalUserExceptionMapper(CompositeBridgeErrorService bridgeErrorService, ErrorHrefVersionBuilder hrefBuilder) {
+        super(bridgeErrorService, ExternalUserException.class, hrefBuilder);
     }
 
     @Override
