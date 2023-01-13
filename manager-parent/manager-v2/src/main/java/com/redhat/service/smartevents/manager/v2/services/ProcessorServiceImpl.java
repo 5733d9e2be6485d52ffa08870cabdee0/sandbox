@@ -290,11 +290,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         List<Condition> updatedConditions = conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).collect(Collectors.toList());
         statusDTO.getConditions().forEach(c -> updatedConditions.add(Condition.from(c, ComponentType.SHARD)));
 
-        // Don't do anything if Conditions are unchanged from our previous state.
-        ManagedResourceStatusV2 status = StatusUtilities.getManagedResourceStatus(operation, conditions);
-        ManagedResourceStatusV2 originalStatus = StatusUtilities.getManagedResourceStatus(operation, updatedConditions);
-        if (Objects.equals(status, originalStatus)) {
-            LOGGER.info("Update for Processor with id '{}' was discarded. The ManagedResourceStatus reflected by the Conditions is unchanged.", processor.getId());
+        // Don't do anything if the Operation is complete.
+        if (Objects.nonNull(operation.getCompletedAt())) {
+            LOGGER.info("Update for Processor with id '{}' was discarded. The Operation has already been completed.", processor.getId());
             return processor;
         }
 
@@ -303,19 +301,23 @@ public class ProcessorServiceImpl implements ProcessorService {
         switch (operation.getType()) {
             case CREATE:
                 if (ConditionUtilities.isOperationComplete(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
                     if (Objects.isNull(processor.getPublishedAt())) {
                         processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
                         metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                     }
                 } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
                     metricsService.onOperationFailed(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                 }
                 break;
 
             case UPDATE:
                 if (ConditionUtilities.isOperationComplete(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
                     metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
                 } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
                     metricsService.onOperationFailed(processor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
                 }
                 break;
@@ -328,6 +330,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorDAO.deleteById(statusDTO.getId());
                     metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
                     metricsService.onOperationFailed(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 }
                 break;
