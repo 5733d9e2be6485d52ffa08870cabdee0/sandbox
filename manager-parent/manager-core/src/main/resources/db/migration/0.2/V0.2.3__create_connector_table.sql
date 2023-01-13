@@ -1,0 +1,30 @@
+CREATE TABLE CONNECTOR_V2 (
+    id                             varchar(255) NOT NULL PRIMARY KEY,
+    bridge_id                      varchar(255) NOT NULL,
+    name                           varchar(255) NOT NULL,
+    type                           varchar(255) NOT NULL, -- The discriminator for sources/sinks
+    connector_type_id              varchar(255) NOT NULL,
+    connector_external_id          varchar(255) NOT NULL,
+    topic_name                     varchar(255) NOT NULL,
+    error                          text,
+
+    submitted_at                   timestamp    NOT NULL,
+    published_at                   timestamp,
+
+    operation_type                 varchar(255) NOT NULL,
+    operation_requested_at         timestamp    NOT NULL,
+
+    owner                          varchar(255) NOT NULL,
+
+    version                        integer      NOT NULL default 0,
+
+    generation                     integer      NOT NULL default 0,
+
+    definition                     jsonb        NOT NULL,
+    unique (bridge_id, name),
+    constraint fk_processor foreign key (bridge_id) references BRIDGE_V2 (id)
+);
+
+-- add new "organisation_id" column
+alter table CONDITION add column "connector_id" varchar(255);
+alter table CONDITION add foreign key (connector_id) references CONNECTOR_V2(id);

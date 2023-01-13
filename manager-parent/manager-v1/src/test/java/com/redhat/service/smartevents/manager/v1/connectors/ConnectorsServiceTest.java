@@ -13,8 +13,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
-import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;

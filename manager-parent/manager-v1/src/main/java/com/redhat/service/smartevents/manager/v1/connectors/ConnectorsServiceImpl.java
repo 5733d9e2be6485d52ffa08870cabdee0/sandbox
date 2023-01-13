@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
-import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;

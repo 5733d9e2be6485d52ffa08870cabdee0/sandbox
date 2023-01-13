@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.infra.v1.api.models.connectors;
+package com.redhat.service.smartevents.infra.core.models.connectors;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
