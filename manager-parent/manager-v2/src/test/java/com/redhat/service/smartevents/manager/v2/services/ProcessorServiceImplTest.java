@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -107,6 +108,9 @@ public class ProcessorServiceImplTest {
     public static final String NON_EXISTING_CUSTOMER_ID = "non-existing-customer-id";
 
     public static final QueryResourceInfo QUERY_INFO = new QueryResourceInfo(0, 100);
+
+    @ConfigProperty(name = "event-bridge.managed-processor.deployment.timeout-seconds")
+    int managedProcessorTimeoutSeconds;
 
     @Inject
     ProcessorService processorService;
@@ -834,7 +838,7 @@ public class ProcessorServiceImplTest {
         assertThat(dto.getFlows().asText()).isEqualTo(flows.asText());
         assertThat(dto.getOperationType()).isEqualTo(processor.getOperation().getType());
         assertThat(dto.getGeneration()).isEqualTo(processor.getGeneration());
-        assertThat(dto.getExpiry()).isAfter(processor.getSubmittedAt());
+        assertThat(dto.getTimeoutSeconds()).isEqualTo(managedProcessorTimeoutSeconds);
     }
 
     @Test

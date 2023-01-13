@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.infra.v2.api.models.dto;
 
-import java.time.ZonedDateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -26,8 +24,8 @@ public class ProcessorDTO extends BaseResourceDTO {
             String customerId,
             String owner,
             OperationType operationType,
-            ZonedDateTime expiry) {
-        super(id, name, customerId, owner, operationType, expiry);
+            int timeout) {
+        super(id, name, customerId, owner, operationType, timeout);
         this.flows = flows;
         this.bridgeId = bridgeId;
     }

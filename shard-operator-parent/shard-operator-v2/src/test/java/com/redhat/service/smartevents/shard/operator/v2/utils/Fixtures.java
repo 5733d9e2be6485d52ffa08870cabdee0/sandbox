@@ -1,13 +1,11 @@
 package com.redhat.service.smartevents.shard.operator.v2.utils;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.v2.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
@@ -51,7 +49,7 @@ public class Fixtures {
                 USER_NAME,
                 KAFKA_CONNECTION_DTO,
                 operation,
-                ZonedDateTime.now(ZoneOffset.UTC));
+                TestSupport.RESOURCE_TIMEOUT);
     }
 
     public static ManagedBridge createManagedBridge(BridgeDTO bridgeDTO, String namespace) {
@@ -66,7 +64,7 @@ public class Fixtures {
                 CUSTOMER_ID,
                 USER_NAME,
                 operation,
-                ZonedDateTime.now(ZoneOffset.UTC));
+                TestSupport.RESOURCE_TIMEOUT);
     }
 
     public static ManagedProcessor createManagedProcessor(ProcessorDTO processorDTO, String namespace) {

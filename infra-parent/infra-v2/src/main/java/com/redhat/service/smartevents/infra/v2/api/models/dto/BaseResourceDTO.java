@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.infra.v2.api.models.dto;
 
-import java.time.ZonedDateTime;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -27,19 +26,19 @@ public abstract class BaseResourceDTO {
     @JsonProperty("generation")
     private long generation;
 
-    @JsonProperty("expiry")
-    private ZonedDateTime expiry;
+    @JsonProperty("timeout")
+    private int timeout;
 
     protected BaseResourceDTO() {
     }
 
-    protected BaseResourceDTO(String id, String name, String customerId, String owner, OperationType operationType, ZonedDateTime expiry) {
+    protected BaseResourceDTO(String id, String name, String customerId, String owner, OperationType operationType, int timeout) {
         this.id = id;
         this.name = name;
         this.customerId = customerId;
         this.owner = owner;
         this.operationType = operationType;
-        this.expiry = expiry;
+        this.timeout = timeout;
     }
 
     public String getId() {
@@ -90,12 +89,12 @@ public abstract class BaseResourceDTO {
         this.generation = generation;
     }
 
-    public ZonedDateTime getExpiry() {
-        return expiry;
+    public int getTimeoutSeconds() {
+        return timeout;
     }
 
-    public void setExpiry(ZonedDateTime expiry) {
-        this.expiry = expiry;
+    public void setTimeoutSeconds(int timeout) {
+        this.timeout = timeout;
     }
 
     @Override

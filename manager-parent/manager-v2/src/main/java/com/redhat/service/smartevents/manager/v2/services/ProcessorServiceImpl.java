@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.v2.services;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -354,7 +353,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setFlows(processor.getDefinition().getFlows());
         dto.setOperationType(processor.getOperation().getType());
         dto.setGeneration(processor.getGeneration());
-        dto.setExpiry(processor.getSubmittedAt().plus(managedProcessorTimeoutSeconds, ChronoUnit.SECONDS));
+        dto.setTimeoutSeconds(managedProcessorTimeoutSeconds);
         return dto;
     }
 

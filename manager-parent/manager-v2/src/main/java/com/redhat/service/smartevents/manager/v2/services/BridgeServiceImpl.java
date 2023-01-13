@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.manager.v2.services;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -317,7 +316,7 @@ public class BridgeServiceImpl implements BridgeService {
         dto.setKafkaConnection(kafkaConnectionDTO);
         dto.setTlsCertificate(tlsCertificate);
         dto.setTlsKey(tlsKey);
-        dto.setExpiry(bridge.getSubmittedAt().plus(managedBridgeTimeoutSeconds, ChronoUnit.SECONDS));
+        dto.setTimeoutSeconds(managedBridgeTimeoutSeconds);
         return dto;
     }
 

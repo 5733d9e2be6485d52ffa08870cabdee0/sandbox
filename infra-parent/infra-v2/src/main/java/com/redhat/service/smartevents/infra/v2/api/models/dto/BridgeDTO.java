@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.infra.v2.api.models.dto;
 
-import java.time.ZonedDateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
@@ -34,8 +32,8 @@ public class BridgeDTO extends BaseResourceDTO {
             String owner,
             KafkaConnectionDTO kafkaConnection,
             OperationType operationType,
-            ZonedDateTime expiry) {
-        super(id, name, customerId, owner, operationType, expiry);
+            int timeout) {
+        super(id, name, customerId, owner, operationType, timeout);
         this.endpoint = endpoint;
         this.tlsCertificate = tlsCertificate;
         this.tlsKey = tlsKey;
