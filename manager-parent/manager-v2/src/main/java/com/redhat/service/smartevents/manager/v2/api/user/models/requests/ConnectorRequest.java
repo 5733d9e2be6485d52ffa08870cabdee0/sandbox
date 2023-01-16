@@ -3,6 +3,8 @@ package com.redhat.service.smartevents.manager.v2.api.user.models.requests;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,6 +28,12 @@ public class ConnectorRequest {
     @NotNull(message = "Connector payload can't be null")
     protected ObjectNode connector;
 
+    public ConnectorRequest(){}
+
+    public ConnectorRequest(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
@@ -48,5 +56,9 @@ public class ConnectorRequest {
 
     public void setConnector(ObjectNode connector) {
         this.connector = connector;
+    }
+
+    public Connector toEntity() {
+        return new Connector(getName());
     }
 }

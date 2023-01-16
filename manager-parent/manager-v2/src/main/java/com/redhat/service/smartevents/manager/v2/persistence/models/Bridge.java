@@ -63,6 +63,10 @@ public class Bridge extends ManagedResourceV2 {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
 
+    public static final String ORGANISATION_ID_PARAM = "organisationId";
+
+    public static final String SHARD_ID_PARAM = "shardId";
+
     @Column(name = "endpoint")
     private String endpoint;
 

@@ -25,8 +25,12 @@ import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDe
 @NamedQueries({
         @NamedQuery(name = "CONNECTOR_V2.findByIdWithConditions",
                 query = "from Connector_V2 conn left join fetch conn.conditions where conn.id=:id and conn.type=:type"),
+        @NamedQuery(name = "CONNECTOR_V2.findByBridgeIdAndName",
+                query = "from Connector_V2 conn where conn.name=:name and conn.bridge.id=:bridgeId and conn.type=:type"),
         @NamedQuery(name = "CONNECTOR_V2.findByIdsWithBridgeAndConditions",
                 query = "select distinct (conn) from Connector_V2 conn left join fetch conn.bridge left join fetch conn.conditions where conn.id in (:ids)"),
+        @NamedQuery(name = "CONNECTOR_V2.countByBridgeIdAndCustomerId",
+                query = "select count(conn.id) from Connector_V2 conn where conn.bridge.id=:bridgeId and conn.bridge.customerId=:customerId and conn.type=:type")
 })
 // Hibernate does not support sub-queries in Named Queries. This is therefore written as Native Query.
 // Hibernate however does not support eager fetches with Native Queries without composing a _View_ class model,
@@ -49,6 +53,10 @@ import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDe
 @Entity(name = "Connector_V2")
 @Table(name = "CONNECTOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id", "type" }) })
 public class Connector extends ManagedDefinedResourceV2<ConnectorDefinition> {
+
+    public static final String BRIDGE_ID_PARAM = "bridgeId";
+
+    public static final String TYPE_PARAM = "type";
 
     // ID returned by MC service
     @Column(name = "connector_external_id")
@@ -75,6 +83,12 @@ public class Connector extends ManagedDefinedResourceV2<ConnectorDefinition> {
     @Column(name = "type", nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
     protected ConnectorType type;
+
+    public Connector(){}
+
+    public Connector(String name){
+        this.name = name;
+    }
 
     public String getConnectorExternalId() {
         return connectorExternalId;

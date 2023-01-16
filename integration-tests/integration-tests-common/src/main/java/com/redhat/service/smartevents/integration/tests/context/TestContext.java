@@ -33,11 +33,12 @@ public class TestContext {
     private Scenario scenario;
 
     private String namespace;
-    private OpenShiftClient oc;
+
+    @JsonIgnore
+    private OpenShiftClient client;
 
     public TestContext() {
         namespace = GlobalContext.getUniqueNamespaceName();
-        oc = new DefaultOpenShiftClient();
     }
 
     public String getSqsQueue(String queueName) {
@@ -169,6 +170,9 @@ public class TestContext {
     }
 
     public OpenShiftClient getClient() {
-        return oc;
+        if (client == null) {
+            client = new DefaultOpenShiftClient();
+        }
+        return client;
     }
 }

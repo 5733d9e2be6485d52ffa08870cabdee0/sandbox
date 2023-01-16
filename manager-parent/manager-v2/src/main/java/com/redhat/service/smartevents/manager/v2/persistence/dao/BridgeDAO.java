@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
+import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
@@ -27,35 +28,35 @@ public class BridgeDAO implements ManagedResourceV2DAO<Bridge> {
     @Override
     public Bridge findByIdWithConditions(String id) {
         Parameters params = Parameters
-                .with("id", id);
+                .with(Bridge.ID_PARAM, id);
         return find("#BRIDGE_V2.findByIdWithConditions", params).firstResult();
     }
 
     public Bridge findByIdAndCustomerIdWithConditions(String id, String customerId) {
         Parameters params = Parameters
-                .with("id", id).and("customerId", customerId);
+                .with(Bridge.ID_PARAM, id).and(Bridge.CUSTOMER_ID_PARAM, customerId);
         return find("#BRIDGE.findByIdAndCustomerIdWithConditions", params).firstResult();
     }
 
     public Bridge findByNameAndCustomerId(String name, String customerId) {
         Parameters params = Parameters
-                .with("name", name).and("customerId", customerId);
+                .with(Bridge.NAME_PARAM, name).and(Bridge.CUSTOMER_ID_PARAM, customerId);
         return find("#BRIDGE_V2.findByNameAndCustomerId", params).firstResult();
     }
 
     public long countByOrganisationId(String organisationId) {
         Parameters params = Parameters
-                .with("organisationId", organisationId);
+                .with(Bridge.ORGANISATION_ID_PARAM, organisationId);
         return count("#BRIDGE_V2.countByOrganisationId", params);
     }
 
     public ListResult<Bridge> findByCustomerId(String customerId, QueryResourceInfo queryInfo) {
-        Parameters parameters = Parameters.with("customerId", customerId);
+        Parameters parameters = Parameters.with(Bridge.CUSTOMER_ID_PARAM, customerId);
         PanacheQuery<Bridge> query = find("#BRIDGE_V2.findByCustomerId", parameters);
 
         String filterName = queryInfo.getFilterInfo().getFilterName();
         if (Objects.nonNull(filterName)) {
-            query.filter("byName", Parameters.with("name", filterName + "%"));
+            query.filter("byName", Parameters.with(Bridge.NAME_PARAM, filterName + "%"));
         }
 
         // As the status of the resource is a view over the conditions, it has to be calculated on the fly. ATM we do it in java, in case there are
@@ -81,7 +82,7 @@ public class BridgeDAO implements ManagedResourceV2DAO<Bridge> {
     public List<Bridge> findByShardIdToDeployOrDelete(String shardId) {
         EntityManager em = getEntityManager();
         Query q = em.createNamedQuery("BRIDGE_V2.findBridgeIdByShardIdToDeployOrDelete");
-        q.setParameter("shardId", shardId);
+        q.setParameter(Bridge.SHARD_ID_PARAM, shardId);
         // Hibernate does not support Lazy Fetches on NativeQueries.
         // Therefore, first get the BridgeId's and then the Bridges using a regular query
         List<String> bridgeIds = (List<String>) q.getResultList();
