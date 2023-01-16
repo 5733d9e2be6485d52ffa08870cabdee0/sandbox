@@ -15,6 +15,7 @@ import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConditionDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.SinkConnectorDAO;
 
 /**
  * This bean must be injected in every test class that uses the database.
@@ -31,6 +32,9 @@ public class DatabaseManagerUtils {
 
     @Inject
     ProcessorDAO processorDAO;
+
+    @Inject
+    SinkConnectorDAO sinkConnectorDAO;
 
     @Inject
     ConditionDAO conditionDAO;
@@ -67,9 +71,14 @@ public class DatabaseManagerUtils {
         // Clean up
         deleteAllConditions();
         deleteAllProcessors();
+        deleteAllConnectors();
         deleteAllBridges();
         deleteAllShards();
         deleteQuartz();
+    }
+
+    private void deleteAllConnectors() {
+        sinkConnectorDAO.getEntityManager().createQuery("DELETE FROM Connector_V2").executeUpdate();
     }
 
     private void deleteAllProcessors() {

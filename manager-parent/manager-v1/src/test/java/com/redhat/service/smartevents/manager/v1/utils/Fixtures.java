@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
-import com.redhat.service.smartevents.infra.v1.api.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;

@@ -14,7 +14,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 public abstract class ManagedDefinedResourceV2<T> extends ManagedResourceV2 {
 
     @Type(type = JsonTypes.JSON_BIN)
-    @Column(name = "definition", columnDefinition = JsonTypes.JSON_BIN)
+    @Column(name = "definition", columnDefinition = JsonTypes.JSON_BIN, nullable = false)
     protected T definition;
 
     public T getDefinition() {
