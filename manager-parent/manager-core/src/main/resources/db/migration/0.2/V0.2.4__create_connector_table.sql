@@ -23,7 +23,7 @@ CREATE TABLE CONNECTOR_V2 (
     version                        integer      NOT NULL default 0,
     generation                     integer      NOT NULL default 0,
 
-    unique (bridge_id, name),
+    unique (bridge_id, name, type),
     constraint fk_processor foreign key (bridge_id) references BRIDGE_V2 (id)
 );
 

@@ -59,7 +59,7 @@ import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDe
         @Filter(name = "byName", condition = "name like :name"),
 })
 @Entity(name = "Connector_V2")
-@Table(name = "CONNECTOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id" }) })
+@Table(name = "CONNECTOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id", "type" }) })
 public class Connector extends ManagedDefinedResourceV2<ConnectorDefinition> {
 
     // ID returned by MC service
