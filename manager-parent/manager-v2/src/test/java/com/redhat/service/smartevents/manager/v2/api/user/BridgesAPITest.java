@@ -12,11 +12,12 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorDAO;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.InvalidCloudProviderException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
@@ -56,6 +57,7 @@ public class BridgesAPITest {
     @Inject
     BridgeDAO bridgeDAO;
 
+    @V2
     @Inject
     BridgeErrorDAO errorDAO;
 
@@ -169,8 +171,8 @@ public class BridgesAPITest {
         assertThat(response.getItems()).hasSize(1);
 
         ErrorResponse error = response.getItems().get(0);
-        assertThat(error.getId()).isEqualTo("4");
-        assertThat(error.getCode()).endsWith("4");
+        assertThat(error.getId()).isEqualTo("5");
+        assertThat(error.getCode()).endsWith("5");
         assertThat(error.getReason()).isNotBlank();
         assertThat(error.getHref()).contains(V2APIConstants.V2_ERROR_API_BASE_PATH);
     }

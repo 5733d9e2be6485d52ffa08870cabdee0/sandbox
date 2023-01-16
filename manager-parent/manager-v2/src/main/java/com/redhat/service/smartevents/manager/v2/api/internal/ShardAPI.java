@@ -28,8 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ForbiddenRequestException;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
@@ -71,6 +72,7 @@ public class ShardAPI {
     @Inject
     ShardService shardService;
 
+    @V2
     @Inject
     IdentityResolver identityResolver;
 

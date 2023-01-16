@@ -7,7 +7,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 import com.redhat.service.smartevents.integration.tests.common.TimeUtils;
-import com.redhat.service.smartevents.integration.tests.context.ShardContext;
+import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 
@@ -22,9 +22,9 @@ import io.fabric8.kubernetes.api.model.SecretBuilder;
  */
 public class BridgeExecutorSteps {
 
-    private ShardContext context;
+    private TestContext context;
 
-    public BridgeExecutorSteps(ShardContext context) {
+    public BridgeExecutorSteps(TestContext context) {
         this.context = context;
     }
 

@@ -7,6 +7,8 @@ import javax.enterprise.inject.Instance;
 import javax.validation.ConstraintViolation;
 
 import com.redhat.service.smartevents.infra.core.exceptions.AbstractErrorHrefVersionProvider;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionBuilder;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionBuilderImpl;
 import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
 
 import static org.mockito.Mockito.mock;
@@ -15,6 +17,10 @@ import static org.mockito.Mockito.when;
 public class TestMappersUtils {
 
     public static final String DEFAULT_HREF_BASE = "/api/v0/errors/";
+
+    public static ErrorHrefVersionBuilder getDefaultBuilderMock() {
+        return new ErrorHrefVersionBuilderImpl(getDefaultBuildersMock());
+    }
 
     public static Instance<ErrorHrefVersionProvider> getDefaultBuildersMock() {
         Instance<ErrorHrefVersionProvider> builders = mock(Instance.class);

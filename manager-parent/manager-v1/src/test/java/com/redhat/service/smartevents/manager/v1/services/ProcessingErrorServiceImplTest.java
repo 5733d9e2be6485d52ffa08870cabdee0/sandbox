@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.BadRequestException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.responses.ProcessingErrorResponse;

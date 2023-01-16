@@ -69,11 +69,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>processor-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.epam.reportportal</groupId>
       <artifactId>agent-java-junit5</artifactId>
       <scope>test</scope>
@@ -162,6 +157,11 @@
                       <file>${project.build.directory}/kubernetes/managedbridges.com.redhat.service.smartevents-v1.yml</file>
                       <type>yml</type>
                       <classifier>crd-managedbridges</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>${project.build.directory}/kubernetes/managedprocessors.com.redhat.service.smartevents-v1.yml</file>
+                      <type>yml</type>
+                      <classifier>crd-managedprocessors</classifier>
                     </artifact>
                   </artifacts>
                 </configuration>

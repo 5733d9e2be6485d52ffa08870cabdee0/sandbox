@@ -987,6 +987,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - submitted_at
       - status
@@ -1059,6 +1060,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - display_name
       - enabled
@@ -1124,25 +1126,29 @@ components:
     Error:
       required:
       - kind
-      - reason
       - id
+      - name
       - href
+      - reason
       type: object
       properties:
         kind:
           description: The kind (type) of this resource
           type: string
+        id:
+          description: The unique identifier of this resource
+          type: string
         name:
           description: The name of this resource
           type: string
           example: resourceName1
+        href:
+          description: "The URL of this resource, without the protocol"
+          type: string
+          example: example.com/resource
         code:
           type: string
         reason:
-          type: string
-        id:
-          type: string
-        href:
           type: string
     ErrorListResponse:
       required:
@@ -1222,6 +1228,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       type: object
       properties:
@@ -1330,6 +1337,7 @@ components:
       required:
       - kind
       - id
+      - name
       - href
       - submitted_at
       - status

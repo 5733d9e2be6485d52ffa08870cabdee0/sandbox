@@ -5,8 +5,8 @@ import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.requests.AbstractBridgeRequest;
-import com.redhat.service.smartevents.manager.core.api.validators.ValidCloudProvider;
 import com.redhat.service.smartevents.manager.v1.api.user.validators.processors.ValidErrorHandler;
+import com.redhat.service.smartevents.manager.v1.api.validators.ValidCloudProvider;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 
 @ValidCloudProvider

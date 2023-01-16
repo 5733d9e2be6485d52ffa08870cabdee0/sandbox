@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.shard.operator.cucumber.steps;
 
 import java.io.IOException;
 
-import com.redhat.service.smartevents.integration.tests.context.ShardContext;
+import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.logs.EventCollector;
 import com.redhat.service.smartevents.integration.tests.logs.LogCollector;
 
@@ -15,9 +15,9 @@ import io.cucumber.java.Scenario;
  */
 public class Hooks {
 
-    private ShardContext context;
+    private TestContext context;
 
-    public Hooks(ShardContext context) {
+    public Hooks(TestContext context) {
         this.context = context;
     }
 
