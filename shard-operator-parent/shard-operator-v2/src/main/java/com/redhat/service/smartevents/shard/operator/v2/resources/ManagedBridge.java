@@ -127,7 +127,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             managedBridgeSpec.setId(bridgeId);
             managedBridgeSpec.setName(bridgeName);
             managedBridgeSpec.setDnsConfiguration(this.dnsConfigurationSpec);
-            managedBridgeSpec.setkNativeBrokerConfiguration(this.kNativeBrokerConfigurationSpec);
+            managedBridgeSpec.setKnativeBrokerConfiguration(this.kNativeBrokerConfigurationSpec);
             managedBridgeSpec.setGeneration(this.generation);
             managedBridgeSpec.setSourceConfigurationSpec(this.sourceConfigurationSpec);
 

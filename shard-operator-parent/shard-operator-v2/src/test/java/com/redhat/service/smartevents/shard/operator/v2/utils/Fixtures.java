@@ -54,7 +54,7 @@ public class Fixtures {
     }
 
     public static ManagedBridge createManagedBridge(BridgeDTO bridgeDTO, String namespace) {
-        return ManagedBridgeConverter.fromBridgeDTOToManageBridge(bridgeDTO, namespace);
+        return ManagedBridgeConverter.fromBridgeDTO(bridgeDTO, namespace);
     }
 
     public static ProcessorDTO createProcessor(OperationType operation) {

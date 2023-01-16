@@ -25,31 +25,18 @@ spec:
                 properties:
                   host:
                     type: string
-                  tls:
-                    properties:
-                      key:
-                        type: string
-                      certificate:
-                        type: string
-                    type: object
                 type: object
               owner:
                 type: string
-              customerId:
-                type: string
-              kNativeBrokerConfiguration:
+              knativeBrokerConfiguration:
                 properties:
                   kafkaConfiguration:
                     properties:
                       saslMechanism:
                         type: string
-                      password:
-                        type: string
                       numberOfPartitions:
                         type: integer
                       bootstrapServers:
-                        type: string
-                      user:
                         type: string
                       topic:
                         type: string
@@ -59,6 +46,8 @@ spec:
                         type: string
                     type: object
                 type: object
+              customerId:
+                type: string
               name:
                 type: string
               generation:
