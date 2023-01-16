@@ -14,6 +14,7 @@ CREATE TABLE CONNECTOR_V2 (
 
     operation_type                 varchar(255) NOT NULL,
     operation_requested_at         timestamp    NOT NULL,
+    operation_completed_at         timestamp,
 
     owner                          varchar(255) NOT NULL,
 
@@ -26,6 +27,5 @@ CREATE TABLE CONNECTOR_V2 (
     constraint fk_processor foreign key (bridge_id) references BRIDGE_V2 (id)
 );
 
--- add new "organisation_id" column
 alter table CONDITION add column "connector_id" varchar(255);
 alter table CONDITION add foreign key (connector_id) references CONNECTOR_V2(id);
