@@ -55,7 +55,7 @@ public abstract class AbstractConnectorDAOTest {
         assertThat(retrieved.getConnectorExternalId()).isEqualTo(TestConstants.DEFAULT_CONNECTOR_EXTERNAL_ID);
         assertThat(retrieved.getConnectorTypeId()).isEqualTo(TestConstants.DEFAULT_CONNECTOR_TYPE_ID);
         assertThat(retrieved.getTopicName()).isEqualTo(TestConstants.DEFAULT_CONNECTOR_TOPIC_NAME);
-        assertThat(retrieved.getTopicName()).isEqualTo(TestConstants.DEFAULT_CONNECTOR_TOPIC_NAME);
+        assertThat(retrieved.getType()).isEqualTo(getConnectorType());
         assertThat(retrieved.getOperation()).isNotNull();
         assertThat(retrieved.getOperation().getType()).isNotNull();
         assertThat(retrieved.getOperation().getRequestedAt()).isNotNull();
@@ -123,10 +123,12 @@ public abstract class AbstractConnectorDAOTest {
         assertThat(processors).isEmpty();
     }
 
+    // Test that all the queries on the Connector use the discriminator: the SinkConnectorDAO should not retrieve Source connectors and viceversa.
     @Test
     @Transactional
     public void testTypeDiscriminator() {
         Bridge b = createBridge();
+        // If the DAO is for the Sink, it creates a Source. If the DAO is for the Source, it creates a Sink.
         Connector connector = Fixtures.createConnector(b, ConnectorType.SOURCE.equals(getConnectorType()) ? ConnectorType.SINK : ConnectorType.SOURCE);
         bridgeDAO.persist(b);
 
@@ -139,6 +141,7 @@ public abstract class AbstractConnectorDAOTest {
         connector.setConditions(List.of(condition1, condition2, condition3));
         getConnectorDAO().persist(connector);
 
+        // Check that no connectors are found, i.e. all the queries filter by type (the discriminator).
         assertThat(getConnectorDAO().findByShardIdToDeployOrDelete(b.getShardId())).hasSize(0);
         assertThat(getConnectorDAO().findByIdWithConditions(connector.getId())).isNull();
     }

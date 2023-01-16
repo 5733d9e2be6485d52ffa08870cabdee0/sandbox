@@ -19,12 +19,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.FilterDefs;
-import org.hibernate.annotations.Filters;
-import org.hibernate.annotations.ParamDef;
-
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDefinition;
 
@@ -51,12 +45,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDe
                         "(cp.incomplete_count = 0 or cp.incomplete_count is null) and " +
                         "b.shard_id = :shardId and " +
                         "conn.type = :type")
-})
-@FilterDefs({
-        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
-})
-@Filters({
-        @Filter(name = "byName", condition = "name like :name"),
 })
 @Entity(name = "Connector_V2")
 @Table(name = "CONNECTOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id", "type" }) })
