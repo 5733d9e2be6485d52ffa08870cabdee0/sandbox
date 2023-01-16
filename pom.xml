@@ -6,7 +6,7 @@
   <groupId>com.redhat.service.smartevents</groupId>
   <artifactId>smart-events</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <packaging>pom</packaging> 
 
   <name>SmartEvents</name>
   <description>Parent module for SmartEvents</description>
