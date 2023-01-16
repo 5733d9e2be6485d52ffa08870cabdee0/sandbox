@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
@@ -41,6 +42,7 @@ public class ManagerClientImpl implements ManagerClient {
     @Inject
     EventBridgeOidcClient eventBridgeOidcClient;
 
+    @V2
     @Inject
     OperatorMetricsService metricsService;
 

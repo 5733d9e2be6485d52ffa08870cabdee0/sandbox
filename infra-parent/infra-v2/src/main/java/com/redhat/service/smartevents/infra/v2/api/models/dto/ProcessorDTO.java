@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProcessorDTO extends BaseResourceDTO {
+public class ProcessorDTO extends BaseV2DTO {
 
     @JsonProperty("flows")
     private ObjectNode flows;

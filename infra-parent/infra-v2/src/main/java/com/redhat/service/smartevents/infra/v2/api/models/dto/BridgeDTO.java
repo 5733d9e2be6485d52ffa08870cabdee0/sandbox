@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BridgeDTO extends BaseResourceDTO {
+public class BridgeDTO extends BaseV2DTO {
 
     @JsonProperty("dnsConfiguration")
     private DNSConfigurationDTO dnsConfiguration;

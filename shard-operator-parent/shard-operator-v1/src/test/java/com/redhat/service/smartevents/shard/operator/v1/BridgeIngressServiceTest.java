@@ -13,6 +13,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.core.metrics.SupportsMetrics;
 import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
@@ -84,6 +85,7 @@ public class BridgeIngressServiceTest {
     @InjectMock
     TemplateProviderV1 templateProvider;
 
+    @V1
     @InjectMock
     OperatorMetricsService metricsService;
 
@@ -278,7 +280,7 @@ public class BridgeIngressServiceTest {
         assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
         verify(managerClient).notifyBridgeStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), READY));
-        verify(metricsService).onOperationComplete(any(BridgeIngress.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
+        verify(metricsService).onOperationComplete(any(SupportsMetrics.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
     }
 
     private void assertManagedResourceStatusUpdateDTOUpdate(ManagedResourceStatusUpdateDTO update,
@@ -316,7 +318,7 @@ public class BridgeIngressServiceTest {
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
                     verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
                     updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), FAILED));
-                    verify(metricsService).onOperationFailed(any(BridgeIngress.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
+                    verify(metricsService).onOperationFailed(any(SupportsMetrics.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
                 });
 
         // Re-try creation
@@ -345,7 +347,7 @@ public class BridgeIngressServiceTest {
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
                     verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
                     updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), FAILED));
-                    verify(metricsService).onOperationFailed(any(BridgeIngress.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
+                    verify(metricsService).onOperationFailed(any(SupportsMetrics.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
                 });
     }
 

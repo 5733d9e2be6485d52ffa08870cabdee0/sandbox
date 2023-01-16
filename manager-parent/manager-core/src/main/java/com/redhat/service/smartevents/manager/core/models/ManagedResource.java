@@ -8,8 +8,10 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
+import com.redhat.service.smartevents.infra.core.metrics.SupportsMetrics;
+
 @MappedSuperclass
-public abstract class ManagedResource {
+public abstract class ManagedResource implements SupportsMetrics {
 
     public static final String ID_PARAM = "id";
 
@@ -34,6 +36,7 @@ public abstract class ManagedResource {
     @Column(name = "published_at", columnDefinition = "TIMESTAMP")
     protected ZonedDateTime publishedAt;
 
+    @Override
     public String getId() {
         return id;
     }

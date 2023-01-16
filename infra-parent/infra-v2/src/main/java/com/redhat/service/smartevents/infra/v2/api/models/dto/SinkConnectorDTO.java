@@ -8,7 +8,7 @@ import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SinkConnectorDTO extends BaseResourceDTO {
+public class SinkConnectorDTO extends BaseV2DTO {
 
     @JsonProperty("bridgeId")
     private String bridgeId;

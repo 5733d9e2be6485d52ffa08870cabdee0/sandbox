@@ -53,6 +53,14 @@ public class MetricsServiceImplTest {
 
     private List<Tag> createdExpectedTags(ManagedResource managedResource, MetricsOperation operation) {
         return List.of(Tag.of(MetricsServiceImpl.RESOURCE_TAG, managedResource.getClass().getSimpleName().toLowerCase()),
+                Tag.of(MetricsServiceImpl.RESOURCE_ID_TAG, MetricsServiceImpl.WILDCARD),
+                Tag.of(MetricsServiceImpl.VERSION_TAG, V2.class.getSimpleName()),
+                operation.getMetricTag());
+    }
+
+    private List<Tag> createdExpectedInstanceTags(ManagedResource managedResource, MetricsOperation operation) {
+        return List.of(Tag.of(MetricsServiceImpl.RESOURCE_TAG, managedResource.getClass().getSimpleName().toLowerCase()),
+                Tag.of(MetricsServiceImpl.RESOURCE_ID_TAG, managedResource.getId()),
                 Tag.of(MetricsServiceImpl.VERSION_TAG, V2.class.getSimpleName()),
                 operation.getMetricTag());
     }
@@ -95,8 +103,10 @@ public class MetricsServiceImplTest {
         metricsService.onOperationComplete(resource, metricsOperation);
 
         List<Tag> expectedTags = createdExpectedTags(resource, metricsOperation);
+        List<Tag> expectedInstanceTags = createdExpectedInstanceTags(resource, metricsOperation);
         assertThat(meterRegistry.counter(operationTotalSuccessCountMetricName, expectedTags).count()).isEqualTo(1.0);
         assertThat(meterRegistry.timer(operatonDurationMetricName, expectedTags).totalTime(TimeUnit.MINUTES)).isNotEqualTo(0);
+        assertThat(meterRegistry.timer(operatonDurationMetricName, expectedInstanceTags).totalTime(TimeUnit.MINUTES)).isNotEqualTo(0);
     }
 
     @Test
@@ -111,8 +121,10 @@ public class MetricsServiceImplTest {
         metricsService.onOperationComplete(resource, MANAGER_RESOURCE_PROVISION);
 
         List<Tag> expectedTags = createdExpectedTags(resource, MANAGER_RESOURCE_PROVISION);
+        List<Tag> expectedInstanceTags = createdExpectedInstanceTags(resource, MANAGER_RESOURCE_PROVISION);
         assertThat(meterRegistry.counter(operationTotalSuccessCountMetricName, expectedTags).count()).isEqualTo(0.0);
         assertThat(meterRegistry.timer(operatonDurationMetricName, expectedTags).totalTime(TimeUnit.MINUTES)).isEqualTo(0.0);
+        assertThat(meterRegistry.timer(operatonDurationMetricName, expectedInstanceTags).totalTime(TimeUnit.MINUTES)).isEqualTo(0);
     }
 
     private List<Condition> makeConditions(MetricsOperation metricsOperation) {

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
@@ -26,7 +27,6 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeS
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
@@ -44,6 +44,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditio
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_KNATIVE_BROKER_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_NETWORK_RESOURCE_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
+import static com.redhat.service.smartevents.shard.operator.v2.metrics.MetricsUtilities.from;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
@@ -58,14 +59,12 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
     int reconcileIntervalMillis;
 
     @Inject
-    KubernetesClient kubernetesClient;
-
-    @Inject
     NetworkingService networkingService;
 
     @Inject
     ManagedBridgeService managedBridgeService;
 
+    @V2
     @Inject
     OperatorMetricsService metricsService;
 
@@ -126,7 +125,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         }
 
         if (isBridgeStatusChange(managedBridge)) {
-            metricsService.onOperationComplete(managedBridge, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
+            metricsService.onOperationComplete(from(managedBridge), MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             return UpdateControl.updateStatus(managedBridge);
         }
         return UpdateControl.noUpdate();
@@ -143,7 +142,7 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
         // we can not set the owner reference. We have to delete the resource manually.
         networkingService.delete(managedBridge.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
-        metricsService.onOperationComplete(managedBridge, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
+        metricsService.onOperationComplete(from(managedBridge), MetricsOperation.CONTROLLER_RESOURCE_DELETE);
         return DeleteControl.defaultDelete();
     }
 

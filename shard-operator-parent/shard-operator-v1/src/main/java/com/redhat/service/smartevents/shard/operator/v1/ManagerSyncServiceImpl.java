@@ -60,6 +60,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
+    @V1
     @Inject
     OperatorMetricsService metricsService;
 

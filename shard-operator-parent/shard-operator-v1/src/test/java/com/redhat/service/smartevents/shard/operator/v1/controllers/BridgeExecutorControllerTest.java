@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.v1.controllers;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -180,7 +183,7 @@ public class BridgeExecutorControllerTest {
     }
 
     private BridgeExecutor buildBridgeExecutor() {
-        return BridgeExecutor.fromBuilder()
+        BridgeExecutor bridgeExecutor = BridgeExecutor.fromBuilder()
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                 .withImageName(TestSupport.EXECUTOR_IMAGE)
                 .withProcessorType(ProcessorType.SINK)
@@ -190,5 +193,8 @@ public class BridgeExecutorControllerTest {
                 .withCustomerId(TestSupport.CUSTOMER_ID)
                 .withDefinition(new ProcessorDefinition())
                 .build();
+        //k8s sets the creation Timestamp when the CR is first created (not when fully reconciled)
+        bridgeExecutor.getMetadata().setCreationTimestamp(ZonedDateTime.now(ZoneOffset.UTC).toString());
+        return bridgeExecutor;
     }
 }

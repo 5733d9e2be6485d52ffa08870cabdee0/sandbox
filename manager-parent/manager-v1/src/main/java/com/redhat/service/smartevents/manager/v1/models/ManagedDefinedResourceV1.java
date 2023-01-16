@@ -11,7 +11,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 @MappedSuperclass
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class ManagedDefinedResourceV1<T> extends ManagedResourceV1 {
+public abstract class ManagedDefinedResourceV1<T> extends ManagedResourceV1 {
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "definition", columnDefinition = JsonTypes.JSON_BIN)

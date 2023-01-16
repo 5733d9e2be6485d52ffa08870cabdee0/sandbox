@@ -8,13 +8,7 @@ import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BridgeDTO {
-
-    @JsonProperty("id")
-    private String id;
-
-    @JsonProperty("name")
-    private String name;
+public class BridgeDTO extends BaseV1DTO {
 
     @JsonProperty("endpoint")
     private String endpoint;
@@ -24,15 +18,6 @@ public class BridgeDTO {
 
     @JsonProperty("tlsKey")
     private String tlsKey;
-
-    @JsonProperty("customerId")
-    private String customerId;
-
-    @JsonProperty("owner")
-    private String owner;
-
-    @JsonProperty("status")
-    private ManagedResourceStatusV1 status;
 
     @JsonProperty("kafkaConnection")
     private KafkaConnectionDTO kafkaConnection;
@@ -49,87 +34,43 @@ public class BridgeDTO {
             String owner,
             ManagedResourceStatusV1 status,
             KafkaConnectionDTO kafkaConnection) {
-        this.id = id;
-        this.name = name;
+        super(id, name, customerId, owner, status);
         this.endpoint = endpoint;
         this.tlsCertificate = tlsCertificate;
         this.tlsKey = tlsKey;
-        this.customerId = customerId;
-        this.owner = owner;
-        this.status = status;
         this.kafkaConnection = kafkaConnection;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public void setStatus(ManagedResourceStatusV1 status) {
-        this.status = status;
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
-
-    public void setTlsCertificate(String tlsCertificate) {
-        this.tlsCertificate = tlsCertificate;
-    }
-
-    public void setTlsKey(String tlsKey) {
-        this.tlsKey = tlsKey;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
-        this.kafkaConnection = kafkaConnection;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public String getOwner() {
-        return owner;
     }
 
     public String getEndpoint() {
         return endpoint;
     }
 
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
     public String getTlsCertificate() {
         return tlsCertificate;
+    }
+
+    public void setTlsCertificate(String tlsCertificate) {
+        this.tlsCertificate = tlsCertificate;
     }
 
     public String getTlsKey() {
         return tlsKey;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public ManagedResourceStatusV1 getStatus() {
-        return status;
+    public void setTlsKey(String tlsKey) {
+        this.tlsKey = tlsKey;
     }
 
     public KafkaConnectionDTO getKafkaConnection() {
         return kafkaConnection;
+    }
+
+    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
+        this.kafkaConnection = kafkaConnection;
     }
 
     @Override

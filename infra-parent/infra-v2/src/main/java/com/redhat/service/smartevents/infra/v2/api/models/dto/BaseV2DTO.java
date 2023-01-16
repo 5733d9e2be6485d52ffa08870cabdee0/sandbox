@@ -4,21 +4,11 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.smartevents.infra.core.models.dtos.BaseDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class BaseResourceDTO {
-    @JsonProperty("id")
-    private String id;
-
-    @JsonProperty("name")
-    private String name;
-
-    @JsonProperty("customerId")
-    private String customerId;
-
-    @JsonProperty("owner")
-    private String owner;
+public abstract class BaseV2DTO extends BaseDTO {
 
     @JsonProperty("operation")
     private OperationType operationType;
@@ -29,48 +19,13 @@ public abstract class BaseResourceDTO {
     @JsonProperty("timeoutSeconds")
     private int timeoutSeconds;
 
-    protected BaseResourceDTO() {
+    protected BaseV2DTO() {
     }
 
-    protected BaseResourceDTO(String id, String name, String customerId, String owner, OperationType operationType, int timeoutSeconds) {
-        this.id = id;
-        this.name = name;
-        this.customerId = customerId;
-        this.owner = owner;
+    protected BaseV2DTO(String id, String name, String customerId, String owner, OperationType operationType, int timeoutSeconds) {
+        super(id, name, customerId, owner);
         this.operationType = operationType;
         this.timeoutSeconds = timeoutSeconds;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
     }
 
     public OperationType getOperationType() {
@@ -105,7 +60,7 @@ public abstract class BaseResourceDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        BaseResourceDTO dto = (BaseResourceDTO) o;
+        BaseV2DTO dto = (BaseV2DTO) o;
         return id.equals(dto.id);
     }
 
@@ -114,4 +69,16 @@ public abstract class BaseResourceDTO {
         return Objects.hash(id);
     }
 
+    @Override
+    public String toString() {
+        return "BaseV2DTO{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", customerId='" + customerId + '\'' +
+                ", owner='" + owner + '\'' +
+                ", operationType=" + operationType +
+                ", generation=" + generation +
+                ", timeoutSeconds=" + timeoutSeconds +
+                '}';
+    }
 }

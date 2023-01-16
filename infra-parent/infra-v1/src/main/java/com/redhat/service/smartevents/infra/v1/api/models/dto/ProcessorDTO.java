@@ -10,16 +10,10 @@ import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDe
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProcessorDTO {
+public class ProcessorDTO extends BaseV1DTO {
 
     @JsonProperty("type")
     private ProcessorType type;
-
-    @JsonProperty("id")
-    private String id;
-
-    @JsonProperty("name")
-    private String name;
 
     @JsonProperty("definition")
     private ProcessorDefinition definition;
@@ -27,17 +21,20 @@ public class ProcessorDTO {
     @JsonProperty("bridgeId")
     private String bridgeId;
 
-    @JsonProperty("customerId")
-    private String customerId;
-
-    @JsonProperty("owner")
-    private String owner;
-
-    @JsonProperty("status")
-    private ManagedResourceStatusV1 status;
-
     @JsonProperty("kafkaConnection")
     private KafkaConnectionDTO kafkaConnection;
+
+    public ProcessorDTO() {
+    }
+
+    public ProcessorDTO(String id, String name, String customerId, String owner, ManagedResourceStatusV1 status, ProcessorType type,
+            ProcessorDefinition definition, String bridgeId, KafkaConnectionDTO kafkaConnection) {
+        super(id, name, customerId, owner, status);
+        this.type = type;
+        this.definition = definition;
+        this.bridgeId = bridgeId;
+        this.kafkaConnection = kafkaConnection;
+    }
 
     public ProcessorType getType() {
         return type;
@@ -45,22 +42,6 @@ public class ProcessorDTO {
 
     public void setType(ProcessorType type) {
         this.type = type;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public ProcessorDefinition getDefinition() {
@@ -77,30 +58,6 @@ public class ProcessorDTO {
 
     public void setBridgeId(String bridgeId) {
         this.bridgeId = bridgeId;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public ManagedResourceStatusV1 getStatus() {
-        return status;
-    }
-
-    public void setStatus(ManagedResourceStatusV1 status) {
-        this.status = status;
     }
 
     public KafkaConnectionDTO getKafkaConnection() {

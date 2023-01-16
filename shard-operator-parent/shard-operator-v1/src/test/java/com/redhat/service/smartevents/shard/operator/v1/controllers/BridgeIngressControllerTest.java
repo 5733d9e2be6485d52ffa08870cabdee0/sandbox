@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.v1.controllers;
 
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -147,12 +149,15 @@ public class BridgeIngressControllerTest {
     }
 
     private BridgeIngress buildBridgeIngress() {
-        return BridgeIngress.fromBuilder()
+        BridgeIngress bridgeIngress = BridgeIngress.fromBuilder()
                 .withBridgeId(TestSupport.BRIDGE_ID)
                 .withBridgeName(TestSupport.BRIDGE_NAME)
                 .withCustomerId(TestSupport.CUSTOMER_ID)
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                 .withHost(TestSupport.BRIDGE_HOST)
                 .build();
+        //k8s sets the creation Timestamp when the CR is first created (not when fully reconciled)
+        bridgeIngress.getMetadata().setCreationTimestamp(ZonedDateTime.now(ZoneOffset.UTC).toString());
+        return bridgeIngress;
     }
 }

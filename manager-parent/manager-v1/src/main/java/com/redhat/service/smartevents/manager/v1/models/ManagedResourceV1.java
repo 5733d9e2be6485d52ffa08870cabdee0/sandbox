@@ -12,7 +12,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 
 @MappedSuperclass
-public class ManagedResourceV1 extends ManagedResource implements HasErrorInformation {
+public abstract class ManagedResourceV1 extends ManagedResource implements HasErrorInformation {
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)

@@ -56,6 +56,7 @@ import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.shard.operator.v1.metrics.MetricsUtilities.from;
 
 @ApplicationScoped
 @ControllerConfiguration(name = BridgeIngressController.NAME, labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
@@ -92,6 +93,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
+    @V1
     @Inject
     OperatorMetricsService metricsService;
 
@@ -198,7 +200,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!status.isReady()) {
-            metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
+            metricsService.onOperationComplete(from(bridgeIngress), MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
             status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManager(bridgeIngress, ManagedResourceStatusV1.READY);
@@ -242,7 +244,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // we can not set the owner reference. We have to delete the resource manually.
         networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
-        metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
+        metricsService.onOperationComplete(from(bridgeIngress), MetricsOperation.CONTROLLER_RESOURCE_DELETE);
         notifyManager(bridgeIngress, ManagedResourceStatusV1.DELETED);
 
         return DeleteControl.defaultDelete();
@@ -287,7 +289,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 bridgeIngress.getMetadata().getNamespace(),
                 bei.getReason());
 
-        metricsService.onOperationFailed(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
+        metricsService.onOperationFailed(from(bridgeIngress), MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
 
         String id = bridgeIngress.getSpec().getId();
         String customerId = bridgeIngress.getSpec().getCustomerId();

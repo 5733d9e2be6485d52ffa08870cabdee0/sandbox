@@ -11,6 +11,7 @@ import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpda
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.v1.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
 import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
+import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +23,7 @@ public class ManagedResourceOperationMapperTest {
             boolean isManagedResourceModified,
             ManagedResourceStatusV1 updateStatus,
             ManagedResourceOperation operation) {
-        ManagedResourceV1 managedResource = new ManagedResourceV1();
+        ManagedResourceV1 managedResource = new Bridge();
         managedResource.setStatus(managedResourceStatus);
         managedResource.setModifiedAt(isManagedResourceModified ? ZonedDateTime.now() : null);
 

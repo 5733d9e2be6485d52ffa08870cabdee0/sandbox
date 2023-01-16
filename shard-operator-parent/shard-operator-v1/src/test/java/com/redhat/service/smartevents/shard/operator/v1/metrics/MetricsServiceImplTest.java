@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.core.metrics;
+package com.redhat.service.smartevents.shard.operator.v1.metrics;
 
 import java.util.List;
 
@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v1.api.V1;
+import com.redhat.service.smartevents.shard.operator.core.metrics.ManagerRequestStatus;
+import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -29,6 +32,7 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class MetricsServiceImplTest {
 
+    @V1
     @Inject
     OperatorMetricsService metricsService;
 

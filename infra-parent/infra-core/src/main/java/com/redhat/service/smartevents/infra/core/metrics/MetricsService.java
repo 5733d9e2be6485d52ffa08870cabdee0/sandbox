@@ -6,10 +6,10 @@ public interface MetricsService<T> {
 
     Set<String> getMetricNames();
 
-    void onOperationStart(T managedResource, MetricsOperation operation);
+    void onOperationStart(T resource, MetricsOperation operation);
 
-    void onOperationComplete(T managedResource, MetricsOperation operation);
+    void onOperationComplete(T resource, MetricsOperation operation);
 
-    void onOperationFailed(T managedResource, MetricsOperation operation);
+    void onOperationFailed(T resource, MetricsOperation operation);
 
 }

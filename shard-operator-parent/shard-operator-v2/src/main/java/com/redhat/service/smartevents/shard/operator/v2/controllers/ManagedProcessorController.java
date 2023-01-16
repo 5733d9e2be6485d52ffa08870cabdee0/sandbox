@@ -41,6 +41,8 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
+import static com.redhat.service.smartevents.shard.operator.v2.metrics.MetricsUtilities.from;
+
 @ApplicationScoped
 @ControllerConfiguration(name = ManagedProcessorController.NAME, labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
 public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
@@ -61,6 +63,7 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
     @Inject
     NetworkingService networkingService;
 
+    @V2
     @Inject
     OperatorMetricsService metricsService;
 
@@ -115,7 +118,7 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
                     managedProcessorName,
                     managedProcessorNamespace);
 
-            metricsService.onOperationComplete(managedProcessor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
+            metricsService.onOperationComplete(from(managedProcessor), MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             return UpdateControl.updateStatus(managedProcessor);
         }
 

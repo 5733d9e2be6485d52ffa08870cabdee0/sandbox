@@ -57,6 +57,7 @@ import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.FAILED;
+import static com.redhat.service.smartevents.shard.operator.v1.metrics.MetricsUtilities.from;
 
 @ApplicationScoped
 @ControllerConfiguration(name = BridgeExecutorController.NAME, labelSelector = LabelsBuilder.V1_RECONCILER_LABEL_SELECTOR)
@@ -90,6 +91,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
+    @V1
     @Inject
     OperatorMetricsService metricsService;
 
@@ -239,7 +241,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!bridgeExecutor.getStatus().isReady()) {
-            metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
+            metricsService.onOperationComplete(from(bridgeExecutor), MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
             status.markConditionFalse(ConditionTypeConstants.AUGMENTING);
             notifyManager(bridgeExecutor, ManagedResourceStatusV1.READY);
@@ -273,7 +275,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         // Linked resources are automatically deleted
 
-        metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
+        metricsService.onOperationComplete(from(bridgeExecutor), MetricsOperation.CONTROLLER_RESOURCE_DELETE);
         notifyManager(bridgeExecutor, ManagedResourceStatusV1.DELETED);
 
         return DeleteControl.defaultDelete();
@@ -309,7 +311,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         LOGGER.error("BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
                 bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), bei.getReason());
 
-        metricsService.onOperationFailed(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
+        metricsService.onOperationFailed(from(bridgeExecutor), MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
 
         String id = bridgeExecutor.getSpec().getId();
         String customerId = bridgeExecutor.getSpec().getCustomerId();
