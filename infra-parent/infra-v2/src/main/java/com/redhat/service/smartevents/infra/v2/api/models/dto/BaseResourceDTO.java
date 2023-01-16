@@ -26,19 +26,19 @@ public abstract class BaseResourceDTO {
     @JsonProperty("generation")
     private long generation;
 
-    @JsonProperty("timeout")
-    private int timeout;
+    @JsonProperty("timeoutSeconds")
+    private int timeoutSeconds;
 
     protected BaseResourceDTO() {
     }
 
-    protected BaseResourceDTO(String id, String name, String customerId, String owner, OperationType operationType, int timeout) {
+    protected BaseResourceDTO(String id, String name, String customerId, String owner, OperationType operationType, int timeoutSeconds) {
         this.id = id;
         this.name = name;
         this.customerId = customerId;
         this.owner = owner;
         this.operationType = operationType;
-        this.timeout = timeout;
+        this.timeoutSeconds = timeoutSeconds;
     }
 
     public String getId() {
@@ -90,11 +90,11 @@ public abstract class BaseResourceDTO {
     }
 
     public int getTimeoutSeconds() {
-        return timeout;
+        return timeoutSeconds;
     }
 
-    public void setTimeoutSeconds(int timeout) {
-        this.timeout = timeout;
+    public void setTimeoutSeconds(int timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
     }
 
     @Override

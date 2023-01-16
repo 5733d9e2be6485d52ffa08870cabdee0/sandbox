@@ -24,8 +24,8 @@ public class ProcessorDTO extends BaseResourceDTO {
             String customerId,
             String owner,
             OperationType operationType,
-            int timeout) {
-        super(id, name, customerId, owner, operationType, timeout);
+            int timeoutSeconds) {
+        super(id, name, customerId, owner, operationType, timeoutSeconds);
         this.flows = flows;
         this.bridgeId = bridgeId;
     }

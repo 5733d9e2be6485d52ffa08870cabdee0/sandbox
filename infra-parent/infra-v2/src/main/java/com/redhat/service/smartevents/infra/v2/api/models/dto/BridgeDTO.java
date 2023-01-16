@@ -32,8 +32,8 @@ public class BridgeDTO extends BaseResourceDTO {
             String owner,
             KafkaConnectionDTO kafkaConnection,
             OperationType operationType,
-            int timeout) {
-        super(id, name, customerId, owner, operationType, timeout);
+            int timeoutSeconds) {
+        super(id, name, customerId, owner, operationType, timeoutSeconds);
         this.endpoint = endpoint;
         this.tlsCertificate = tlsCertificate;
         this.tlsKey = tlsKey;
