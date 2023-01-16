@@ -33,24 +33,12 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CO
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
-import static com.redhat.service.smartevents.manager.v2.services.ProcessorServiceImplTest.NOT_READY_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public abstract class AbstractConnectorServiceTest {
-
-    public static final String NEW_CONNECTOR_NAME = "My Connector";
-    public static final String NOT_READY_BRIDGE_ID = "not-ready-bridge-id";
-    public static final String PROVISIONING_CONNECTOR_ID = "provisioning-connector-id";
-    public static final String PROVISIONING_CONNECTOR_NAME = "provisioning-connector-name";
-    public static final String FAILED_CONNECTOR_ID = "failed-connector-id";
-    public static final String FAILED_CONNECTOR_NAME = "failed-connector-name";
-
-    public static final String NON_EXISTING_BRIDGE_ID = "non-existing-bridge-id";
-    public static final String NON_EXISTING_PROCESSOR_ID = "non-existing-processor-id";
-    public static final String NON_EXISTING_CUSTOMER_ID = "non-existing-customer-id";
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -103,7 +91,7 @@ public abstract class AbstractConnectorServiceTest {
     }
 
     @Test
-    void testCreateProcessorWhenOrganizationHasNoQuota() {
+    void testCreateConnectorWhenOrganizationHasNoQuota() {
         Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
@@ -114,7 +102,7 @@ public abstract class AbstractConnectorServiceTest {
     }
 
     @Test
-    void testCreateProcessor() {
+    void testCreateConnector() {
         Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 

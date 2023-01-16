@@ -41,7 +41,7 @@ public abstract class AbstractConnectorService implements ConnectorService {
     @Override
     @Transactional
     public Connector createConnector(String bridgeId, String customerId, String owner, String organisationId, ConnectorRequest connectorRequest) {
-        // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
+        // We cannot deploy Connectors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgeService.getReadyBridge(bridgeId, customerId);
 
         // Check connectors limits
@@ -81,7 +81,7 @@ public abstract class AbstractConnectorService implements ConnectorService {
         ConnectorDefinition definition = new ConnectorDefinition(connectorPayload);
         connector.setDefinition(definition);
 
-        // Processor and Work should always be created in the same transaction
+        // Connector and Work should always be created in the same transaction
         getDAO().persist(connector);
 
         // Schedule worker for connector
