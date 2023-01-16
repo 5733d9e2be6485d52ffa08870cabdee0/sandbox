@@ -21,7 +21,6 @@ import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.SourceConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getModifiedAt;

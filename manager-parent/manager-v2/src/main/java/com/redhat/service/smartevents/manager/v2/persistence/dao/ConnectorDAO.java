@@ -7,11 +7,10 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
-import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
-
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+
 import io.quarkus.panache.common.Parameters;
 
 public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
@@ -22,18 +21,18 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
         this.type = type;
     }
 
-    public Connector findByBridgeIdAndName(String bridgeId, String name) {
-        Parameters params = Parameters.with(Processor.NAME_PARAM, name)
-                .and(Connector.BRIDGE_ID_PARAM, bridgeId)
-                .and(Connector.TYPE_PARAM, type);
-        return find("#CONNECTOR_V2.findByBridgeIdAndName", params).firstResult();
-    }
-
     public Connector findByIdWithConditions(String id) {
         Parameters params = Parameters
                 .with(Connector.ID_PARAM, id)
                 .and(Connector.TYPE_PARAM, type);
         return find("#CONNECTOR_V2.findByIdWithConditions", params).firstResult();
+    }
+
+    public Connector findByBridgeIdAndName(String bridgeId, String name) {
+        Parameters params = Parameters.with(Processor.NAME_PARAM, name)
+                .and(Connector.BRIDGE_ID_PARAM, bridgeId)
+                .and(Connector.TYPE_PARAM, type);
+        return find("#CONNECTOR_V2.findByBridgeIdAndName", params).firstResult();
     }
 
     public long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {

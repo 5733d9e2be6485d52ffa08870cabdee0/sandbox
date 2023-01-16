@@ -15,13 +15,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.v2.api.V2;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
-import com.redhat.service.smartevents.manager.v2.services.BridgeService;
-import com.redhat.service.smartevents.manager.v2.services.SourceConnectorService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -35,12 +28,16 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorResponse;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
+import com.redhat.service.smartevents.manager.v2.services.SourceConnectorService;
 
 import io.quarkus.security.Authenticated;
 

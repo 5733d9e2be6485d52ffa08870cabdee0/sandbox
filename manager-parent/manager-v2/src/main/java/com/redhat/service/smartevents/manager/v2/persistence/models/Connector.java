@@ -84,9 +84,10 @@ public class Connector extends ManagedDefinedResourceV2<ConnectorDefinition> {
     @Enumerated(EnumType.STRING)
     protected ConnectorType type;
 
-    public Connector(){}
+    public Connector() {
+    }
 
-    public Connector(String name){
+    public Connector(String name) {
         this.name = name;
     }
 

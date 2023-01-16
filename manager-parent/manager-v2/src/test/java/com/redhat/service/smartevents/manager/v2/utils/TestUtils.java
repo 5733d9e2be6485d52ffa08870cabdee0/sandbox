@@ -180,7 +180,7 @@ public class TestUtils {
                 .post(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(connectorType) + "/");
     }
 
-    private static String getConnectorPathByType(ConnectorType type){
-        return  type.equals(ConnectorType.SINK) ? "sinks" : "sources";
+    private static String getConnectorPathByType(ConnectorType type) {
+        return type.equals(ConnectorType.SINK) ? "sinks" : "sources";
     }
 }
