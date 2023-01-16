@@ -20,7 +20,7 @@ public class CustomResourceStatusTest {
     }
 
     @Test
-    public void testMarkConditionFailure() {
+    public void testMarkConditionFalse() {
         // Given
         final CustomResourceStatus resourceStatus = new FooResourceStatus();
 
@@ -30,9 +30,31 @@ public class CustomResourceStatusTest {
 
         // Then
         assertThat(resourceStatus.isReady()).isFalse();
-        assertThat(resourceStatus.getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getLastTransitionTime()).isNotNull();
-            assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
-        });
+        assertThat(resourceStatus.getConditionByType(ConditionTypeConstants.READY))
+                .isPresent()
+                .hasValueSatisfying(c -> {
+                    assertThat(c.getLastTransitionTime()).isNotNull();
+                    assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
+                });
     }
+
+    @Test
+    public void testMarkConditionFailure() {
+        // Given
+        final CustomResourceStatus resourceStatus = new FooResourceStatus();
+
+        // When
+        resourceStatus.markConditionFailed(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, "");
+        resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
+
+        // Then
+        assertThat(resourceStatus.isReady()).isFalse();
+        assertThat(resourceStatus.getConditionByType(ConditionTypeConstants.READY))
+                .isPresent()
+                .hasValueSatisfying(c -> {
+                    assertThat(c.getLastTransitionTime()).isNotNull();
+                    assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
+                });
+    }
+
 }

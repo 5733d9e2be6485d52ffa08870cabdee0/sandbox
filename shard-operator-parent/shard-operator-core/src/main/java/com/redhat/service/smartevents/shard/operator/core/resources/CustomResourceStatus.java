@@ -107,6 +107,33 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     }
 
     @JsonIgnore
+    public final boolean isConditionTypeFailed(final String conditionType, final String reason) {
+        return getConditions().stream().anyMatch(c -> conditionType.equals(c.getType())
+                && Objects.equals(c.getReason(), reason)
+                && ConditionStatus.Failed.equals(c.getStatus()));
+    }
+
+    public void markConditionFailed(final String conditionType, final String reason, final String message, final String errorCode) {
+        final Optional<Condition> condition = this.getConditionByType(conditionType);
+        if (condition.isPresent()) {
+            condition.get().setMessage(message);
+            condition.get().setErrorCode(errorCode);
+            condition.get().setReason(reason);
+            condition.get().setStatus(ConditionStatus.Failed);
+            condition.get().setLastTransitionTime(new Date());
+            this.conditions.add(condition.get());
+        }
+    }
+
+    public void markConditionFailed(final String conditionType, final String reason, final String message) {
+        markConditionFailed(conditionType, reason, message, null);
+    }
+
+    public void markConditionFailed(final String conditionType) {
+        markConditionFailed(conditionType, null, "", null);
+    }
+
+    @JsonIgnore
     public final void setStatusFromBridgeError(BridgeError bridgeError) {
         markConditionFalse(ConditionTypeConstants.READY,
                 bridgeError.getReason(),
