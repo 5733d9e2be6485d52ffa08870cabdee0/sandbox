@@ -17,11 +17,16 @@ import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.N
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDefinition;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
+
+import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
+import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getModifiedAt;
+import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getStatusMessage;
 
 public abstract class AbstractConnectorService implements ConnectorService {
 
@@ -37,6 +42,8 @@ public abstract class AbstractConnectorService implements ConnectorService {
     protected abstract long getOrganisationConnectorsQuota(String organisationId);
 
     protected abstract List<Condition> createAcceptedConditions();
+
+    protected abstract ConnectorResponse generateSpecificResponse(Connector connector);
 
     @Override
     @Transactional
@@ -96,5 +103,23 @@ public abstract class AbstractConnectorService implements ConnectorService {
                 connector.getBridge().getId());
 
         return connector;
+    }
+
+    @Override
+    public ConnectorResponse toResponse(Connector connector) {
+        ConnectorResponse connectorResponse = generateSpecificResponse(connector);
+
+        connectorResponse.setId(connector.getId());
+        connectorResponse.setName(connector.getName());
+        connectorResponse.setStatus(getManagedResourceStatus(connector));
+        connectorResponse.setPublishedAt(connector.getPublishedAt());
+        connectorResponse.setSubmittedAt(connector.getSubmittedAt());
+        connectorResponse.setModifiedAt(getModifiedAt(connector));
+        connectorResponse.setOwner(connector.getOwner());
+        connectorResponse.setStatusMessage(getStatusMessage(connector));
+        connectorResponse.setConnector(connector.getDefinition().getConnector());
+        connectorResponse.setConnectorTypeId(connector.getConnectorTypeId());
+
+        return connectorResponse;
     }
 }

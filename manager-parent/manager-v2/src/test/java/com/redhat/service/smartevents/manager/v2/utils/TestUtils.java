@@ -158,14 +158,9 @@ public class TestUtils {
                 .put(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors");
     }
 
-    public static Response listSourceConnectors() {
+    public static Response listConnectors(ConnectorType type) {
         return jsonRequest()
-                .get(V2APIConstants.V2_USER_API_BASE_PATH + "sources");
-    }
-
-    public static Response listSinkConnectors() {
-        return jsonRequest()
-                .get(V2APIConstants.V2_USER_API_BASE_PATH + "sinks");
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + getConnectorPathByType(type));
     }
 
     public static Response addConnectorToBridge(String bridgeId, ConnectorRequest connectorRequest, ConnectorType connectorType) {
