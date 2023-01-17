@@ -1,17 +1,19 @@
 package com.redhat.service.smartevents.shard.operator.core;
 
+import javax.inject.Inject;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
+
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
 
 import static com.redhat.service.smartevents.shard.operator.core.IstioSetupService.ISTIO_GATEWAY_NAME;
 import static com.redhat.service.smartevents.shard.operator.core.IstioSetupService.ISTIO_GATEWAY_NAMESPACE;
