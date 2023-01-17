@@ -60,7 +60,14 @@ public class ManagedProcessorServiceImplTest {
     public void testCamelIntegrationIsProvisioned() throws JsonProcessingException {
 
         ObjectNode flow = objectMapper.readValue("{\"from\":{\"uri\":\"fromURI\",\"steps\":[{\"to\":\"toURI\"}]}}", ObjectNode.class);
-        ProcessorDTO processorDTO = new ProcessorDTO("processorId", "processorName", flow, "bridgeId", "customerId", "owner", OperationType.CREATE);
+        ProcessorDTO processorDTO = new ProcessorDTO("processorId",
+                "processorName",
+                flow,
+                "bridgeId",
+                "customerId",
+                "owner",
+                OperationType.CREATE,
+                TestSupport.RESOURCE_TIMEOUT);
 
         bridgeIngressService.createManagedProcessor(processorDTO);
         waitUntiManagedProcessorExists(processorDTO);

@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -64,6 +65,9 @@ import static org.mockito.Mockito.verify;
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
 public class BridgeServiceTest {
+
+    @ConfigProperty(name = "event-bridge.managed-bridge.deployment.timeout-seconds")
+    int managedBridgeTimeoutSeconds;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -258,6 +262,7 @@ public class BridgeServiceTest {
         assertThat(bridgeDTO.getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
         assertThat(bridgeDTO.getGeneration()).isEqualTo(bridge.getGeneration());
         assertThat(bridgeDTO.getOperationType()).isEqualTo(bridge.getOperation().getType());
+        assertThat(bridgeDTO.getTimeoutSeconds()).isEqualTo(managedBridgeTimeoutSeconds);
     }
 
     @Test

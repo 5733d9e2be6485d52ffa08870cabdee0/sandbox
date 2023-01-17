@@ -11,6 +11,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,9 @@ import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.ge
 public class ProcessorServiceImpl implements ProcessorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
+
+    @ConfigProperty(name = "event-bridge.managed-processor.deployment.timeout-seconds")
+    int managedProcessorTimeoutSeconds;
 
     @Inject
     ProcessorDAO processorDAO;
@@ -349,6 +353,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setFlows(processor.getDefinition().getFlows());
         dto.setOperationType(processor.getOperation().getType());
         dto.setGeneration(processor.getGeneration());
+        dto.setTimeoutSeconds(managedProcessorTimeoutSeconds);
         return dto;
     }
 

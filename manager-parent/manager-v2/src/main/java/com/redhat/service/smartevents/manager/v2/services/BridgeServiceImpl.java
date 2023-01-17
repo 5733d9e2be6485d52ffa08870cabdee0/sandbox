@@ -78,6 +78,9 @@ public class BridgeServiceImpl implements BridgeService {
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.key")
     String b64TlsKey;
 
+    @ConfigProperty(name = "event-bridge.managed-bridge.deployment.timeout-seconds")
+    int managedBridgeTimeoutSeconds;
+
     @Inject
     BridgeDAO bridgeDAO;
 
@@ -313,6 +316,7 @@ public class BridgeServiceImpl implements BridgeService {
         dto.setKafkaConnection(kafkaConnectionDTO);
         dto.setTlsCertificate(tlsCertificate);
         dto.setTlsKey(tlsKey);
+        dto.setTimeoutSeconds(managedBridgeTimeoutSeconds);
         return dto;
     }
 
