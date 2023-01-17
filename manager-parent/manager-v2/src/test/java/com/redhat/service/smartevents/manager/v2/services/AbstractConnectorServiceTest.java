@@ -90,15 +90,25 @@ public abstract class AbstractConnectorServiceTest {
                 .isThrownBy(() -> getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), bridge.getOrganisationId(), request));
     }
 
+    // See the quota configuration settings in application.properties
     @Test
     void testCreateConnectorWhenOrganizationHasNoQuota() {
         Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridge.setOrganisationId("organisation_with_1_quota");
         bridgeDAO.persist(bridge);
 
+        // Consume one quota
         ConnectorRequest request = new ConnectorRequest();
-        request.setName(DEFAULT_CONNECTOR_NAME);
+        request.setName(DEFAULT_CONNECTOR_NAME + "1");
+        request.setConnectorTypeId(DEFAULT_CONNECTOR_TYPE_ID);
+        request.setConnector(JsonNodeFactory.instance.objectNode());
+
+        getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), bridge.getOrganisationId(), request);
+
+        // The organisation has only one quota, should raise an exception.
+        request.setName(DEFAULT_CONNECTOR_NAME + "2");
         assertThatExceptionOfType(NoQuotaAvailable.class)
-                .isThrownBy(() -> getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), bridge.getOrganisationId(), request));
+                .isThrownBy(() -> getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), "organisation_with_no_quota", request));
     }
 
     @Test
