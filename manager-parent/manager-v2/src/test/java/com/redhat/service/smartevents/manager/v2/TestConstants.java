@@ -18,6 +18,12 @@ public class TestConstants {
     public static final String DEFAULT_PROCESSOR_ID = "myProcessorId";
     public static final String DEFAULT_PROCESSOR_NAME = "myProcessor";
 
+    public static final String DEFAULT_CONNECTOR_ID = "myConnectorId";
+    public static final String DEFAULT_CONNECTOR_NAME = "myConnector";
+    public static final String DEFAULT_CONNECTOR_EXTERNAL_ID = "myConnectorExternalId";
+    public static final String DEFAULT_CONNECTOR_TYPE_ID = "my_connector_0.1";
+    public static final String DEFAULT_CONNECTOR_TOPIC_NAME = "myTopicName";
+
     public static final String DEFAULT_CLOUD_PROVIDER = "aws";
     public static final String DEFAULT_REGION = "us-east-1";
 

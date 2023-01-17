@@ -19,6 +19,9 @@ public class Operation {
     @Column(name = "operation_requested_at", columnDefinition = "TIMESTAMP", nullable = false)
     private ZonedDateTime requestedAt;
 
+    @Column(name = "operation_completed_at", columnDefinition = "TIMESTAMP", nullable = false)
+    private ZonedDateTime completedAt;
+
     public Operation() {
     }
 
@@ -41,6 +44,14 @@ public class Operation {
 
     public void setRequestedAt(ZonedDateTime requestedAt) {
         this.requestedAt = requestedAt;
+    }
+
+    public ZonedDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(ZonedDateTime completedAt) {
+        this.completedAt = completedAt;
     }
 
 }

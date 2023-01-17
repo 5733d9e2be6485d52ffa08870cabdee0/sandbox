@@ -23,18 +23,18 @@ import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
 import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.BadRequestException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
@@ -94,6 +94,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     ManagerMetricsServiceV1 metricsService;
 
+    @V1
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 
@@ -324,7 +325,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Since updates to the Action are unsupported we do not need to update the Connector record.
         connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
-        metricsService.onOperationStart(existingProcessor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+        metricsService.onOperationStart(existingProcessor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
                 existingProcessor.getId(),
@@ -398,7 +399,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                         bridgesService.updateBridgeStatus(new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), ManagedResourceStatusV1.PREPARING));
                     }
                 }
-                metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+                metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
                 break;
 
             case DELETE:

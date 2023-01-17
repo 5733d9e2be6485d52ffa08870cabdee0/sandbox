@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.shard.operator.v1.resources;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InvalidURLException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.core.utils.StringUtils;

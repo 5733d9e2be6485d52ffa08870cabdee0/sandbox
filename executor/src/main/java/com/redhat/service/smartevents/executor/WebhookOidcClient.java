@@ -10,13 +10,16 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.infra.core.auth.AbstractOidcClient;
 import com.redhat.service.smartevents.infra.core.auth.OidcClientConstants;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.v1.api.auth.AbstractOidcClientV1;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.OidcTokensNotInitializedException;
 
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
-public class WebhookOidcClient extends AbstractOidcClient {
+public class WebhookOidcClient extends AbstractOidcClientV1 {
 
     private static final String NAME = OidcClientConstants.WEBHOOK_OIDC_CLIENT_NAME;
 
@@ -48,5 +51,10 @@ public class WebhookOidcClient extends AbstractOidcClient {
         oidcClientConfig.setRefreshTokenTimeSkew(AbstractOidcClient.REFRESH_TOKEN_TIME_SKEW);
 
         return oidcClientConfig;
+    }
+
+    @Override
+    protected InternalPlatformException getOidcTokensNotInitializedException(String message) {
+        return new OidcTokensNotInitializedException(message);
     }
 }

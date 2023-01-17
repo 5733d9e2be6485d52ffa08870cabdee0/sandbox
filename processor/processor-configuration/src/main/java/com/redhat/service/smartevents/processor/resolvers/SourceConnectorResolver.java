@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.GatewayProviderException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;

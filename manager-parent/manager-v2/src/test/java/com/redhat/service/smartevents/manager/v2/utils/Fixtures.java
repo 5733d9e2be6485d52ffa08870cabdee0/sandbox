@@ -7,19 +7,27 @@ import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDefinition;
 import com.redhat.service.smartevents.infra.v2.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_EXTERNAL_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_TOPIC_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_TYPE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_NAME;
 
@@ -180,6 +188,40 @@ public class Fixtures {
         return p;
     }
 
+    public static Connector createConnector(Bridge b, ConnectorType type) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        return createConnector(DEFAULT_CONNECTOR_ID, b, DEFAULT_CONNECTOR_NAME, operation, type, null);
+    }
+
+    public static Connector createReadyConnector(Bridge b, ConnectorType type) {
+        Operation operation = new Operation();
+        operation.setType(OperationType.CREATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        Connector c = createConnector(DEFAULT_CONNECTOR_ID, b, DEFAULT_CONNECTOR_NAME, operation, type, createConnectorReadyConditions());
+        c.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        return c;
+    }
+
+    public static Connector createConnector(String id, Bridge b, String name, Operation operation, ConnectorType type, List<Condition> conditions) {
+        Connector c = new Connector();
+        c.setId(id);
+        c.setType(type);
+        c.setName(name);
+        c.setConnectorExternalId(DEFAULT_CONNECTOR_EXTERNAL_ID);
+        c.setConnectorTypeId(DEFAULT_CONNECTOR_TYPE_ID);
+        c.setTopicName(DEFAULT_CONNECTOR_TOPIC_NAME);
+        c.setOperation(operation);
+        c.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        c.setBridge(b);
+        c.setOwner(TestConstants.DEFAULT_USER_NAME);
+        c.setDefinition(new ConnectorDefinition(JsonNodeFactory.instance.objectNode()));
+        c.setConditions(conditions);
+        return c;
+    }
+
     public static List<Condition> createBridgeAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
@@ -251,6 +293,13 @@ public class Fixtures {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ComponentType.SHARD));
+        return conditions;
+    }
+
+    public static List<Condition> createConnectorReadyConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
         return conditions;
     }
 

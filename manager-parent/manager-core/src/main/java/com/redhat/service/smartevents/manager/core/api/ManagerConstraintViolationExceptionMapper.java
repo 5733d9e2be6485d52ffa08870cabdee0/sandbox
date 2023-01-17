@@ -2,12 +2,11 @@ package com.redhat.service.smartevents.manager.core.api;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.ws.rs.ext.Provider;
 
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionProvider;
+import com.redhat.service.smartevents.infra.core.exceptions.CompositeBridgeErrorService;
+import com.redhat.service.smartevents.infra.core.exceptions.ErrorHrefVersionBuilder;
 import com.redhat.service.smartevents.infra.core.exceptions.mappers.ConstraintViolationExceptionMapper;
 
 @Provider
@@ -15,8 +14,8 @@ import com.redhat.service.smartevents.infra.core.exceptions.mappers.ConstraintVi
 public class ManagerConstraintViolationExceptionMapper extends ConstraintViolationExceptionMapper {
 
     @Inject
-    public ManagerConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService, Instance<ErrorHrefVersionProvider> builders) {
-        super(bridgeErrorService, builders);
+    public ManagerConstraintViolationExceptionMapper(CompositeBridgeErrorService bridgeErrorService, ErrorHrefVersionBuilder hrefBuilder) {
+        super(bridgeErrorService, hrefBuilder);
     }
 
     @Override

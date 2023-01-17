@@ -8,6 +8,7 @@ import javax.validation.ValidatorFactory;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.manager.core.persistence.dao.CloudProviderDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvider;
 import com.redhat.service.smartevents.manager.core.persistence.models.CloudRegion;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @QuarkusTest
 public class CloudProviderConstraintValidatorTest {
 
+    @V1
     @Inject
     CloudProviderDAO cloudProviderDAO;
 

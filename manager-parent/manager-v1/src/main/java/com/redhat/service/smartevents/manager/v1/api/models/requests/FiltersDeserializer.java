@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.deser.DeserializerFactory;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorFilterDefinitionException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorFilterDefinitionException;
 import com.redhat.service.smartevents.infra.v1.api.models.filters.BaseFilter;
 
 public class FiltersDeserializer extends StdDeserializer<Set<BaseFilter>> {

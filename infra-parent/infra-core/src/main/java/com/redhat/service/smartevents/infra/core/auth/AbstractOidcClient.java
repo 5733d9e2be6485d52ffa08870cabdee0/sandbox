@@ -10,7 +10,7 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.OidcTokensNotInitializedException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.OidcClientConfig;
@@ -78,10 +78,12 @@ public abstract class AbstractOidcClient implements com.redhat.service.smarteven
 
     public String getToken() {
         if (currentTokens == null) {
-            throw new OidcTokensNotInitializedException(String.format("Tokens for OIDC client '%s' are not initialized.", name));
+            throw getOidcTokensNotInitializedException(String.format("Tokens for OIDC client '%s' are not initialized.", name));
         }
         return currentTokens.getAccessToken();
     }
+
+    protected abstract InternalPlatformException getOidcTokensNotInitializedException(String message);
 
     public String getName() {
         return this.name;

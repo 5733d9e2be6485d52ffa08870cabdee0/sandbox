@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.core.api.user;
 
 import java.util.Optional;
 
-import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
@@ -30,14 +29,14 @@ public abstract class AbstractErrorsAPI {
 
     private String errorsBasePath;
 
-    @Inject
-    BridgeErrorService service;
+    private BridgeErrorService service;
 
     public AbstractErrorsAPI() {
         // For CDI
     }
 
-    public AbstractErrorsAPI(String errorsBasePath) {
+    public AbstractErrorsAPI(String errorsBasePath, BridgeErrorService service) {
+        this.service = service;
         this.errorsBasePath = errorsBasePath;
     }
 

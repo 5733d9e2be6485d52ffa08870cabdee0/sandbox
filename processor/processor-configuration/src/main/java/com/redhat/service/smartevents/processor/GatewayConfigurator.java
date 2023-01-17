@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.processor;
 
 import java.util.Optional;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.processor.resolvers.GatewayResolver;

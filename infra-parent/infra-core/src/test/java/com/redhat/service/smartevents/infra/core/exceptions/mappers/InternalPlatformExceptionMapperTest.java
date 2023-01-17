@@ -9,10 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorType;
+import com.redhat.service.smartevents.infra.core.exceptions.CompositeBridgeErrorService;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.VaultException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 
@@ -25,20 +24,20 @@ public class InternalPlatformExceptionMapperTest {
     private static final BridgeError MAPPED_ERROR = new BridgeError(1, "mapped-code", "mapped-reason", BridgeErrorType.USER);
 
     @Mock
-    private BridgeErrorService bridgeErrorService;
+    private CompositeBridgeErrorService bridgeErrorService;
 
     private InternalPlatformExceptionMapper mapper;
 
     @BeforeEach
     void setup() {
         when(bridgeErrorService.getError(InternalPlatformException.class)).thenReturn(Optional.of(MAPPED_ERROR));
-        this.mapper = new InternalPlatformExceptionMapper(bridgeErrorService, TestMappersUtils.getDefaultBuildersMock());
+        this.mapper = new InternalPlatformExceptionMapper(bridgeErrorService, TestMappersUtils.getDefaultBuilderMock());
         this.mapper.init();
     }
 
     @Test
     void testMappedException() {
-        ErrorsResponse response = mapper.toResponse(new VaultException("error")).readEntity(ErrorsResponse.class);
+        ErrorsResponse response = mapper.toResponse(new InternalPlatformException("error")).readEntity(ErrorsResponse.class);
         assertThat(response.getItems()).hasSize(1);
 
         ErrorResponse error = response.getItems().get(0);

@@ -38,8 +38,11 @@ public class StatusUtilities {
         if (conditions.stream().noneMatch(c -> c.getComponent() == ComponentType.MANAGER) || conditions.stream().noneMatch(c -> c.getComponent() == ComponentType.SHARD)) {
             throw new IllegalStateException("Conditions must contain at least one condition for the manager and one for the shard.");
         }
+        return getManagedResourceStatus(resource.getOperation(), conditions);
+    }
 
-        switch (resource.getOperation().getType()) {
+    public static ManagedResourceStatusV2 getManagedResourceStatus(Operation operation, List<Condition> conditions) {
+        switch (operation.getType()) {
             case CREATE:
                 // The ordering of these checks is important!
                 if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
@@ -117,6 +120,7 @@ public class StatusUtilities {
         }
         List<Condition> errors = resource.getConditions()
                 .stream()
+                .filter(c -> c.getStatus() == ConditionStatus.FAILED)
                 .filter(c -> Objects.nonNull(c.getErrorCode()))
                 .collect(Collectors.toList());
         if (errors.isEmpty()) {

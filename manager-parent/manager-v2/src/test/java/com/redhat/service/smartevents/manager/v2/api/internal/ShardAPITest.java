@@ -9,6 +9,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
@@ -59,6 +62,7 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PR
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.SHARD_ID;
+import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -89,6 +93,18 @@ public class ShardAPITest {
     @SuppressWarnings("unused")
     // Prevent WorkManager from kicking in as we'll mock all activities
     WorkManager workManager;
+
+    @ConfigProperty(name = "rhose.metrics-name.operation-total-count")
+    String operationTotalCountMetricName;
+
+    @ConfigProperty(name = "rhose.metrics-name.operation-success-total-count")
+    String operationTotalSuccessCountMetricName;
+
+    @ConfigProperty(name = "rhose.metrics-name.operation-failure-total-count")
+    String operationTotalFailureCountMetricName;
+
+    @ConfigProperty(name = "rhose.metrics-name.operation-duration-seconds")
+    String operationDurationMetricName;
 
     @BeforeEach
     public void cleanUp() {
@@ -439,6 +455,80 @@ public class ShardAPITest {
 
         // Check the new status remains PROVISIONING
         awaitForProcessorToBe(PROVISIONING, processorId);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void metricsAreProducedForSuccessfulDeployment() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
+
+        //Emulate the Shard having deployed the Bridge
+        mockBridgeCreation(bridgeResponse.getId());
+
+        //Create a Processor for the Bridge
+        ProcessorResponse processorResponse = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME)).as(ProcessorResponse.class);
+        //Emulate the Processor dependencies being completed in the Manager and hence becoming visible to the Shard
+        mockProcessorControlPlaneActivitiesComplete(processorResponse.getId());
+        String processorId = processorResponse.getId();
+
+        awaitForProcessorToBe(PROVISIONING, processorId);
+
+        // Update Status to reflect that the Processor has been created by the Shard
+        TestUtils.updateProcessorStatus(makeResourceStatusDTO(processorId,
+                List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
+                        makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE))));
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        // Not all metrics are recorded by this test. Only the "successful" path in this test.
+        assertThat(metrics).contains(operationTotalCountMetricName);
+        assertThat(metrics).contains(operationTotalSuccessCountMetricName);
+        assertThat(metrics).contains(operationDurationMetricName);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void metricsAreProducedForFailedDeployment() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
+
+        //Emulate the Shard having deployed the Bridge
+        mockBridgeCreation(bridgeResponse.getId());
+
+        //Create a Processor for the Bridge
+        ProcessorResponse processorResponse = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME)).as(ProcessorResponse.class);
+        //Emulate the Processor dependencies being completed in the Manager and hence becoming visible to the Shard
+        mockProcessorControlPlaneActivitiesComplete(processorResponse.getId());
+        String processorId = processorResponse.getId();
+
+        awaitForProcessorToBe(PROVISIONING, processorId);
+
+        // Update Status to reflect that the Processor failed to be created by the Shard
+        TestUtils.updateProcessorStatus(makeResourceStatusDTO(processorId,
+                List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
+                        makeConditionDTO(DP_CONFIG_MAP_READY_NAME, FAILED))));
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        // Not all metrics are recorded by this test. Only the "failure" path in this test.
+        assertThat(metrics).contains(operationTotalCountMetricName);
+        assertThat(metrics).contains(operationTotalFailureCountMetricName);
+        assertThat(metrics).contains(operationDurationMetricName);
     }
 
     @Test
