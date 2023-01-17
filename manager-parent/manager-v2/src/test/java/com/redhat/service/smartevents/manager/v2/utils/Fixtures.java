@@ -189,11 +189,15 @@ public class Fixtures {
     }
 
     public static Connector createConnector(Bridge b, ConnectorType type) {
+        return createConnector(b, type, DEFAULT_CONNECTOR_ID, DEFAULT_CONNECTOR_NAME);
+    }
+
+    public static Connector createConnector(Bridge b, ConnectorType type, String id, String name) {
         Operation operation = new Operation();
         operation.setType(OperationType.CREATE);
         operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        return createConnector(DEFAULT_CONNECTOR_ID, b, DEFAULT_CONNECTOR_NAME, operation, type, null);
+        return createConnector(id, b, name, operation, type, null);
     }
 
     public static Connector createReadyConnector(Bridge b, ConnectorType type) {

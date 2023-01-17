@@ -43,6 +43,6 @@ public class QuotaConfigurationProvider {
     }
 
     public OrganisationQuota getOrganisationQuotas(String organisationId) {
-        return organisationsQuota.getOrDefault(organisationId, new OrganisationQuota(0, 0));
+        return organisationsQuota.getOrDefault(organisationId, new OrganisationQuota(0, 0, 0, 0));
     }
 }

@@ -12,6 +12,8 @@ public final class DefaultConditions {
     public static final String CP_KAFKA_TOPIC_DELETED_NAME = "KafkaTopicDeleted";
     public static final String CP_DNS_RECORD_DELETED_NAME = "DnsRecordDeleted";
 
+    public static final String CP_CONNECTOR_READY_NAME = "ConnectorReady";
+
     public static final String DP_SECRET_READY_NAME = "SecretReady";
     public static final String DP_CONFIG_MAP_READY_NAME = "ConfigMapReady";
     public static final String DP_KNATIVE_BROKER_READY_NAME = "KNativeBrokerReady";

@@ -4,10 +4,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -164,5 +166,21 @@ public class TestUtils {
     public static Response listSinkConnectors() {
         return jsonRequest()
                 .get(V2APIConstants.V2_USER_API_BASE_PATH + "sinks");
+    }
+
+    public static Response addConnectorToBridge(String bridgeId, ConnectorRequest connectorRequest, ConnectorType connectorType) {
+        return jsonRequest()
+                .body(connectorRequest)
+                .post(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(connectorType) + "/");
+    }
+
+    public static Response addConnectorToBridgeWithRequestBody(String bridgeId, String connectorRequest, ConnectorType connectorType) {
+        return jsonRequest()
+                .body(connectorRequest)
+                .post(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(connectorType) + "/");
+    }
+
+    private static String getConnectorPathByType(ConnectorType type) {
+        return type.equals(ConnectorType.SINK) ? "sinks" : "sources";
     }
 }
