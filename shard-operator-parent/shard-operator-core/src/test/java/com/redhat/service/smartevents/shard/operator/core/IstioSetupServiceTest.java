@@ -1,19 +1,17 @@
 package com.redhat.service.smartevents.shard.operator.core;
 
-import javax.inject.Inject;
-
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.gateway.Gateway;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.requestauthentication.RequestAuthentication;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.virtualservice.VirtualService;
-
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import javax.inject.Inject;
 
 import static com.redhat.service.smartevents.shard.operator.core.IstioSetupService.ISTIO_GATEWAY_NAME;
 import static com.redhat.service.smartevents.shard.operator.core.IstioSetupService.ISTIO_GATEWAY_NAMESPACE;
@@ -59,7 +57,7 @@ public class IstioSetupServiceTest {
     }
 
     @Test
-    public void test_gateway_modification_applied() {
+    public void testGatewayModificationApplied() {
         // setup
         Gateway expected = templateProvider.loadIstioGatewayTemplate();
         expected.getMetadata().setName(ISTIO_GATEWAY_NAME);
@@ -83,7 +81,7 @@ public class IstioSetupServiceTest {
     }
 
     @Test
-    public void test_virtualService_modification_applied() {
+    public void testVirtualServiceModificationApplied() {
         // setup
         VirtualService expected = templateProvider.loadIstioVirtualServiceTemplate();
         expected.getMetadata().setName(ISTIO_VIRTUAL_SERVICE_NAME);
@@ -106,7 +104,7 @@ public class IstioSetupServiceTest {
     }
 
     @Test
-    public void test_requestAuthentication_modification_applied() {
+    public void testRequestAuthenticationModificationApplied() {
         // setup
         RequestAuthentication expected = templateProvider.loadJWTRequestAuthenticationTemplate();
         expected.getMetadata().setName(JWT_REQUEST_AUTHENTICATION_NAME);
