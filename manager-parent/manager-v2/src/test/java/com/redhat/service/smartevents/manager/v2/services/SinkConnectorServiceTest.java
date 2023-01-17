@@ -4,8 +4,9 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
-import com.redhat.service.smartevents.manager.v2.persistence.dao.SourceConnectorDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.SinkConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
@@ -13,33 +14,36 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
-public class SourceConnectorServiceTest extends AbstractConnectorServiceTest {
+public class SinkConnectorServiceTest extends AbstractConnectorServiceTest {
 
     @Inject
-    SourceConnectorService sourceConnectorService;
+    SinkConnectorService sinkConnectorService;
 
     @Inject
-    SourceConnectorDAO sourceConnectorDAO;
+    SinkConnectorDAO sinkConnectorDAO;
 
     @Override
     public ConnectorService getConnectorService() {
-        return sourceConnectorService;
+        return sinkConnectorService;
     }
 
     @Override
     public ConnectorDAO getConnectorDAO() {
-        return sourceConnectorDAO;
+        return sinkConnectorDAO;
     }
 
     @Override
     public ConnectorType getConnectorType() {
-        return ConnectorType.SOURCE;
+        return ConnectorType.SINK;
     }
 
     @Override
     public void additionalResponseAssertions(ConnectorResponse connectorResponse, Bridge bridge, Connector connector) {
-        // No additional checks for SourceConnectorResponse ATM
+        assertThat(connectorResponse).isInstanceOf(SinkConnectorResponse.class);
+        assertThat(((SinkConnectorResponse) connectorResponse).getUriDsl()).startsWith("knative").contains(connectorResponse.getId());
     }
 }

@@ -33,7 +33,6 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CO
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
-import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -46,11 +45,11 @@ public abstract class AbstractConnectorServiceTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
-    public abstract ConnectorService getConnectorService();
+    protected abstract ConnectorService getConnectorService();
 
-    public abstract ConnectorDAO getConnectorDAO();
+    protected abstract ConnectorDAO getConnectorDAO();
 
-    public abstract ConnectorType getConnectorType();
+    protected abstract ConnectorType getConnectorType();
 
     @BeforeEach
     public void cleanUp() {
@@ -172,6 +171,11 @@ public abstract class AbstractConnectorServiceTest {
         assertThat(response.getOwner()).isEqualTo(bridge.getOwner());
         assertThat(response.getHref()).contains(V2APIConstants.V2_USER_API_BASE_PATH, bridge.getId());
         assertThat(response.getStatusMessage()).isNull();
-        assertThat(response.getConnector().asText()).isEqualTo(connectorPayload.asText());
+        assertThat(response.getConnector().asText()).isEqualTo(connector.getDefinition().getConnector().asText());
+
+        additionalResponseAssertions(response, bridge, connector);
     }
+
+    protected abstract void additionalResponseAssertions(ConnectorResponse connectorResponse, Bridge bridge, Connector connector);
+
 }
