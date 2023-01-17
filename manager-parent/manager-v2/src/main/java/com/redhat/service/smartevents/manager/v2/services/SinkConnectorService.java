@@ -35,7 +35,7 @@ public class SinkConnectorService extends AbstractConnectorService {
 
     @Override
     protected ConnectorType getConnectorType() {
-        return ConnectorType.SOURCE;
+        return ConnectorType.SINK;
     }
 
     @Override
