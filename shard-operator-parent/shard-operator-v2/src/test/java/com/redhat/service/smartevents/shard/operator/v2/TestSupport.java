@@ -6,5 +6,6 @@ public class TestSupport {
     public static final String BRIDGE_ID = "my-id";
     public static final String PROCESSOR_ID = "my-processor-id";
     public static final String PROCESSOR_NAME = "my-processor-name";
+    public static final int RESOURCE_TIMEOUT = 60;
 
 }
