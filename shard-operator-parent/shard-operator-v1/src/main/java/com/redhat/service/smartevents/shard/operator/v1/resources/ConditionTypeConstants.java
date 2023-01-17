@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.core.resources;
+package com.redhat.service.smartevents.shard.operator.v1.resources;
 
 /**
  * Condition types should be named in PascalCase. Short condition names are preferred (e.g. "Ready" over "MyResourceReady").

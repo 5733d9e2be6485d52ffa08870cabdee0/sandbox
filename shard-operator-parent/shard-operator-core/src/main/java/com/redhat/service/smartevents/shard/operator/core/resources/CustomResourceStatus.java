@@ -9,7 +9,6 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 
 import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
 
@@ -36,22 +35,6 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     public final Optional<Condition> getConditionByType(final String conditionType) {
         // o(1) operation since we are fetching by our hash key
         return conditions.stream().filter(c -> conditionType.equals(c.getType())).findFirst();
-    }
-
-    @JsonIgnore
-    public final boolean isReady() { // Don't use this in V2 as READY constant doesn't exist https://issues.redhat.com/browse/MGDOBR-1369
-        return conditions.stream().anyMatch(c -> ConditionTypeConstants.READY.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
-    }
-
-    @JsonIgnore
-    public final boolean isReadyV2() {
-        return conditions.stream().allMatch(c -> ConditionStatus.True.equals(c.getStatus()));
-    }
-
-    @JsonIgnore
-    public final boolean isAugmentingTrueOrUnknown() {
-        return conditions.stream()
-                .anyMatch(c -> ConditionTypeConstants.AUGMENTING.equals(c.getType()) && (ConditionStatus.True.equals(c.getStatus()) || ConditionStatus.Unknown.equals(c.getStatus())));
     }
 
     @JsonIgnore
@@ -133,11 +116,4 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
         markConditionFailed(conditionType, null, "", null);
     }
 
-    @JsonIgnore
-    public final void setStatusFromBridgeError(BridgeError bridgeError) {
-        markConditionFalse(ConditionTypeConstants.READY,
-                bridgeError.getReason(),
-                bridgeError.getReason(),
-                bridgeError.getCode());
-    }
 }

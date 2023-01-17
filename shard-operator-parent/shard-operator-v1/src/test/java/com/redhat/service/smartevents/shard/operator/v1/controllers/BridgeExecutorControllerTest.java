@@ -9,10 +9,10 @@ import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDe
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.v1.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
+import com.redhat.service.smartevents.shard.operator.v1.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.v1.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 

@@ -89,7 +89,7 @@ public class ManagedProcessorController implements Reconciler<ManagedProcessor>,
 
         ManagedProcessorStatus processorStatus = managedProcessor.getStatus();
 
-        if (!processorStatus.isReadyV2() && isTimedOut(processorStatus)) {
+        if (!processorStatus.isReady() && isTimedOut(processorStatus)) {
             // The only resource that can be in timeout state is Camel so let's use this to invalidate the ManagedProcessor
             processorStatus.markConditionFalse(ManagedProcessorStatus.CAMEL_INTEGRATION_AVAILABLE);
             return UpdateControl.updateStatus(managedProcessor);

@@ -30,7 +30,6 @@ import com.redhat.service.smartevents.shard.operator.core.networking.NetworkReso
 import com.redhat.service.smartevents.shard.operator.core.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
@@ -39,6 +38,7 @@ import com.redhat.service.smartevents.shard.operator.v1.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressStatus;
+import com.redhat.service.smartevents.shard.operator.v1.resources.ConditionTypeConstants;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;

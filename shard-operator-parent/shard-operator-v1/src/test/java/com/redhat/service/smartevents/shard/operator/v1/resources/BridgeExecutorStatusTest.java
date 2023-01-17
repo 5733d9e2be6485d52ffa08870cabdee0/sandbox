@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 
 public class BridgeExecutorStatusTest {
 

@@ -1,6 +1,8 @@
-package com.redhat.service.smartevents.shard.operator.core.resources;
+package com.redhat.service.smartevents.shard.operator.v1.resources;
 
 import org.junit.jupiter.api.Test;
+
+import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,7 +11,7 @@ public class CustomResourceStatusTest {
     @Test
     public void testMarkConditionReady() {
         // Given
-        final CustomResourceStatus resourceStatus = new FooResourceStatus();
+        final BaseResourceStatus resourceStatus = new FooResourceStatus();
 
         // When
         resourceStatus.markConditionTrue(ConditionTypeConstants.READY);
@@ -22,7 +24,7 @@ public class CustomResourceStatusTest {
     @Test
     public void testMarkConditionFalse() {
         // Given
-        final CustomResourceStatus resourceStatus = new FooResourceStatus();
+        final BaseResourceStatus resourceStatus = new FooResourceStatus();
 
         // When
         resourceStatus.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, "");
@@ -41,7 +43,7 @@ public class CustomResourceStatusTest {
     @Test
     public void testMarkConditionFailure() {
         // Given
-        final CustomResourceStatus resourceStatus = new FooResourceStatus();
+        final BaseResourceStatus resourceStatus = new FooResourceStatus();
 
         // When
         resourceStatus.markConditionFailed(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, "");
