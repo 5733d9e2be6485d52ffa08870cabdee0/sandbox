@@ -22,7 +22,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 
 @ApplicationScoped
-public class SourceConnectorServiceImpl extends AbstractConnectorService<SourceConnectorResponse> implements SourceConnectorService<SourceConnectorResponse> {
+public class SourceConnectorServiceImpl extends AbstractConnectorService<SourceConnectorResponse> implements SourceConnectorService {
 
     @Inject
     SourceConnectorDAO sourceConnectorDAO;

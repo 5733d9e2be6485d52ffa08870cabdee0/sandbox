@@ -38,7 +38,7 @@ import com.redhat.service.smartevents.manager.v2.api.user.models.requests.Connec
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
-import com.redhat.service.smartevents.manager.v2.services.SourceConnectorServiceImpl;
+import com.redhat.service.smartevents.manager.v2.services.SourceConnectorService;
 
 import io.quarkus.security.Authenticated;
 
@@ -57,7 +57,7 @@ import io.quarkus.security.Authenticated;
 public class SourceConnectorsAPI {
 
     @Inject
-    SourceConnectorServiceImpl sourceConnectorService;
+    SourceConnectorService sourceConnectorService;
 
     @V2
     @Inject

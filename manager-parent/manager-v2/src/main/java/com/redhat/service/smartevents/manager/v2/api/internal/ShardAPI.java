@@ -42,7 +42,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.services.BridgeService;
 import com.redhat.service.smartevents.manager.v2.services.ProcessorService;
-import com.redhat.service.smartevents.manager.v2.services.SinkConnectorServiceImpl;
+import com.redhat.service.smartevents.manager.v2.services.SinkConnectorService;
 
 import io.quarkus.security.Authenticated;
 
@@ -73,7 +73,7 @@ public class ShardAPI {
     ProcessorService processorService;
 
     @Inject
-    SinkConnectorServiceImpl sinkConnectorService;
+    SinkConnectorService sinkConnectorService;
 
     @Inject
     ShardService shardService;

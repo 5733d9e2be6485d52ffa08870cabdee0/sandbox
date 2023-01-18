@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.services;
 
-import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorResponse;
 
-public interface SourceConnectorService<T extends ConnectorResponse> extends ConnectorService<T> {
+public interface SourceConnectorService extends ConnectorService<SourceConnectorResponse> {
 
 }

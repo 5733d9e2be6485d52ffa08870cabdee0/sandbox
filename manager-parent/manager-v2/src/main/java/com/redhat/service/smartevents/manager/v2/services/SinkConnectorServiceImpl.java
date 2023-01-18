@@ -26,7 +26,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 
 @ApplicationScoped
-public class SinkConnectorServiceImpl extends AbstractConnectorService<SinkConnectorResponse> implements SinkConnectorService<SinkConnectorResponse> {
+public class SinkConnectorServiceImpl extends AbstractConnectorService<SinkConnectorResponse> implements SinkConnectorService {
 
     private static final String URI_DSL_PREFIX = "knative:endpoint/ob-";
 

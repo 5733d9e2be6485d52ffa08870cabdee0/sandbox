@@ -38,7 +38,7 @@ import com.redhat.service.smartevents.manager.v2.api.user.models.requests.Connec
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
-import com.redhat.service.smartevents.manager.v2.services.SinkConnectorServiceImpl;
+import com.redhat.service.smartevents.manager.v2.services.SinkConnectorService;
 
 import io.quarkus.security.Authenticated;
 
@@ -57,7 +57,7 @@ import io.quarkus.security.Authenticated;
 public class SinkConnectorsAPI {
 
     @Inject
-    SinkConnectorServiceImpl sinkConnectorService;
+    SinkConnectorService sinkConnectorService;
 
     @V2
     @Inject
