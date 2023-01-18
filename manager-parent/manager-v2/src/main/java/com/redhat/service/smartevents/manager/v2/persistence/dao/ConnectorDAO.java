@@ -16,7 +16,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -46,7 +45,7 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
     }
 
     public ListResult<Connector> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
-        Parameters parameters = Parameters.with(Processor.BRIDGE_ID_PARAM, bridgeId).and(Bridge.CUSTOMER_ID_PARAM, customerId);
+        Parameters parameters = Parameters.with(Connector.BRIDGE_ID_PARAM, bridgeId).and(Bridge.CUSTOMER_ID_PARAM, customerId);
         PanacheQuery<Connector> query = find("#CONNECTOR_V2.findByBridgeIdAndCustomerId", parameters);
 
         String filterName = queryInfo.getFilterInfo().getFilterName();
@@ -68,8 +67,8 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
         int startIndex = queryInfo.getPageNumber() * queryInfo.getPageSize();
         int endIndex = startIndex + queryInfo.getPageSize();
 
-        List<Connector> processors = startIndex >= total ? new ArrayList<>() : filtered.subList(startIndex, (int) Math.min(total, endIndex));
-        return new ListResult<>(processors, queryInfo.getPageNumber(), total);
+        List<Connector> connectors = startIndex >= total ? new ArrayList<>() : filtered.subList(startIndex, (int) Math.min(total, endIndex));
+        return new ListResult<>(connectors, queryInfo.getPageNumber(), total);
     }
 
     public long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {
