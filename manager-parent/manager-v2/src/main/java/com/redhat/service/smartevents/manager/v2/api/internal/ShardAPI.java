@@ -202,6 +202,8 @@ public class ShardAPI {
     @PUT
     @Path("sinks")
     public Response updateConnectorsStatus(List<ResourceStatusDTO> statusDTOs) {
+        String shardId = identityResolver.resolve(jwt);
+        failIfNotAuthorized(shardId);
         throw new RuntimeException("Not implemented yet exception https://issues.redhat.com/browse/MGDOBR-1380");
     }
 
