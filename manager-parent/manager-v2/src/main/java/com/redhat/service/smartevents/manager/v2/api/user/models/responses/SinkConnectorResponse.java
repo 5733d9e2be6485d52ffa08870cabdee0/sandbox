@@ -15,7 +15,7 @@ public class SinkConnectorResponse extends ConnectorResponse {
     @Schema(description = "The URI to be used in Camel DSL to send data to this sink", example = "knative:my-id")
     protected String uriDsl;
 
-    protected SinkConnectorResponse() {
+    public SinkConnectorResponse() {
         super("SinkConnector");
     }
 

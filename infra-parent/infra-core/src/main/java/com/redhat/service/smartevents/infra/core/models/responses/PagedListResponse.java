@@ -16,7 +16,7 @@ import com.redhat.service.smartevents.infra.core.models.ListResult;
         allOf = { PagedListResponse.class, ListResponse.class })
 public abstract class PagedListResponse<T> extends ListResponse<T> {
 
-    public static <T, V> PagedListResponse<V> fill(ListResult<T> source, PagedListResponse<V> target, Function<T, V> converter) {
+    public static <S, V> PagedListResponse<V> fill(ListResult<S> source, PagedListResponse<V> target, Function<S, V> converter) {
         target.setItems(source.getItems().stream().map(converter).collect(Collectors.toList()));
         target.setPage(source.getPage());
         target.setSize(source.getSize());

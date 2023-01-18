@@ -2,44 +2,49 @@ package com.redhat.service.smartevents.manager.v2.api.user;
 
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.redhat.service.smartevents.infra.core.api.APIConstants;
-import com.redhat.service.smartevents.manager.v2.TestConstants;
-import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
-import com.redhat.service.smartevents.manager.v2.utils.TestUtils;
+import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
+import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorListResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorListResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorResponse;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.SinkConnectorDAO;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.restassured.response.Response;
 
-import static com.redhat.service.smartevents.infra.core.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
-import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class SinkConnectorsAPITest {
+public class SinkConnectorsAPITest extends AbstractConnectorsAPITest {
 
     @Inject
-    DatabaseManagerUtils databaseManagerUtils;
+    SinkConnectorDAO sinkConnectorDAO;
 
-    @InjectMock
-    JsonWebToken jwt;
-
-    @BeforeEach
-    public void cleanUp() {
-        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
-        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_ORGANISATION_ID);
-        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
-        when(jwt.getClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_USER_NAME);
-        when(jwt.containsClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
+    @Override
+    public ConnectorType getConnectorType() {
+        return ConnectorType.SINK;
     }
 
-    @Test
-    public void testGetSinkConnectorsNoAuthentication() {
-        TestUtils.listSinkConnectors().then().statusCode(401);
+    @Override
+    protected ConnectorDAO getConnectorDAO() {
+        return sinkConnectorDAO;
+    }
+
+    @Override
+    protected Class<? extends ConnectorResponse> getResponseClass() {
+        return SinkConnectorResponse.class;
+    }
+
+    @Override
+    protected Class<? extends ConnectorListResponse> getListResponseClass() {
+        return SinkConnectorListResponse.class;
+    }
+
+    @Override
+    protected void additionalResponseAssertions(Response connectorResponse, ConnectorRequest connectorRequest) {
+        SinkConnectorResponse sinkConnectorResponse = connectorResponse.as(SinkConnectorResponse.class);
+        assertThat(sinkConnectorResponse.getUriDsl()).startsWith("knative").contains(sinkConnectorResponse.getId());
     }
 }

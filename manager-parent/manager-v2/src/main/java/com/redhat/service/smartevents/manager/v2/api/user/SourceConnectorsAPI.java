@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.v2.api.user;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.BeanParam;
@@ -14,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -26,12 +28,17 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorListResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorResponse;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
+import com.redhat.service.smartevents.manager.v2.services.SourceConnectorService;
 
 import io.quarkus.security.Authenticated;
 
@@ -48,6 +55,16 @@ import io.quarkus.security.Authenticated;
 @Authenticated
 @RegisterRestClient
 public class SourceConnectorsAPI {
+
+    @Inject
+    SourceConnectorService sourceConnectorService;
+
+    @V2
+    @Inject
+    IdentityResolver identityResolver;
+
+    @Inject
+    JsonWebToken jwt;
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -78,7 +95,10 @@ public class SourceConnectorsAPI {
     @GET
     @Path("{bridgeId}/sources")
     public Response getSourceConnectors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {
-        return Response.status(500, "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        return Response.ok(PagedListResponse.fill(sourceConnectorService.getConnectors(bridgeId, customerId, queryInfo),
+                new SourceConnectorListResponse(),
+                sourceConnectorService::toResponse)).build();
     }
 
     @APIResponses(value = {
@@ -95,7 +115,11 @@ public class SourceConnectorsAPI {
     @POST
     @Path("{bridgeId}/sources")
     public Response createSourceConnector(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ConnectorRequest connectorRequest) {
-        return Response.status(500, "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        String organisationId = identityResolver.resolveOrganisationId(jwt);
+        String owner = identityResolver.resolveOwner(jwt);
+        Connector connector = sourceConnectorService.createConnector(bridgeId, customerId, owner, organisationId, connectorRequest);
+        return Response.accepted(sourceConnectorService.toResponse(connector)).build();
     }
 
     @APIResponses(value = {

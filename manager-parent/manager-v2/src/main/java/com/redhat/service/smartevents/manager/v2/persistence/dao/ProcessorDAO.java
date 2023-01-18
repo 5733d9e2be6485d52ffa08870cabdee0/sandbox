@@ -29,7 +29,7 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
     @Override
     public Processor findByIdWithConditions(String id) {
         Parameters params = Parameters
-                .with("id", id);
+                .with(Processor.ID_PARAM, id);
         return find("#PROCESSOR_V2.findByIdWithConditions", params).firstResult();
     }
 
@@ -46,7 +46,7 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
     }
 
     public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
-        Parameters parameters = Parameters.with("bridgeId", bridgeId).and("customerId", customerId);
+        Parameters parameters = Parameters.with(Processor.BRIDGE_ID_PARAM, bridgeId).and(Bridge.CUSTOMER_ID_PARAM, customerId);
         PanacheQuery<Processor> query = find("#PROCESSOR_V2.findByBridgeIdAndCustomerId", parameters);
 
         String filterName = queryInfo.getFilterInfo().getFilterName();
@@ -84,7 +84,7 @@ public class ProcessorDAO implements ManagedResourceV2DAO<Processor> {
     public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
         EntityManager em = getEntityManager();
         Query q = em.createNamedQuery("PROCESSOR_V2.findProcessorIdByShardIdToDeployOrDelete");
-        q.setParameter("shardId", shardId);
+        q.setParameter(Bridge.SHARD_ID_PARAM, shardId);
         // Hibernate does not support Lazy Fetches on NativeQueries.
         // Therefore, first get the ProcessorId's and then the Processors using a regular query
         List<String> processorIds = (List<String>) q.getResultList();
