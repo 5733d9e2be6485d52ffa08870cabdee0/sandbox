@@ -1,15 +1,24 @@
 package com.redhat.service.smartevents.manager.v2.persistence.dao;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
 
 public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
@@ -33,6 +42,33 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
                 .and(Connector.BRIDGE_ID_PARAM, bridgeId)
                 .and(Connector.TYPE_PARAM, type);
         return find("#CONNECTOR_V2.findByBridgeIdAndName", params).firstResult();
+    }
+
+    public ListResult<Connector> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
+        Parameters parameters = Parameters.with(Connector.BRIDGE_ID_PARAM, bridgeId).and(Bridge.CUSTOMER_ID_PARAM, customerId);
+        PanacheQuery<Connector> query = find("#CONNECTOR_V2.findByBridgeIdAndCustomerId", parameters);
+
+        String filterName = queryInfo.getFilterInfo().getFilterName();
+        if (Objects.nonNull(filterName)) {
+            query.filter("byName", Parameters.with(Connector.NAME_PARAM, filterName + "%"));
+        }
+
+        // As the status of the resource is a view over the conditions, it has to be calculated on the fly. ATM we do it in java, in case there are
+        // performance issues we might move the filtering to the database adapting the database schema accordingly.
+
+        List<Connector> filtered = query.list();
+        Set<ManagedResourceStatusV2> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
+        if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
+            // Calculate the status of the resource and apply filter.
+            filtered = filtered.stream().filter(x -> filterStatus.contains(StatusUtilities.getManagedResourceStatus(x))).collect(Collectors.toList());
+        }
+
+        long total = filtered.size();
+        int startIndex = queryInfo.getPageNumber() * queryInfo.getPageSize();
+        int endIndex = startIndex + queryInfo.getPageSize();
+
+        List<Connector> connectors = startIndex >= total ? new ArrayList<>() : filtered.subList(startIndex, (int) Math.min(total, endIndex));
+        return new ListResult<>(connectors, queryInfo.getPageNumber(), total);
     }
 
     public long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {

@@ -15,7 +15,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
-import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.SinkConnectorDAO;
@@ -23,7 +22,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 
 @ApplicationScoped
-public class SinkConnectorService extends AbstractConnectorService {
+public class SinkConnectorService extends AbstractConnectorService<SinkConnectorResponse> {
 
     private static final String URI_DSL_PREFIX = "knative:endpoint/ob-";
 
@@ -58,7 +57,7 @@ public class SinkConnectorService extends AbstractConnectorService {
     }
 
     @Override
-    protected ConnectorResponse generateSpecificResponse(Connector connector) {
+    protected SinkConnectorResponse generateSpecificResponse(Connector connector) {
         SinkConnectorResponse sinkConnectorResponse = new SinkConnectorResponse();
         sinkConnectorResponse.setUriDsl(buildUriDsl(connector.getId()));
         sinkConnectorResponse.setHref(getHref(connector));
