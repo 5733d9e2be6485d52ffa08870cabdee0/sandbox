@@ -277,7 +277,7 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
@@ -295,13 +295,13 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
         assertThat(operationCompletedAt).isNotNull();
 
-        Bridge updated2 = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated2 = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated2.getPublishedAt()).isEqualTo(updated.getPublishedAt());
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
@@ -326,7 +326,7 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        bridgeService.updateBridgeStatus(statusDTO);
+        bridgeService.updateStatus(statusDTO);
 
         assertThat(bridge.getPublishedAt()).isNull();
         assertThat(bridge.getOperation().getCompletedAt()).isNull();
@@ -346,7 +346,7 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
         verify(metricsService).onOperationComplete(eq(bridge), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
@@ -367,13 +367,13 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
         assertThat(operationCompletedAt).isNotNull();
         verify(metricsService).onOperationComplete(eq(bridge), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
 
-        Bridge updated2 = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated2 = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
         verify(metricsService).onOperationComplete(eq(bridge), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
@@ -402,7 +402,7 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(updated.getOperation().getCompletedAt()).isNull();
@@ -420,7 +420,7 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        bridgeService.updateBridgeStatus(statusDTO);
+        bridgeService.updateStatus(statusDTO);
 
         assertThat(bridgeDAO.findById(bridge.getId())).isNull();
     }
@@ -435,7 +435,7 @@ public class BridgeServiceTest {
         statusDTO.setGeneration(bridge.getGeneration());
         statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
 
-        bridgeService.updateBridgeStatus(statusDTO);
+        bridgeService.updateStatus(statusDTO);
 
         assertThat(bridgeDAO.findById(bridge.getId())).isNotNull();
     }
@@ -455,7 +455,7 @@ public class BridgeServiceTest {
                 "ErrorCode",
                 ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
         verify(metricsService, never()).onOperationComplete(any(), any());
@@ -478,7 +478,7 @@ public class BridgeServiceTest {
                 ZonedDateTime.now(ZoneOffset.UTC))));
 
         // First failure should record metrics
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
         assertThat(operationCompletedAt).isNotNull();
@@ -496,7 +496,7 @@ public class BridgeServiceTest {
                         "ErrorCode",
                         ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated2 = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated2 = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
         verify(metricsService, never()).onOperationComplete(any(), any());
@@ -529,7 +529,7 @@ public class BridgeServiceTest {
                 "ErrorCode",
                 ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Bridge updated = bridgeService.updateBridgeStatus(statusDTO);
+        Bridge updated = bridgeService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
@@ -552,7 +552,7 @@ public class BridgeServiceTest {
                 "ErrorCode",
                 ZonedDateTime.now(ZoneOffset.UTC))));
 
-        bridgeService.updateBridgeStatus(statusDTO);
+        bridgeService.updateStatus(statusDTO);
 
         assertThat(bridgeDAO.findById(bridge.getId())).isNotNull();
         verify(metricsService, never()).onOperationComplete(any(), any());

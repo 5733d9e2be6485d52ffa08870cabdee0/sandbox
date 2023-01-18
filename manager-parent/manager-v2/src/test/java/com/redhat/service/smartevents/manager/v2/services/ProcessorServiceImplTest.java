@@ -495,7 +495,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
 
@@ -517,13 +517,13 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
         assertThat(operationCompletedAt).isNotNull();
 
-        Processor updated2 = processorService.updateProcessorStatus(statusDTO);
+        Processor updated2 = processorService.updateStatus(statusDTO);
 
         assertThat(updated2.getPublishedAt()).isEqualTo(updated.getPublishedAt());
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
@@ -553,7 +553,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        processorService.updateStatus(statusDTO);
 
         assertThat(processor.getPublishedAt()).isNull();
         assertThat(processor.getOperation().getCompletedAt()).isNull();
@@ -576,7 +576,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
@@ -601,14 +601,14 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(operationCompletedAt).isNotNull();
         verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
 
-        Processor updated2 = processorService.updateProcessorStatus(statusDTO);
+        Processor updated2 = processorService.updateStatus(statusDTO);
 
         assertThat(updated2.getPublishedAt()).isNotNull();
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
@@ -639,7 +639,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(updated.getOperation().getCompletedAt()).isNull();
@@ -659,7 +659,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        processorService.updateStatus(statusDTO);
 
         verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_DELETE));
         verify(metricsService, never()).onOperationFailed(any(), any());
@@ -678,7 +678,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        processorService.updateStatus(statusDTO);
 
         verify(processorDAO, never()).deleteById(eq(processor.getId()));
     }
@@ -702,7 +702,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNull();
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
@@ -730,7 +730,7 @@ public class ProcessorServiceImplTest {
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
         // First failure should record metrics
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
         assertThat(updated.getPublishedAt()).isNull();
@@ -749,7 +749,7 @@ public class ProcessorServiceImplTest {
                         "ErrorCode",
                         ZonedDateTime.now(ZoneOffset.UTC))));
 
-        Processor updated2 = processorService.updateProcessorStatus(statusDTO);
+        Processor updated2 = processorService.updateStatus(statusDTO);
 
         assertThat(updated2.getPublishedAt()).isNull();
         assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
@@ -785,7 +785,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
         assertThat(updated.getOperation().getCompletedAt()).isNotNull();
@@ -810,7 +810,7 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        processorService.updateStatus(statusDTO);
 
         verify(metricsService, never()).onOperationComplete(any(), any());
         verify(metricsService).onOperationFailed(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_DELETE));

@@ -18,7 +18,7 @@ import io.quarkus.test.junit.QuarkusTest;
 public class SourceConnectorServiceTest extends AbstractConnectorServiceTest {
 
     @Inject
-    SourceConnectorService sourceConnectorService;
+    SourceConnectorServiceImpl sourceConnectorService;
 
     @Inject
     SourceConnectorDAO sourceConnectorDAO;

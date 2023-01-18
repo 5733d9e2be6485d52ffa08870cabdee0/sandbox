@@ -33,7 +33,7 @@ public class SinkConnectorServiceTest extends AbstractConnectorServiceTest {
     int managedSinkConnectorsTimeoutSeconds;
 
     @Inject
-    SinkConnectorService sinkConnectorService;
+    SinkConnectorServiceImpl sinkConnectorService;
 
     @Inject
     SinkConnectorDAO sinkConnectorDAO;

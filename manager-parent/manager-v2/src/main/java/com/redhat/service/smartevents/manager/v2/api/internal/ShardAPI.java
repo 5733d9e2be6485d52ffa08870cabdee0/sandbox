@@ -42,7 +42,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.services.BridgeService;
 import com.redhat.service.smartevents.manager.v2.services.ProcessorService;
-import com.redhat.service.smartevents.manager.v2.services.SinkConnectorService;
+import com.redhat.service.smartevents.manager.v2.services.SinkConnectorServiceImpl;
 
 import io.quarkus.security.Authenticated;
 
@@ -73,7 +73,7 @@ public class ShardAPI {
     ProcessorService processorService;
 
     @Inject
-    SinkConnectorService sinkConnectorService;
+    SinkConnectorServiceImpl sinkConnectorService;
 
     @Inject
     ShardService shardService;
@@ -211,7 +211,7 @@ public class ShardAPI {
                     statusDTO.getId(),
                     statusDTO.getGeneration(),
                     logConditions(statusDTO.getConditions()));
-            processorService.updateProcessorStatus(statusDTO);
+            processorService.updateStatus(statusDTO);
         } catch (Exception e) {
             LOGGER.warn("Failed to process update from Shard for Processor with id '{}' and generation '{}' with conditions '{}'",
                     statusDTO.getId(),
@@ -228,7 +228,7 @@ public class ShardAPI {
                     statusDTO.getId(),
                     statusDTO.getGeneration(),
                     logConditions(statusDTO.getConditions()));
-            bridgesService.updateBridgeStatus(statusDTO);
+            bridgesService.updateStatus(statusDTO);
         } catch (Exception e) {
             LOGGER.warn("Failed to process update from Shard for Bridge with id '{}' and generation '{}' with conditions '{}'",
                     statusDTO.getId(),
