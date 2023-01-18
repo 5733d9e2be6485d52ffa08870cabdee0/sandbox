@@ -2,73 +2,58 @@ package com.redhat.service.smartevents.infra.v2.api.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BridgeDTO extends BaseResourceDTO {
 
-    @JsonProperty("endpoint")
-    private String endpoint;
+    @JsonProperty("dnsConfiguration")
+    private DNSConfigurationDTO dnsConfiguration;
+    @JsonProperty("knativeBrokerConfiguration")
+    private KnativeBrokerConfigurationDTO knativeBrokerConfiguration;
 
-    @JsonProperty("tlsCertificate")
-    private String tlsCertificate;
-
-    @JsonProperty("tlsKey")
-    private String tlsKey;
-
-    @JsonProperty("kafkaConnection")
-    private KafkaConnectionDTO kafkaConnection;
+    @JsonProperty("sourceConfiguration")
+    private SourceConfigurationDTO sourceConfiguration;
 
     public BridgeDTO() {
     }
 
     public BridgeDTO(String id,
             String name,
-            String endpoint,
-            String tlsCertificate,
-            String tlsKey,
             String customerId,
             String owner,
-            KafkaConnectionDTO kafkaConnection,
+            DNSConfigurationDTO dnsConfiguration,
+            KnativeBrokerConfigurationDTO knativeBrokerConfiguration,
+            SourceConfigurationDTO sourceConfiguration,
             OperationType operationType,
             int timeoutSeconds) {
         super(id, name, customerId, owner, operationType, timeoutSeconds);
-        this.endpoint = endpoint;
-        this.tlsCertificate = tlsCertificate;
-        this.tlsKey = tlsKey;
-        this.kafkaConnection = kafkaConnection;
+        this.dnsConfiguration = dnsConfiguration;
+        this.knativeBrokerConfiguration = knativeBrokerConfiguration;
+        this.sourceConfiguration = sourceConfiguration;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public DNSConfigurationDTO getDnsConfiguration() {
+        return dnsConfiguration;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setDnsConfiguration(DNSConfigurationDTO dnsConfiguration) {
+        this.dnsConfiguration = dnsConfiguration;
     }
 
-    public String getTlsCertificate() {
-        return tlsCertificate;
+    public KnativeBrokerConfigurationDTO getKnativeBrokerConfiguration() {
+        return knativeBrokerConfiguration;
     }
 
-    public void setTlsCertificate(String tlsCertificate) {
-        this.tlsCertificate = tlsCertificate;
+    public void setKnativeBrokerConfiguration(KnativeBrokerConfigurationDTO knativeBrokerConfiguration) {
+        this.knativeBrokerConfiguration = knativeBrokerConfiguration;
     }
 
-    public String getTlsKey() {
-        return tlsKey;
+    public SourceConfigurationDTO getSourceConfiguration() {
+        return sourceConfiguration;
     }
 
-    public void setTlsKey(String tlsKey) {
-        this.tlsKey = tlsKey;
-    }
-
-    public KafkaConnectionDTO getKafkaConnection() {
-        return kafkaConnection;
-    }
-
-    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
-        this.kafkaConnection = kafkaConnection;
+    public void setSourceConfiguration(SourceConfigurationDTO sourceConfiguration) {
+        this.sourceConfiguration = sourceConfiguration;
     }
 }

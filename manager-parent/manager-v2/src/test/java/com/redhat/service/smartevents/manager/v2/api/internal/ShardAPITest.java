@@ -134,7 +134,7 @@ public class ShardAPITest {
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
         assertThat(bridge.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
         assertThat(bridge.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
-        assertThat(bridge.getEndpoint()).isNotNull();
+        assertThat(bridge.getDnsConfiguration().getEndpoint()).isNotNull();
     }
 
     @Test

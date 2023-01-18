@@ -35,6 +35,8 @@ import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.DNSConfigurationDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.KnativeBrokerConfigurationDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
@@ -305,17 +307,22 @@ public class BridgeServiceImpl implements BridgeService {
                 internalKafkaConfigurationProvider.getSaslMechanism(),
                 resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
+        KnativeBrokerConfigurationDTO knativeBrokerConfiguration = new KnativeBrokerConfigurationDTO(kafkaConnectionDTO);
+
+        DNSConfigurationDTO dnsConfiguration = new DNSConfigurationDTO(
+                bridge.getEndpoint(),
+                tlsCertificate,
+                tlsKey);
+
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
         dto.setCustomerId(bridge.getCustomerId());
         dto.setOwner(bridge.getOwner());
-        dto.setEndpoint(bridge.getEndpoint());
         dto.setOperationType(bridge.getOperation().getType());
         dto.setGeneration(bridge.getGeneration());
-        dto.setKafkaConnection(kafkaConnectionDTO);
-        dto.setTlsCertificate(tlsCertificate);
-        dto.setTlsKey(tlsKey);
+        dto.setDnsConfiguration(dnsConfiguration);
+        dto.setKnativeBrokerConfiguration(knativeBrokerConfiguration);
         dto.setTimeoutSeconds(managedBridgeTimeoutSeconds);
         return dto;
     }

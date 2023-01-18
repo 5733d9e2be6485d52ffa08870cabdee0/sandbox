@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.DNSConfigurationDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.KnativeBrokerConfigurationDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.SourceConfigurationDTO;
 import com.redhat.service.smartevents.shard.operator.v2.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
@@ -42,12 +45,11 @@ public class Fixtures {
     public static BridgeDTO createBridge(OperationType operation) {
         return new BridgeDTO(BRIDGE_ID,
                 BRIDGE_NAME,
-                BRIDGE_ENDPOINT,
-                BRIDGE_TLS_CERTIFICATE,
-                BRIDGE_TLS_KEY,
                 CUSTOMER_ID,
                 USER_NAME,
-                KAFKA_CONNECTION_DTO,
+                new DNSConfigurationDTO(BRIDGE_ENDPOINT, BRIDGE_TLS_CERTIFICATE, BRIDGE_TLS_KEY),
+                new KnativeBrokerConfigurationDTO(KAFKA_CONNECTION_DTO),
+                new SourceConfigurationDTO(KAFKA_CONNECTION_DTO),
                 operation,
                 TestSupport.RESOURCE_TIMEOUT);
     }

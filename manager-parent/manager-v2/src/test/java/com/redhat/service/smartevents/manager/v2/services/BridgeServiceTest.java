@@ -255,11 +255,11 @@ public class BridgeServiceTest {
 
         assertThat(bridgeDTO.getId()).hasSizeGreaterThan(0);
         assertThat(bridgeDTO.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
-        assertThat(bridgeDTO.getEndpoint()).isEqualTo(DEFAULT_BRIDGE_ENDPOINT);
+        assertThat(bridgeDTO.getDnsConfiguration().getEndpoint()).isEqualTo(DEFAULT_BRIDGE_ENDPOINT);
         assertThat(bridgeDTO.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
         assertThat(bridgeDTO.getOwner()).isEqualTo(DEFAULT_CUSTOMER_ID);
-        assertThat(bridgeDTO.getTlsCertificate()).isEqualTo(DEFAULT_BRIDGE_TLS_CERTIFICATE);
-        assertThat(bridgeDTO.getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
+        assertThat(bridgeDTO.getDnsConfiguration().getTlsCertificate()).isEqualTo(DEFAULT_BRIDGE_TLS_CERTIFICATE);
+        assertThat(bridgeDTO.getDnsConfiguration().getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
         assertThat(bridgeDTO.getGeneration()).isEqualTo(bridge.getGeneration());
         assertThat(bridgeDTO.getOperationType()).isEqualTo(bridge.getOperation().getType());
         assertThat(bridgeDTO.getTimeoutSeconds()).isEqualTo(managedBridgeTimeoutSeconds);

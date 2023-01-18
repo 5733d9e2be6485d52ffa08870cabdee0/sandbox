@@ -18,6 +18,8 @@ public class ManagedBridgeSpec {
 
     private long generation;
 
+    private SourceConfigurationSpec sourceConfigurationSpec = new SourceConfigurationSpec();
+
     public String getCustomerId() {
         return customerId;
     }
@@ -74,21 +76,28 @@ public class ManagedBridgeSpec {
         this.generation = generation;
     }
 
+    public SourceConfigurationSpec getManagedSourceSpec() {
+        return sourceConfigurationSpec;
+    }
+
+    public void setManagedSourceSpec(SourceConfigurationSpec sourceConfigurationSpec) {
+        this.sourceConfigurationSpec = sourceConfigurationSpec;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
+        if (this == o)
             return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
         ManagedBridgeSpec that = (ManagedBridgeSpec) o;
-        return Objects.equals(id, that.id) && Objects.equals(customerId, that.customerId) && Objects.equals(kNativeBrokerConfiguration, that.kNativeBrokerConfiguration)
-                && Objects.equals(dnsConfiguration, that.dnsConfiguration) && Objects.equals(owner, that.owner) && Objects.equals(generation, that.generation);
+        return generation == that.generation && Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(customerId, that.customerId)
+                && Objects.equals(kNativeBrokerConfiguration, that.kNativeBrokerConfiguration) && Objects.equals(dnsConfiguration, that.dnsConfiguration) && Objects.equals(owner, that.owner)
+                && Objects.equals(sourceConfigurationSpec, that.sourceConfigurationSpec);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, customerId, kNativeBrokerConfiguration, dnsConfiguration, owner, generation);
+        return Objects.hash(id, name, customerId, kNativeBrokerConfiguration, dnsConfiguration, owner, generation, sourceConfigurationSpec);
     }
 }
