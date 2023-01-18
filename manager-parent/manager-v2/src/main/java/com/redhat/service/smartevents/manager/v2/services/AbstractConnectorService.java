@@ -58,7 +58,6 @@ public abstract class AbstractConnectorService<T extends ConnectorResponse> impl
         if (status != ManagedResourceStatusV2.READY && status != ManagedResourceStatusV2.FAILED) {
             throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
         }
-        LOGGER.info("SUCA");
         return getDAO().findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo);
     }
 
