@@ -8,12 +8,13 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProviderImplV2;
+import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProviderV2;
 import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 
@@ -28,6 +29,10 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
 
     @Inject
     NamespaceProvider namespaceProvider;
+
+    @V2
+    @Inject
+    TemplateProviderV2 templateProvider;
 
     @Override
     public void createManagedProcessor(ProcessorDTO processorDTO) {
@@ -67,7 +72,7 @@ public class ManagedProcessorServiceImpl implements ManagedProcessorService {
 
     public CamelIntegration fetchOrCreateCamelIntegration(ManagedProcessor processor) {
         TemplateImportConfig config = TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME);
-        CamelIntegration expected = new TemplateProviderImplV2().loadCamelIntegrationTemplate(processor, config);
+        CamelIntegration expected = templateProvider.loadCamelIntegrationTemplate(processor, config);
 
         String processorName = processor.getMetadata().getName();
         String integrationName = processor.getMetadata().getName();

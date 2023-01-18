@@ -13,14 +13,15 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderV1;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
@@ -82,8 +83,9 @@ public class BridgeExecutorServiceTest {
     @InjectMock
     ManagerClient managerClient;
 
+    @V1
     @InjectMock
-    TemplateProvider templateProvider;
+    TemplateProviderV1 templateProvider;
 
     @InjectMock
     OperatorMetricsService metricsService;

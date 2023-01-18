@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
@@ -20,10 +21,10 @@ import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorTy
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentSpecUtils;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderV1;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.utils.Constants;
 
@@ -55,8 +56,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
+    @V1
     @Inject
-    TemplateProvider templateProvider;
+    TemplateProviderV1 templateProvider;
 
     @Inject
     ObjectMapper objectMapper;

@@ -13,13 +13,12 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcess
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
-import io.fabric8.kubernetes.client.CustomResource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TemplateProviderImplV2Test {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final ManagedProcessor MANAGED_PROCESSOR = ManagedProcessor.fromBuilder()
             .withProcessorName("id")
@@ -27,14 +26,14 @@ public class TemplateProviderImplV2Test {
             .withBridgeId(TestSupport.BRIDGE_ID)
             .withCustomerId(TestSupport.CUSTOMER_ID)
             .withProcessorId("id")
-            .withDefinition(objectMapper.createObjectNode())
+            .withDefinition(OBJECT_MAPPER.createObjectNode())
             .build();
 
     @Test
     public void metadataIsUpdated() {
         TemplateProviderV2 templateProvider = new TemplateProviderImplV2();
         CamelIntegration camelIntegration = templateProvider.loadCamelIntegrationTemplate(MANAGED_PROCESSOR, getConfig());
-        assertOwnerReference(MANAGED_PROCESSOR, camelIntegration.getMetadata());
+        assertOwnerReference(camelIntegration.getMetadata());
         assertThat(camelIntegration.getMetadata().getName()).isEqualTo(MANAGED_PROCESSOR.getMetadata().getName());
         assertThat(camelIntegration.getMetadata().getNamespace()).isEqualTo(MANAGED_PROCESSOR.getMetadata().getNamespace());
     }
@@ -44,27 +43,27 @@ public class TemplateProviderImplV2Test {
         TemplateProviderV2 templateProvider = new TemplateProviderImplV2();
         CamelIntegration camelIntegration = templateProvider.loadCamelIntegrationTemplate(MANAGED_PROCESSOR, getConfig());
 
-        assertOwnerReference(MANAGED_PROCESSOR, camelIntegration.getMetadata());
-        assertLabels(camelIntegration.getMetadata(), MANAGED_PROCESSOR.COMPONENT_NAME);
+        assertOwnerReference(camelIntegration.getMetadata());
+        assertLabels(camelIntegration.getMetadata());
         assertThat(camelIntegration.getMetadata().getName()).isEqualTo("proc-id");
         assertThat(camelIntegration.getMetadata().getNamespace()).isEqualTo("ns");
         assertThat(camelIntegration.getSpec().getFlows()).isEqualTo(new ArrayList<>());
     }
 
-    private void assertLabels(ObjectMeta meta, String component) {
-        assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(component);
+    private void assertLabels(ObjectMeta meta) {
+        assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(ManagedProcessor.COMPONENT_NAME);
         assertThat(meta.getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.V2_OPERATOR_NAME);
         assertThat(meta.getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.V2_OPERATOR_NAME);
     }
 
-    private void assertOwnerReference(CustomResource resource, ObjectMeta meta) {
+    private void assertOwnerReference(ObjectMeta meta) {
         assertThat(meta.getOwnerReferences().size()).isEqualTo(1);
 
         OwnerReference ownerReference = meta.getOwnerReferences().get(0);
-        assertThat(ownerReference.getName()).isEqualTo(resource.getMetadata().getName());
-        assertThat(ownerReference.getApiVersion()).isEqualTo(resource.getApiVersion());
-        assertThat(ownerReference.getKind()).isEqualTo(resource.getKind());
-        assertThat(ownerReference.getUid()).isEqualTo(resource.getMetadata().getUid());
+        assertThat(ownerReference.getName()).isEqualTo(MANAGED_PROCESSOR.getMetadata().getName());
+        assertThat(ownerReference.getApiVersion()).isEqualTo(MANAGED_PROCESSOR.getApiVersion());
+        assertThat(ownerReference.getKind()).isEqualTo(MANAGED_PROCESSOR.getKind());
+        assertThat(ownerReference.getUid()).isEqualTo(MANAGED_PROCESSOR.getMetadata().getUid());
     }
 
     private TemplateImportConfig getConfig() {

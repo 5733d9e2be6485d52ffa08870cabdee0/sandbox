@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.v2.providers;
 
+import javax.enterprise.context.ApplicationScoped;
+
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProviderImpl;
 import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
@@ -7,8 +10,8 @@ import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegrati
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.CustomResource;
 
-// Avoid using quarkus as it gets too complicated and this needs refactoring
-// See https://issues.redhat.com/browse/MGDOBR-1294
+@V2
+@ApplicationScoped
 public class TemplateProviderImplV2 extends TemplateProviderImpl implements TemplateProviderV2 {
 
     private static final String TEMPLATES_DIR = "/templates";
