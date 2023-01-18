@@ -5,7 +5,6 @@ import java.util.Set;
 
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_AUTHORISATION_POLICY_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_CONFIG_MAP_READY_NAME;
@@ -19,7 +18,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditio
  * This status MUST implement the status best practices as defined by the
  * <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties">Kubernetes API Conventions</a>
  */
-public class ManagedBridgeStatus extends CustomResourceStatus {
+public class ManagedBridgeStatus extends BaseResourceStatus {
 
     private static Set<Condition> getCreationConditions() {
         Set<Condition> conditions = new HashSet<>();
