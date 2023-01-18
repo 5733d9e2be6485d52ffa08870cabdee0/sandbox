@@ -30,6 +30,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
@@ -94,7 +95,10 @@ public class SinkConnectorsAPI {
     @GET
     @Path("{bridgeId}/sinks")
     public Response getSinkConnectors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {
-        return Response.status(500, "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        return Response.ok(PagedListResponse.fill(sinkConnectorService.getConnectors(bridgeId, customerId, queryInfo),
+                new SinkConnectorListResponse(),
+                sinkConnectorService::toResponse)).build();
     }
 
     @APIResponses(value = {

@@ -19,6 +19,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.FilterDefs;
+import org.hibernate.annotations.Filters;
+import org.hibernate.annotations.ParamDef;
+
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDefinition;
 
@@ -27,6 +33,8 @@ import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDe
                 query = "from Connector_V2 conn left join fetch conn.conditions where conn.id=:id and conn.type=:type"),
         @NamedQuery(name = "CONNECTOR_V2.findByBridgeIdAndName",
                 query = "from Connector_V2 conn where conn.name=:name and conn.bridge.id=:bridgeId and conn.type=:type"),
+        @NamedQuery(name = "CONNECTOR_V2.findByBridgeIdAndCustomerId",
+                query = "select distinct (conn) from Connector_V2 conn left join fetch conn.bridge left join fetch conn.conditions where conn.bridge.id=:bridgeId and conn.bridge.customerId=:customerId order by conn.submittedAt desc"),
         @NamedQuery(name = "CONNECTOR_V2.findByIdsWithBridgeAndConditions",
                 query = "select distinct (conn) from Connector_V2 conn left join fetch conn.bridge left join fetch conn.conditions where conn.id in (:ids)"),
         @NamedQuery(name = "CONNECTOR_V2.countByBridgeIdAndCustomerId",
@@ -49,6 +57,12 @@ import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDe
                         "(cp.incomplete_count = 0 or cp.incomplete_count is null) and " +
                         "b.shard_id = :shardId and " +
                         "conn.type = :type")
+})
+@FilterDefs({
+        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") })
+})
+@Filters({
+        @Filter(name = "byName", condition = "name like :name")
 })
 @Entity(name = "Connector_V2")
 @Table(name = "CONNECTOR_V2", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "bridge_id", "type" }) })

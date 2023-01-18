@@ -158,9 +158,34 @@ public class TestUtils {
                 .put(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors");
     }
 
-    public static Response listConnectors(ConnectorType type) {
+    public static Response listConnectors(String bridgeId, ConnectorType type) {
+        return listConnectors(bridgeId, type, 0, 100);
+    }
+
+    public static Response listConnectors(String bridgeId, ConnectorType type, int page, int size) {
         return jsonRequest()
-                .get(V2APIConstants.V2_USER_API_BASE_PATH + getConnectorPathByType(type));
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(type) + "?size=" + size + "&page=" + page);
+    }
+
+    public static Response listConnectorsFilterByName(String bridgeId, String name, ConnectorType type) {
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(type) + "?name=" + name);
+    }
+
+    public static Response listConnectorsFilterByStatus(String bridgeId, ConnectorType type, ManagedResourceStatusV2... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(type) + "?" + queryString);
+    }
+
+    public static Response listConnectorsFilterByStatusWithAnyValue(String bridgeId, ConnectorType type, String... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(type) + "?" + queryString);
+    }
+
+    public static Response listConnectorsFilterByNameAndStatus(String bridgeId, String name, ConnectorType type, ManagedResourceStatusV2... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest()
+                .get(V2APIConstants.V2_USER_API_BASE_PATH + bridgeId + "/" + getConnectorPathByType(type) + "/?name=" + name + "&" + queryString);
     }
 
     public static Response addConnectorToBridge(String bridgeId, ConnectorRequest connectorRequest, ConnectorType connectorType) {

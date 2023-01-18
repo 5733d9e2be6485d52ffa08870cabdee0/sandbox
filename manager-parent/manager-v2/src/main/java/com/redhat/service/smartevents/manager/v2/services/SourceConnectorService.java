@@ -15,7 +15,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
-import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SourceConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.SourceConnectorDAO;
@@ -23,7 +22,7 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 
 @ApplicationScoped
-public class SourceConnectorService extends AbstractConnectorService {
+public class SourceConnectorService extends AbstractConnectorService<SourceConnectorResponse> {
 
     @Inject
     SourceConnectorDAO sourceConnectorDAO;
@@ -55,7 +54,7 @@ public class SourceConnectorService extends AbstractConnectorService {
     }
 
     @Override
-    protected ConnectorResponse generateSpecificResponse(Connector connector) {
+    protected SourceConnectorResponse generateSpecificResponse(Connector connector) {
         SourceConnectorResponse sourceConnectorResponse = new SourceConnectorResponse();
         sourceConnectorResponse.setHref(getHref(connector));
         return sourceConnectorResponse;

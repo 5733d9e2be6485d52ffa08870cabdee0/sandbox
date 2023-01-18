@@ -1,12 +1,19 @@
 package com.redhat.service.smartevents.manager.v2.services;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.AlreadyExistingItemException;
@@ -15,12 +22,15 @@ import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.I
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
@@ -33,6 +43,12 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CO
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgeDeletingConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgeDeprovisionConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgePreparingConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgeProvisionConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -85,6 +101,7 @@ public abstract class AbstractConnectorServiceTest {
 
         ConnectorRequest request = new ConnectorRequest();
         request.setName(DEFAULT_CONNECTOR_NAME);
+
         assertThatExceptionOfType(AlreadyExistingItemException.class)
                 .isThrownBy(() -> getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), bridge.getOrganisationId(), request));
     }
@@ -144,6 +161,73 @@ public abstract class AbstractConnectorServiceTest {
         assertThat(connector.getOperation().getRequestedAt()).isNotNull();
         assertThat(connector.getOperation().getCompletedAt()).isNull();
         assertThat(StatusUtilities.getManagedResourceStatus(connector)).isEqualTo(ManagedResourceStatusV2.ACCEPTED);
+    }
+
+    @Test
+    void testGetConnectors() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        // Store 3 connectors
+        ConnectorRequest request = new ConnectorRequest();
+        request.setName(DEFAULT_CONNECTOR_NAME + "1");
+        request.setConnectorTypeId(DEFAULT_CONNECTOR_TYPE_ID);
+        request.setConnector(JsonNodeFactory.instance.objectNode());
+        getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), bridge.getOrganisationId(), request);
+
+        request.setName(DEFAULT_CONNECTOR_NAME + "2");
+        getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), bridge.getOrganisationId(), request);
+
+        request.setName(DEFAULT_CONNECTOR_NAME + "3");
+        getConnectorService().createConnector(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), bridge.getOrganisationId(), request);
+
+        ListResult<Connector> results = getConnectorService().getConnectors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, new QueryResourceInfo(0, 100));
+        assertThat(results).isNotNull();
+        assertThat(results.getPage()).isZero();
+        assertThat(results.getSize()).isEqualTo(3L);
+        assertThat(results.getTotal()).isEqualTo(3L);
+        assertThat(results.getItems().get(0).getName()).isEqualTo(DEFAULT_CONNECTOR_NAME + "3");
+        assertThat(results.getItems().get(1).getName()).isEqualTo(DEFAULT_CONNECTOR_NAME + "2");
+        assertThat(results.getItems().get(2).getName()).isEqualTo(DEFAULT_CONNECTOR_NAME + "1");
+    }
+
+    @Test
+    void testGetConnectorsWhenNoConnectorsOnBridge() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        ListResult<Processor> results = getConnectorService().getConnectors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, new QueryResourceInfo(0, 100));
+        assertThat(results).isNotNull();
+        assertThat(results.getPage()).isZero();
+        assertThat(results.getSize()).isZero();
+        assertThat(results.getTotal()).isZero();
+    }
+
+    @Test
+    void testGetConnectorsWhenBridgeDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> getConnectorService().getConnectors("UNEXISTING BRIDGE", DEFAULT_CUSTOMER_ID, new QueryResourceInfo(0, 100)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("getConnectorsWhenBridgeHasConditions")
+    void testGetConnectorsWhenBridgeHasConditions(List<Condition> conditions) {
+        Bridge bridge = createBridge();
+        bridge.setConditions(conditions);
+        bridgeDAO.persist(bridge);
+
+        assertThatExceptionOfType(BridgeLifecycleException.class)
+                .isThrownBy(() -> getConnectorService().getConnectors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, new QueryResourceInfo(0, 100)));
+    }
+
+    private static Stream<Arguments> getConnectorsWhenBridgeHasConditions() {
+        Object[][] arguments = {
+                { createBridgePreparingConditions() },
+                { createBridgeProvisionConditions() },
+                { createBridgeDeprovisionConditions() },
+                { createBridgeDeletingConditions() }
+        };
+        return Stream.of(arguments).map(Arguments::of);
     }
 
     @Test

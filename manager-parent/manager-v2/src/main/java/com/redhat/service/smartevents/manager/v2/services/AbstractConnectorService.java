@@ -11,11 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDefinition;
+import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
@@ -23,12 +27,13 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
+import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getModifiedAt;
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getStatusMessage;
 
-public abstract class AbstractConnectorService implements ConnectorService {
+public abstract class AbstractConnectorService<T extends ConnectorResponse> implements ConnectorService<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractConnectorService.class);
 
@@ -43,7 +48,19 @@ public abstract class AbstractConnectorService implements ConnectorService {
 
     protected abstract List<Condition> createAcceptedConditions();
 
-    protected abstract ConnectorResponse generateSpecificResponse(Connector connector);
+    protected abstract T generateSpecificResponse(Connector connector);
+
+    @Override
+    @Transactional
+    public ListResult<Connector> getConnectors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
+        Bridge bridge = bridgeService.getBridge(bridgeId, customerId);
+        ManagedResourceStatusV2 status = StatusUtilities.getManagedResourceStatus(bridge);
+        if (status != ManagedResourceStatusV2.READY && status != ManagedResourceStatusV2.FAILED) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
+        }
+        LOGGER.info("SUCA");
+        return getDAO().findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo);
+    }
 
     @Override
     @Transactional
@@ -106,8 +123,8 @@ public abstract class AbstractConnectorService implements ConnectorService {
     }
 
     @Override
-    public ConnectorResponse toResponse(Connector connector) {
-        ConnectorResponse connectorResponse = generateSpecificResponse(connector);
+    public T toResponse(Connector connector) {
+        T connectorResponse = generateSpecificResponse(connector);
 
         connectorResponse.setId(connector.getId());
         connectorResponse.setName(connector.getName());

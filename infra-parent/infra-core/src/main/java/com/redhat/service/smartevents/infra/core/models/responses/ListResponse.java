@@ -14,7 +14,7 @@ import com.redhat.service.smartevents.infra.core.models.ListResult;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class ListResponse<T> {
 
-    public static <T, V> ListResponse<V> fill(ListResult<T> source, ListResponse<V> target, Function<T, V> converter) {
+    public static <S, V> ListResponse<V> fill(ListResult<S> source, ListResponse<V> target, Function<S, ? extends V> converter) {
         target.setItems(source.getItems().stream().map(converter).collect(Collectors.toList()));
         return target;
     }
