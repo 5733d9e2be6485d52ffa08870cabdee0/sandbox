@@ -330,6 +330,13 @@ public class Fixtures {
         return conditions;
     }
 
+    public static List<Condition> createConnectorFailedConditions() {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.FAILED, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        return conditions;
+    }
+
     public static List<Condition> createFailedConditions() {
         List<Condition> conditions = new ArrayList<>();
         Condition failedCondition = createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.FAILED, ComponentType.MANAGER);

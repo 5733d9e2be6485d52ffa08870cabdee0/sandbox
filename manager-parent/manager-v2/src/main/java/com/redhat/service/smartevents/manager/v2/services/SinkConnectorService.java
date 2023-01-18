@@ -9,11 +9,14 @@ import java.util.Objects;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.SinkConnectorDTO;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConnectorDAO;
@@ -25,6 +28,9 @@ import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 public class SinkConnectorService extends AbstractConnectorService<SinkConnectorResponse> {
 
     private static final String URI_DSL_PREFIX = "knative:endpoint/ob-";
+
+    @ConfigProperty(name = "event-bridge.sink-connectors.deployment.timeout-seconds")
+    int sinkConnectorTimeoutSeconds;
 
     @Inject
     SinkConnectorDAO sinkConnectorDAO;
@@ -62,6 +68,28 @@ public class SinkConnectorService extends AbstractConnectorService<SinkConnector
         sinkConnectorResponse.setUriDsl(buildUriDsl(connector.getId()));
         sinkConnectorResponse.setHref(getHref(connector));
         return sinkConnectorResponse;
+    }
+
+    // For Source Connectors we don't have to deploy resources on the data plane, this is why findByShardIdToDeployOrDelete and toDTO are not at the interface level.
+    public List<Connector> findByShardIdToDeployOrDelete(String shardId) {
+        return sinkConnectorDAO.findByShardIdToDeployOrDelete(shardId);
+    }
+
+    public SinkConnectorDTO toDTO(Connector connector) {
+        SinkConnectorDTO dto = new SinkConnectorDTO();
+        dto.setId(connector.getId());
+        dto.setName(connector.getName());
+        dto.setBridgeId(connector.getBridge().getId());
+        dto.setCustomerId(connector.getBridge().getCustomerId());
+        dto.setOwner(connector.getOwner());
+        dto.setOperationType(connector.getOperation().getType());
+        dto.setGeneration(connector.getGeneration());
+        dto.setTimeoutSeconds(sinkConnectorTimeoutSeconds);
+
+        // TODO: set kafka connection https://issues.redhat.com/browse/MGDOBR-1411
+        // dto.setKafkaConnection(..);
+
+        return dto;
     }
 
     private String getHref(Connector connector) {

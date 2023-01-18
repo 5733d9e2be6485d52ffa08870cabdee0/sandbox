@@ -14,6 +14,8 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
@@ -23,15 +25,20 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.SinkConnectorDTO;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ConnectorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
+import com.redhat.service.smartevents.manager.v2.api.user.models.responses.SinkConnectorResponse;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
+import com.redhat.service.smartevents.manager.v2.persistence.dao.SinkConnectorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
@@ -56,6 +63,8 @@ import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResource
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CLOUD_PROVIDER;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_TYPE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_NAME;
@@ -80,6 +89,9 @@ public class ShardAPITest {
 
     @Inject
     ProcessorDAO processorDAO;
+
+    @Inject
+    SinkConnectorDAO sinkConnectorDAO;
 
     @InjectMock
     JsonWebToken jwt;
@@ -169,6 +181,44 @@ public class ShardAPITest {
         assertThat(processor.getGeneration()).isEqualTo(0);
     }
 
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void getSinkConnectors() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
+
+        //Emulate the Shard having deployed the Bridge
+        mockBridgeCreation(bridgeResponse.getId());
+
+        //Create two Sink Connectors for the Bridge
+        ConnectorRequest request = new ConnectorRequest(DEFAULT_CONNECTOR_NAME + "-1");
+        request.setConnectorTypeId(DEFAULT_CONNECTOR_TYPE_ID + "1");
+        request.setConnector(JsonNodeFactory.instance.objectNode());
+        SinkConnectorResponse sinkConnectorResponse = TestUtils.addConnectorToBridge(bridgeResponse.getId(), request, ConnectorType.SINK).as(SinkConnectorResponse.class);
+
+        request.setName(DEFAULT_CONNECTOR_TYPE_ID + "2");
+        TestUtils.addConnectorToBridge(bridgeResponse.getId(), request, ConnectorType.SINK).as(SinkConnectorResponse.class);
+
+        //Emulate the Connector1 dependencies being completed in the Manager and hence becoming visible to the Shard
+        mockSinkConnectorControlPlaneActivitiesComplete(sinkConnectorResponse.getId());
+
+        final List<SinkConnectorDTO> sinkConnectors = new ArrayList<>();
+        await().atMost(5, SECONDS)
+                .untilAsserted(() -> {
+                    sinkConnectors.clear();
+                    sinkConnectors.addAll(TestUtils.getSinkConnectorsToDeployOrDelete().as(new TypeRef<List<SinkConnectorDTO>>() {
+                    }));
+                    assertThat(sinkConnectors.size()).isEqualTo(1);
+                });
+
+        SinkConnectorDTO sinkConnector = sinkConnectors.get(0);
+        assertThat(sinkConnector.getName()).isEqualTo(sinkConnectorResponse.getName());
+        assertThat(sinkConnector.getBridgeId()).isEqualTo(bridgeResponse.getId());
+        assertThat(sinkConnector.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(sinkConnector.getOwner()).isEqualTo(DEFAULT_USER_NAME);
+        assertThat(sinkConnector.getOperationType()).isEqualTo(OperationType.CREATE);
+        assertThat(sinkConnector.getGeneration()).isEqualTo(0);
+    }
+
     @Transactional
     protected void mockBridgeControlPlaneActivitiesComplete(String bridgeId) {
         Bridge bridge = bridgeDAO.findByIdWithConditions(bridgeId);
@@ -198,6 +248,18 @@ public class ShardAPITest {
         Processor processor = processorDAO.findByIdWithConditions(processorId);
         processor.getConditions().stream().filter(c -> c.getComponent() == ComponentType.MANAGER).forEach(c -> c.setStatus(TRUE));
         processor.setGeneration(generation);
+    }
+
+    @Transactional
+    protected void mockSinkConnectorControlPlaneActivitiesComplete(String sinkConnectorId) {
+        mockSinkConnectorControlPlaneActivitiesComplete(sinkConnectorId, 0);
+    }
+
+    @Transactional
+    protected void mockSinkConnectorControlPlaneActivitiesComplete(String sinkConnectorId, long generation) {
+        Connector connector = sinkConnectorDAO.findByIdWithConditions(sinkConnectorId);
+        connector.getConditions().stream().filter(c -> c.getComponent() == ComponentType.MANAGER).forEach(c -> c.setStatus(TRUE));
+        connector.setGeneration(generation);
     }
 
     @Test
@@ -541,5 +603,7 @@ public class ShardAPITest {
         TestUtils.updateBridgesStatus(new ArrayList<>()).then().statusCode(403);
         TestUtils.getProcessorsToDeployOrDelete().then().statusCode(403);
         TestUtils.updateProcessorsStatus(new ArrayList<>()).then().statusCode(403);
+        TestUtils.getSinkConnectorsToDeployOrDelete().then().statusCode(403);
+        TestUtils.updateSinkConnectorsStatus(new ArrayList<>()).then().statusCode(403);
     }
 }
