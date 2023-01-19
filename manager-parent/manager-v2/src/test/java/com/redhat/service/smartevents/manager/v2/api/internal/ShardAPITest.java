@@ -59,6 +59,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus
 import static com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus.UNKNOWN;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_CONFIG_MAP_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PREPARING;
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PROVISIONING;
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
@@ -270,14 +271,14 @@ public class ShardAPITest {
         //Emulate the Shard having deployed the Bridge
         mockBridgeControlPlaneActivitiesComplete(bridgeResponse.getId());
 
-        awaitForBridgeToBe(PROVISIONING, bridgeResponse.getId());
+        awaitForBridgeToBe(PREPARING, bridgeResponse.getId());
 
         // Update Status to reflect that the Bridge is being created by the Shard
         TestUtils.updateBridgeStatus(makeResourceStatusDTO(bridgeResponse.getId(),
                 List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
                         makeConditionDTO(DP_CONFIG_MAP_READY_NAME, UNKNOWN))));
 
-        // Check the new status remains PROVISIONING
+        // Check the new status is PROVISIONING
         awaitForBridgeToBe(PROVISIONING, bridgeResponse.getId());
 
         // Update Status to reflect that the Bridge is READY
@@ -309,7 +310,7 @@ public class ShardAPITest {
         mockBridgeControlPlaneActivitiesComplete(bridgeResponse1.getId());
         mockBridgeControlPlaneActivitiesComplete(bridgeResponse2.getId());
 
-        awaitForBridgeToBe(PROVISIONING, bridgeResponse1.getId(), bridgeResponse2.getId());
+        awaitForBridgeToBe(PREPARING, bridgeResponse1.getId(), bridgeResponse2.getId());
 
         // Update Status to reflect that the Bridge is READY
         TestUtils.updateBridgesStatus(List.of(
@@ -334,7 +335,7 @@ public class ShardAPITest {
         mockBridgeControlPlaneActivitiesComplete(bridgeResponse1.getId());
         mockBridgeControlPlaneActivitiesComplete(bridgeResponse2.getId());
 
-        awaitForBridgeToBe(PROVISIONING, bridgeResponse1.getId(), bridgeResponse2.getId());
+        awaitForBridgeToBe(PREPARING, bridgeResponse1.getId(), bridgeResponse2.getId());
 
         // Update Status to reflect that the Bridge is READY
         TestUtils.updateBridgesStatus(List.of(
@@ -345,8 +346,8 @@ public class ShardAPITest {
                         List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
                                 makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE)))));
 
-        // The Bridge1 update had an unknown BridgeId so will fail; leaving the resource in PROVISIONING
-        awaitForBridgeToBe(PROVISIONING, bridgeResponse1.getId());
+        // The Bridge1 update had an unknown BridgeId so will fail; leaving the resource in PREPARING
+        awaitForBridgeToBe(PREPARING, bridgeResponse1.getId());
         // The Bridge2 update should have succeeded moving the resource to READY
         awaitForBridgeToBe(READY, bridgeResponse2.getId());
     }
@@ -359,17 +360,15 @@ public class ShardAPITest {
         //Emulate the Bridge dependencies being completed in the Manager and hence becoming visible to the Shard
         mockBridgeControlPlaneActivitiesComplete(bridgeResponse.getId(), 1);
 
-        awaitForBridgeToBe(PROVISIONING, bridgeResponse.getId());
-
-        awaitForBridgeToBe(PROVISIONING, bridgeResponse.getId());
+        awaitForBridgeToBe(PREPARING, bridgeResponse.getId());
 
         // Update Status to reflect FAILURE within the Shard however the update is on a stale generation
         TestUtils.updateBridgeStatus(makeResourceStatusDTO(bridgeResponse.getId(),
                 List.of(makeConditionDTO(DP_SECRET_READY_NAME, FAILED),
                         makeConditionDTO(DP_CONFIG_MAP_READY_NAME, FAILED))));
 
-        // Check the new status remains PROVISIONING
-        awaitForBridgeToBe(PROVISIONING, bridgeResponse.getId());
+        // Check the new status remains PREPARING
+        awaitForBridgeToBe(PREPARING, bridgeResponse.getId());
     }
 
     @Test
@@ -386,14 +385,14 @@ public class ShardAPITest {
         mockProcessorControlPlaneActivitiesComplete(processorResponse.getId());
         String processorId = processorResponse.getId();
 
-        awaitForProcessorToBe(PROVISIONING, processorId);
+        awaitForProcessorToBe(PREPARING, processorId);
 
         // Update Status to reflect that the Processor is being created by the Shard
         TestUtils.updateProcessorStatus(makeResourceStatusDTO(processorId,
                 List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
                         makeConditionDTO(DP_CONFIG_MAP_READY_NAME, UNKNOWN))));
 
-        // Check the new status remains PROVISIONING
+        // Check the new status is PROVISIONING
         awaitForProcessorToBe(PROVISIONING, processorId);
 
         // Update Status to reflect that the Processor is READY
@@ -445,7 +444,7 @@ public class ShardAPITest {
         String processor1Id = processorResponse1.getId();
         String processor2Id = processorResponse2.getId();
 
-        awaitForProcessorToBe(PROVISIONING, processor1Id, processor2Id);
+        awaitForProcessorToBe(PREPARING, processor1Id, processor2Id);
 
         // Update Status to reflect that the Processor is READY
         TestUtils.updateProcessorsStatus(List.of(
@@ -477,7 +476,7 @@ public class ShardAPITest {
         String processor1Id = processorResponse1.getId();
         String processor2Id = processorResponse2.getId();
 
-        awaitForProcessorToBe(PROVISIONING, processor1Id, processor2Id);
+        awaitForProcessorToBe(PREPARING, processor1Id, processor2Id);
 
         // Update Status to reflect that the Processor is READY
         TestUtils.updateProcessorsStatus(List.of(
@@ -488,8 +487,8 @@ public class ShardAPITest {
                         List.of(makeConditionDTO(DP_SECRET_READY_NAME, TRUE),
                                 makeConditionDTO(DP_CONFIG_MAP_READY_NAME, TRUE)))));
 
-        // The Processor1 update had an unknown ProcessorId so will fail; leaving the resource in PROVISIONING
-        awaitForProcessorToBe(PROVISIONING, processor1Id);
+        // The Processor1 update had an unknown ProcessorId so will fail; leaving the resource in PREPARING
+        awaitForProcessorToBe(PREPARING, processor1Id);
         // The Processor2 update should have succeeded moving the resource to READY
         awaitForProcessorToBe(READY, processor2Id);
     }
@@ -508,15 +507,15 @@ public class ShardAPITest {
         mockProcessorControlPlaneActivitiesComplete(processorResponse.getId(), 1);
         String processorId = processorResponse.getId();
 
-        awaitForProcessorToBe(PROVISIONING, processorId);
+        awaitForProcessorToBe(PREPARING, processorId);
 
         // Update Status to reflect FAILURE within the Shard however the update is on a stale generation
         TestUtils.updateProcessorStatus(makeResourceStatusDTO(processorId,
                 List.of(makeConditionDTO(DP_SECRET_READY_NAME, FAILED),
                         makeConditionDTO(DP_CONFIG_MAP_READY_NAME, FAILED))));
 
-        // Check the new status remains PROVISIONING
-        awaitForProcessorToBe(PROVISIONING, processorId);
+        // Check the new status remains PREPARING
+        awaitForProcessorToBe(PREPARING, processorId);
     }
 
     @Test
@@ -533,7 +532,7 @@ public class ShardAPITest {
         mockProcessorControlPlaneActivitiesComplete(processorResponse.getId());
         String processorId = processorResponse.getId();
 
-        awaitForProcessorToBe(PROVISIONING, processorId);
+        awaitForProcessorToBe(PREPARING, processorId);
 
         // Update Status to reflect that the Processor has been created by the Shard
         TestUtils.updateProcessorStatus(makeResourceStatusDTO(processorId,
@@ -570,7 +569,7 @@ public class ShardAPITest {
         mockProcessorControlPlaneActivitiesComplete(processorResponse.getId());
         String processorId = processorResponse.getId();
 
-        awaitForProcessorToBe(PROVISIONING, processorId);
+        awaitForProcessorToBe(PREPARING, processorId);
 
         // Update Status to reflect that the Processor failed to be created by the Shard
         TestUtils.updateProcessorStatus(makeResourceStatusDTO(processorId,
