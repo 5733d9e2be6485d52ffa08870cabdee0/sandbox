@@ -7,7 +7,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.DNSConfigurationDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.KnativeBrokerConfigurationDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.v2.api.models.dto.SourceConfigurationDTO;
 import com.redhat.service.smartevents.shard.operator.v2.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
@@ -49,7 +48,7 @@ public class Fixtures {
                 USER_NAME,
                 new DNSConfigurationDTO(BRIDGE_ENDPOINT, BRIDGE_TLS_CERTIFICATE, BRIDGE_TLS_KEY),
                 new KnativeBrokerConfigurationDTO(KAFKA_CONNECTION_DTO),
-                new SourceConfigurationDTO(KAFKA_CONNECTION_DTO),
+                null,
                 operation,
                 TestSupport.RESOURCE_TIMEOUT);
     }
