@@ -228,7 +228,7 @@ public class BridgeServiceImpl implements BridgeService {
 
     @Override
     @Transactional
-    public Bridge updateBridgeStatus(ResourceStatusDTO statusDTO) {
+    public Bridge updateStatus(ResourceStatusDTO statusDTO) {
         Bridge bridge = bridgeDAO.findByIdWithConditions(statusDTO.getId());
         if (Objects.isNull(bridge)) {
             throw new ItemNotFoundException(String.format("Bridge with id '%s' does not exist.", statusDTO.getId()));

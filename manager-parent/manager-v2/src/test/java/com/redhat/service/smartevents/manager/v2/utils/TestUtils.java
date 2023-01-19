@@ -158,6 +158,17 @@ public class TestUtils {
                 .put(V2APIConstants.V2_SHARD_API_BASE_PATH + "processors");
     }
 
+    public static Response getSinkConnectorsToDeployOrDelete() {
+        return jsonRequest()
+                .get(V2APIConstants.V2_SHARD_API_BASE_PATH + "sinks");
+    }
+
+    public static Response updateSinkConnectorsStatus(List<ResourceStatusDTO> statusDTOs) {
+        return jsonRequest()
+                .body(statusDTOs)
+                .put(V2APIConstants.V2_SHARD_API_BASE_PATH + "sinks");
+    }
+
     public static Response listConnectors(String bridgeId, ConnectorType type) {
         return listConnectors(bridgeId, type, 0, 100);
     }
