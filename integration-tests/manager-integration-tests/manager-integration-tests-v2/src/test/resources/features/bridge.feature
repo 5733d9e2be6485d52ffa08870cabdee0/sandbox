@@ -4,7 +4,7 @@ Feature: Bridge tests
     Given authenticate against Manager
     When create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
     Then the list of Bridge instances is containing the Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "provisioning" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 5 minutes
 
 #  Scenario: Delete a Bridge
 #    Given authenticate against Manager
