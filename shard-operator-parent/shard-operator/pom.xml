@@ -23,10 +23,10 @@
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator-v1</artifactId>
     </dependency>
-    <dependency>
+<!--     <dependency> remove v2!
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator-v2</artifactId>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
