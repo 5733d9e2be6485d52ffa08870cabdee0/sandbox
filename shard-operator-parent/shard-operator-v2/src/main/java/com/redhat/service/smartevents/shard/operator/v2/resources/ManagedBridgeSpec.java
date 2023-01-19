@@ -76,11 +76,11 @@ public class ManagedBridgeSpec {
         this.generation = generation;
     }
 
-    public SourceConfigurationSpec getManagedSourceSpec() {
+    public SourceConfigurationSpec getSourceConfigurationSpec() {
         return sourceConfigurationSpec;
     }
 
-    public void setManagedSourceSpec(SourceConfigurationSpec sourceConfigurationSpec) {
+    public void setSourceConfigurationSpec(SourceConfigurationSpec sourceConfigurationSpec) {
         this.sourceConfigurationSpec = sourceConfigurationSpec;
     }
 

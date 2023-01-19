@@ -35,7 +35,7 @@ public class ManagedBridgeConverter {
                 .withDnsConfigurationSpec(dns)
                 .withKnativeBrokerConfigurationSpec(kNativeBrokerConfigurationSpec)
                 .withGeneration(bridgeDTO.getGeneration())
-                .withManagedSource(sourceConfigurationSpec)
+                .withSourceConfiguration(sourceConfigurationSpec)
                 .build();
     }
 
