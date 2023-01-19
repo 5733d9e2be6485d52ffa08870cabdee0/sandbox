@@ -23,7 +23,7 @@
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator-v1</artifactId>
     </dependency>
-    <dependency> remove v2!
+    <dependency> 
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator-v2</artifactId>
     </dependency> 
