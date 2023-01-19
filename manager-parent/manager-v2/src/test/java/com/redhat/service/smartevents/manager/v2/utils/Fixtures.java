@@ -254,7 +254,7 @@ public class Fixtures {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ComponentType.SHARD));
         return conditions;
     }
 
@@ -298,7 +298,7 @@ public class Fixtures {
     public static List<Condition> createProcessorProvisioningConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
-        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
+        conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ComponentType.SHARD));
         return conditions;
     }
 
