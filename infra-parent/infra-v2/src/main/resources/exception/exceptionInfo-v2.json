@@ -106,11 +106,5 @@
     "id": 18,
     "reason": "An error with AMS occurred.",
     "type": "PLATFORM"
-  },
-  {
-    "exception": "com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.platform.UnclassifiedConstraintViolationException",
-    "id": 19,
-    "reason": "A ConstraintViolation has not been mapped to an ExternalUserException. The raw violation is shown.",
-    "type": "PLATFORM"
   }
 ]
