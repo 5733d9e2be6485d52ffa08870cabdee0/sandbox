@@ -231,6 +231,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
          * In addition to that, we can not set the owner references as it is not in the same namespace of the bridgeIngress.
          */
         expected.getMetadata().setNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+        ensureManagedBridgeLabels(managedBridge, expected);
 
         expected.getSpec().setAction("ALLOW");
         expected.getSpec().getRules().forEach(x -> x.getTo().get(0).getOperation().getPaths().set(0, path));
@@ -244,8 +245,6 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
         expected.getSpec().getRules().get(1).setWhen(Collections.singletonList(serviceAccountsAuthPolicy));
         expected.getSpec().getSelector().setMatchLabels(Collections.singletonMap(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL,
                 istioGatewayProvider.getIstioGatewayService().getMetadata().getLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL)));
-
-        ensureManagedBridgeLabels(managedBridge, expected);
 
         AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
                 .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
