@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
@@ -17,12 +18,12 @@ import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfig
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderV1;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.utils.Constants;
 
@@ -42,8 +43,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
+    @V1
     @Inject
-    TemplateProvider templateProvider;
+    TemplateProviderV1 templateProvider;
 
     @Inject
     GlobalConfigurationsProvider globalConfigurationsProvider;

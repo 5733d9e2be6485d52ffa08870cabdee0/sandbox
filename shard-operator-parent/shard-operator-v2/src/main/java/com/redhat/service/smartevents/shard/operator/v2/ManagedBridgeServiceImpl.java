@@ -14,13 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.DNSConfigurationDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
@@ -28,6 +28,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.knative.Knat
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProviderV2;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Constants;
 
@@ -46,8 +47,9 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     @Inject
     KubernetesClient kubernetesClient;
 
+    @V2
     @Inject
-    TemplateProvider templateProvider;
+    TemplateProviderV2 templateProvider;
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;

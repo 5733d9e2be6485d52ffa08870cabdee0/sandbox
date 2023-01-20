@@ -8,10 +8,11 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.shard.operator.core.monitoring.ServiceMonitorClient;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderV1;
 
 import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.Service;
@@ -27,8 +28,9 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
     @Inject
     KubernetesClient kubernetesClient;
 
+    @V1
     @Inject
-    TemplateProvider templateProvider;
+    TemplateProviderV1 templateProvider;
 
     @Override
     public Optional<ServiceMonitor> fetchOrCreateServiceMonitor(final CustomResource resource, final Service service, final String componentName) {
