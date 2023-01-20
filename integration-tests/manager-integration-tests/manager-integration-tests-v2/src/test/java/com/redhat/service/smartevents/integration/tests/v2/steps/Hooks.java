@@ -78,11 +78,6 @@ public class Hooks {
         } else if (disabledFailedCleanup && scenarioFailed) {
             context.getScenario().log("Failed scenario cleanup disabled and the scenario failed, all resources stays in the cluster");
         } else {
-            // Delete AWS SQS queues
-            //cleanAwsSQSQueues();
-
-            // Delete Kafka topics and related ACLs
-            //cleanKafkaTopics();
 
             String token = BridgeUtils.retrieveBridgeToken();
             // Remove all bridges/processors created
