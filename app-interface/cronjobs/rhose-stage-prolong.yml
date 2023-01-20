@@ -4,7 +4,7 @@ kind: CronJob
 metadata:
   name: rhose-prolong-stage
 spec:
-  schedule: "0 7 * * *"
+  schedule: "0 * * * *"
   concurrencyPolicy: Forbid
   suspend: false
   jobTemplate:
