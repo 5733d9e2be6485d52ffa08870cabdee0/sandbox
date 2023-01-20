@@ -43,7 +43,6 @@ import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CO
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_TYPE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
-import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgeDeletingConditions;
@@ -195,7 +194,7 @@ public abstract class AbstractConnectorServiceTest {
     @Test
     void testGetConnectorWhenCustomerDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> getConnectorService().getConnector(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, "does not exist"));
+                .isThrownBy(() -> getConnectorService().getConnector(DEFAULT_BRIDGE_ID, DEFAULT_CONNECTOR_ID, "does not exist"));
     }
 
     @Test

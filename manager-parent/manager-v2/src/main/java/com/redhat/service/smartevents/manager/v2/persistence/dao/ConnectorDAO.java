@@ -16,7 +16,6 @@ import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
-import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -46,7 +45,7 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
     }
 
     public Connector findByIdBridgeIdAndCustomerId(String bridgeId, String connectorId, String customerId) {
-        Parameters params = Parameters.with(Processor.ID_PARAM, connectorId)
+        Parameters params = Parameters.with(Connector.ID_PARAM, connectorId)
                 .and(Connector.BRIDGE_ID_PARAM, bridgeId)
                 .and(Bridge.CUSTOMER_ID_PARAM, customerId)
                 .and(Connector.TYPE_PARAM, type);
