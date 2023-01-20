@@ -79,7 +79,9 @@ public class SinkConnectorsAPI {
     @GET
     @Path("{bridgeId}/sinks/{sinkId}")
     public Response getSinkConnector(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("sinkId") String sinkId) {
-        return Response.status(500, "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        Connector connector = sinkConnectorService.getConnector(bridgeId, sinkId, customerId);
+        return Response.ok(sinkConnectorService.toResponse(connector)).build();
     }
 
     @APIResponses(value = {
