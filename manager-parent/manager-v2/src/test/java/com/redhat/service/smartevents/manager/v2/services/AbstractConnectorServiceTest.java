@@ -38,10 +38,12 @@ import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.ACCEPTED;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_NAME;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_TYPE_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_ORGANISATION_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridgeDeletingConditions;
@@ -161,6 +163,39 @@ public abstract class AbstractConnectorServiceTest {
         assertThat(connector.getOperation().getRequestedAt()).isNotNull();
         assertThat(connector.getOperation().getCompletedAt()).isNull();
         assertThat(StatusUtilities.getManagedResourceStatus(connector)).isEqualTo(ManagedResourceStatusV2.ACCEPTED);
+    }
+
+    @Test
+    void testGetConnector() {
+        Bridge bridge = Fixtures.createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        Connector connector = Fixtures.createReadyConnector(bridge, getConnectorType());
+        getConnectorDAO().persist(connector);
+
+        Connector found = getConnectorService().getConnector(DEFAULT_BRIDGE_ID, DEFAULT_CONNECTOR_ID, DEFAULT_CUSTOMER_ID);
+        assertThat(found).isNotNull();
+        assertThat(found.getId()).isEqualTo(DEFAULT_CONNECTOR_ID);
+        assertThat(found.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
+        assertThat(found.getBridge().getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
+    }
+
+    @Test
+    void testGetConnectorWhenBridgeDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> getConnectorService().getConnector("does not exist", DEFAULT_CONNECTOR_ID, DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    void testGetConnectorWhenDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> getConnectorService().getConnector(DEFAULT_BRIDGE_ID, "does not exist", DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    void testGetConnectorWhenCustomerDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> getConnectorService().getConnector(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, "does not exist"));
     }
 
     @Test

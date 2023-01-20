@@ -154,6 +154,67 @@ public abstract class AbstractConnectorsAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void getConnector() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ObjectNode connectorPayload = new ObjectNode(JsonNodeFactory.instance);
+        connectorPayload.set("endpoint", JsonNodeFactory.instance.textNode("http://localhost:8080"));
+
+        ConnectorRequest connectorRequest = new ConnectorRequest("myConnector");
+        connectorRequest.setConnectorTypeId(DEFAULT_CONNECTOR_TYPE_ID);
+        connectorRequest.setConnector(connectorPayload);
+
+        Response response = TestUtils.addConnectorToBridge(bridgeResponse.getId(), connectorRequest, getConnectorType());
+        assertThat(response.getStatusCode()).isEqualTo(202);
+
+        ConnectorResponse cr = response.as(getResponseClass());
+
+        ConnectorResponse found = TestUtils.getConnector(bridgeResponse.getId(), cr.getId(), getConnectorType()).as(getResponseClass());
+
+        assertThat(found.getId()).isEqualTo(cr.getId());
+        assertThat(found.getConnectorTypeId()).isEqualTo(connectorRequest.getConnectorTypeId());
+        assertThat(found.getConnector().asText()).isEqualTo(connectorPayload.asText());
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void getConnectorWhenDoesNotExist() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ObjectNode connectorPayload = new ObjectNode(JsonNodeFactory.instance);
+        connectorPayload.set("endpoint", JsonNodeFactory.instance.textNode("http://localhost:8080"));
+
+        ConnectorRequest connectorRequest = new ConnectorRequest("myConnector");
+        connectorRequest.setConnectorTypeId(DEFAULT_CONNECTOR_TYPE_ID);
+        connectorRequest.setConnector(connectorPayload);
+
+        Response response = TestUtils.addConnectorToBridge(bridgeResponse.getId(), connectorRequest, getConnectorType());
+        assertThat(response.getStatusCode()).isEqualTo(202);
+
+        Response found = TestUtils.getConnector(bridgeResponse.getId(), "doesNotExist", getConnectorType());
+        assertThat(found.getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void getConnectorWhenBridgeDoesNotExist() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ObjectNode connectorPayload = new ObjectNode(JsonNodeFactory.instance);
+        connectorPayload.set("endpoint", JsonNodeFactory.instance.textNode("http://localhost:8080"));
+
+        ConnectorRequest connectorRequest = new ConnectorRequest("myConnector");
+        connectorRequest.setConnectorTypeId(DEFAULT_CONNECTOR_TYPE_ID);
+        connectorRequest.setConnector(connectorPayload);
+
+        ConnectorResponse response = TestUtils.addConnectorToBridge(bridgeResponse.getId(), connectorRequest, getConnectorType()).as(getResponseClass());
+
+        Response found = TestUtils.getConnector("doesNotExist", response.getId(), getConnectorType());
+        assertThat(found.getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listConnectors() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 

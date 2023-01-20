@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.manager.v2.services;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -15,6 +16,7 @@ import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.core.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable;
 import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
@@ -59,6 +61,18 @@ public abstract class AbstractConnectorService<T extends ConnectorResponse> impl
             throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
         }
         return getDAO().findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo);
+    }
+
+    @Override
+    @Transactional
+    public Connector getConnector(String bridgeId, String connectorId, String customerId) {
+        Bridge bridge = bridgeService.getBridge(bridgeId, customerId);
+        Connector connector = getDAO().findByIdBridgeIdAndCustomerId(bridge.getId(), connectorId, bridge.getCustomerId());
+        if (Objects.isNull(connector)) {
+            throw new ItemNotFoundException(String.format("Connector with id '%s' does not exist on Bridge '%s' for customer '%s'", connectorId, bridgeId, customerId));
+        }
+
+        return connector;
     }
 
     @Override

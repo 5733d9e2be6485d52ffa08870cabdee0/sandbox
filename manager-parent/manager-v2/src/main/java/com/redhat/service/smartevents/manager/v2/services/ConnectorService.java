@@ -10,6 +10,8 @@ public interface ConnectorService<T extends ConnectorResponse> {
 
     ListResult<Connector> getConnectors(String bridgeId, String customerId, QueryResourceInfo queryInfo);
 
+    Connector getConnector(String bridgeId, String connectorId, String customerId);
+
     Connector createConnector(String bridgeId, String customerId, String owner, String organisationId, ConnectorRequest connectorRequest);
 
     T toResponse(Connector connector);
