@@ -44,6 +44,14 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
         return find("#CONNECTOR_V2.findByBridgeIdAndName", params).firstResult();
     }
 
+    public Connector findByIdBridgeIdAndCustomerId(String bridgeId, String connectorId, String customerId) {
+        Parameters params = Parameters.with(Connector.ID_PARAM, connectorId)
+                .and(Connector.BRIDGE_ID_PARAM, bridgeId)
+                .and(Bridge.CUSTOMER_ID_PARAM, customerId)
+                .and(Connector.TYPE_PARAM, type);
+        return find("#CONNECTOR_V2.findByIdBridgeIdAndCustomerId", params).firstResult();
+    }
+
     public ListResult<Connector> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
         Parameters parameters = Parameters.with(Connector.BRIDGE_ID_PARAM, bridgeId).and(Bridge.CUSTOMER_ID_PARAM, customerId);
         PanacheQuery<Connector> query = find("#CONNECTOR_V2.findByBridgeIdAndCustomerId", parameters);

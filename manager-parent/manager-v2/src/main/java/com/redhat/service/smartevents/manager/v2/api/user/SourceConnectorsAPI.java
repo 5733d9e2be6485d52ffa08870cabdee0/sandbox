@@ -79,7 +79,9 @@ public class SourceConnectorsAPI {
     @GET
     @Path("{bridgeId}/sources/{sourceId}")
     public Response getSourceConnector(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("sourceId") String sourceId) {
-        return Response.status(500, "Not implemented yet.").build();
+        String customerId = identityResolver.resolve(jwt);
+        Connector connector = sourceConnectorService.getConnector(bridgeId, sourceId, customerId);
+        return Response.ok(sourceConnectorService.toResponse(connector)).build();
     }
 
     @APIResponses(value = {

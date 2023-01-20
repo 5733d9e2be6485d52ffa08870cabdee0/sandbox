@@ -30,6 +30,7 @@ import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createCon
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createConnector;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createConnectorAcceptedConditions;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createConnectorReadyConditions;
+import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createReadyConnector;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractConnectorDAOTest {
@@ -153,6 +154,7 @@ public abstract class AbstractConnectorDAOTest {
         // Check that no connectors are found, i.e. all the queries filter by type (the discriminator).
         assertThat(getConnectorDAO().findByShardIdToDeployOrDelete(b.getShardId())).hasSize(0);
         assertThat(getConnectorDAO().findByIdWithConditions(connector.getId())).isNull();
+        assertThat(getConnectorDAO().findByIdBridgeIdAndCustomerId(b.getId(), connector.getId(), b.getCustomerId())).isNull();
     }
 
     @Test
@@ -252,6 +254,32 @@ public abstract class AbstractConnectorDAOTest {
 
         long total = getConnectorDAO().countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(total).isEqualTo(2L);
+    }
+
+    @Test
+    @Transactional
+    public void findByIdBridgeIdAndCustomerId() {
+        Bridge b = createBridge();
+        Connector c = createReadyConnector(b, getConnectorType());
+        bridgeDAO.persist(b);
+        getConnectorDAO().persist(c);
+
+        Connector found = getConnectorDAO().findByIdBridgeIdAndCustomerId(b.getId(), c.getId(), b.getCustomerId());
+        assertThat(found).isNotNull();
+        assertThat(found.getId()).isEqualTo(found.getId());
+        assertThat(found.getConditions()).isNotNull();
+    }
+
+    @Test
+    @Transactional
+    public void findByIdBridgeIdAndCustomerId_doesNotExist() {
+        Bridge b = createBridge();
+        Connector c = createConnector(b, getConnectorType());
+        bridgeDAO.persist(b);
+        getConnectorDAO().persist(c);
+
+        Connector found = getConnectorDAO().findByIdBridgeIdAndCustomerId(b.getId(), "doesntExist", b.getCustomerId());
+        assertThat(found).isNull();
     }
 
     @Test
