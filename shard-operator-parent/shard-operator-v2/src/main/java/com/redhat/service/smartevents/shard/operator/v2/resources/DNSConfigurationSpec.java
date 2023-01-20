@@ -4,15 +4,12 @@ public class DNSConfigurationSpec {
 
     String host;
 
-    TLSSpec tls = new TLSSpec();
-
     public DNSConfigurationSpec() {
 
     }
 
     private DNSConfigurationSpec(Builder builder) {
         setHost(builder.host);
-        setTls(builder.tls);
     }
 
     public String getHost() {
@@ -23,18 +20,9 @@ public class DNSConfigurationSpec {
         this.host = host;
     }
 
-    public TLSSpec getTls() {
-        return tls;
-    }
-
-    public void setTls(TLSSpec tls) {
-        this.tls = tls;
-    }
-
     public static final class Builder {
 
         private String host;
-        private TLSSpec tls;
 
         private Builder() {
         }
@@ -45,11 +33,6 @@ public class DNSConfigurationSpec {
 
         public Builder host(String val) {
             host = val;
-            return this;
-        }
-
-        public Builder tls(TLSSpec val) {
-            tls = val;
             return this;
         }
 

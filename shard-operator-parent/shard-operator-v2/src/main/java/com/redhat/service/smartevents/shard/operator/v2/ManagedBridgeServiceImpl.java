@@ -13,7 +13,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.DNSConfigurationDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
@@ -26,9 +28,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.knative.Knat
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
-import com.redhat.service.smartevents.shard.operator.v2.resources.TLSSpec;
 import com.redhat.service.smartevents.shard.operator.v2.utils.Constants;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -76,27 +76,25 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                     .withName(expected.getMetadata().getName())
                     .createOrReplace(expected);
 
-            createOrUpdateBridgeSecret(expected);
+            createOrUpdateBridgeSecret(expected, bridgeDTO);
         }
     }
 
-    private void createOrUpdateBridgeSecret(ManagedBridge managedBridge) {
+    private void createOrUpdateBridgeSecret(ManagedBridge managedBridge, BridgeDTO bridgeDTO) {
         Secret expected = templateProvider.loadBridgeIngressSecretTemplate(managedBridge, TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME));
 
-        KafkaConfigurationSpec kafkaConfiguration = managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration();
-
+        KafkaConnectionDTO kafkaConnection = bridgeDTO.getKnativeBrokerConfiguration().getKafkaConnection();
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET,
-                Base64.getEncoder().encodeToString(managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration().getBootstrapServers().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getUser().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getPassword().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getSecurityProtocol().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getTopic().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString(kafkaConfiguration.getSaslMechanism().getBytes()));
+                Base64.getEncoder().encodeToString(kafkaConnection.getBootstrapServers().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientId().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientSecret().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getSecurityProtocol().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getTopic().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getSaslMechanism().getBytes()));
 
-        TLSSpec tlsSpec = managedBridge.getSpec().getDnsConfiguration().getTls();
-
-        expected.getData().put(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, Base64.getEncoder().encodeToString(tlsSpec.getCertificate().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.TLS_KEY_SECRET, Base64.getEncoder().encodeToString(tlsSpec.getKey().getBytes()));
+        DNSConfigurationDTO dnsConfiguration = bridgeDTO.getDnsConfiguration();
+        expected.getData().put(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, Base64.getEncoder().encodeToString(dnsConfiguration.getTlsCertificate().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.TLS_KEY_SECRET, Base64.getEncoder().encodeToString(dnsConfiguration.getTlsKey().getBytes()));
 
         Secret existing = kubernetesClient
                 .secrets()
