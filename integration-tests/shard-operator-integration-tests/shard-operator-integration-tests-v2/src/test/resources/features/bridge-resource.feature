@@ -29,16 +29,9 @@ Feature: BridgeResource tests
       owner: user
       dnsConfiguration:
         host: my-bridge
-        tls:
-          key: test
-          certificate: test
-      kNativeBrokerConfiguration:
+      knativeBrokerConfiguration:
         kafkaConfiguration:
           bootstrapServers: ${env.kafka.bootstrap.servers}
-          user: ${env.kafka.ops.client.id}
-          password: ${env.kafka.ops.client.secret}
-          saslMechanism: SASL_SSL
           topic: "${topic.topic1}"
-          securityProtocol: PLAINTEXT
     """
     And the Ingress "test-bridge" is available within 1 minute
