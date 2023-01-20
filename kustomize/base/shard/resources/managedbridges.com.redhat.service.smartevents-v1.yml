@@ -28,28 +28,30 @@ spec:
                 type: object
               owner:
                 type: string
-              knativeBrokerConfiguration:
-                properties:
-                  kafkaConfiguration:
-                    properties:
-                      saslMechanism:
-                        type: string
-                      numberOfPartitions:
-                        type: integer
-                      bootstrapServers:
-                        type: string
-                      topic:
-                        type: string
-                      numberOfReplicas:
-                        type: integer
-                      securityProtocol:
-                        type: string
-                    type: object
-                type: object
               customerId:
                 type: string
               name:
                 type: string
+              knativeBrokerConfiguration:
+                properties:
+                  kafkaConfiguration:
+                    properties:
+                      bootstrapServers:
+                        type: string
+                      topic:
+                        type: string
+                    type: object
+                type: object
+              sourceConfigurationSpec:
+                properties:
+                  kafkaConfiguration:
+                    properties:
+                      bootstrapServers:
+                        type: string
+                      topic:
+                        type: string
+                    type: object
+                type: object
               generation:
                 type: integer
             type: object
@@ -71,6 +73,7 @@ spec:
                       - "False"
                       - "True"
                       - Unknown
+                      - Failed
                       type: string
                     message:
                       type: string

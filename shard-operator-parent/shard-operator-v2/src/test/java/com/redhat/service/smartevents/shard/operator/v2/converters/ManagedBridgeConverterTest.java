@@ -30,7 +30,7 @@ public class ManagedBridgeConverterTest {
         assertThat(managedBridge.getSpec().getOwner()).isEqualTo(bridgeDTO.getOwner());
         assertThat(managedBridge.getSpec().getDnsConfiguration().getHost()).isEqualTo(Fixtures.BRIDGE_HOST);
 
-        KafkaConfigurationSpec kafkaConfiguration = managedBridge.getSpec().getkNativeBrokerConfiguration().getKafkaConfiguration();
+        KafkaConfigurationSpec kafkaConfiguration = managedBridge.getSpec().getKnativeBrokerConfiguration().getKafkaConfiguration();
         assertThat(kafkaConfiguration.getBootstrapServers()).isEqualTo(bridgeDTO.getKnativeBrokerConfiguration().getKafkaConnection().getBootstrapServers());
         assertThat(kafkaConfiguration.getTopic()).isEqualTo(bridgeDTO.getKnativeBrokerConfiguration().getKafkaConnection().getTopic());
     }
