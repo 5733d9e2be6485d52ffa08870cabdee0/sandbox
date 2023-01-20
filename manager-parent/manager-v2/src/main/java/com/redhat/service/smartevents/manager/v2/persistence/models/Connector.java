@@ -34,9 +34,9 @@ import com.redhat.service.smartevents.infra.v2.api.models.connectors.ConnectorDe
         @NamedQuery(name = "CONNECTOR_V2.findByBridgeIdAndName",
                 query = "from Connector_V2 conn where conn.name=:name and conn.bridge.id=:bridgeId and conn.type=:type"),
         @NamedQuery(name = "CONNECTOR_V2.findByBridgeIdAndCustomerId",
-                query = "select distinct (conn) from Connector_V2 conn left join fetch conn.bridge left join fetch conn.conditions where conn.bridge.id=:bridgeId and conn.bridge.customerId=:customerId order by conn.submittedAt desc"),
+                query = "select distinct (conn) from Connector_V2 conn left join fetch conn.bridge left join fetch conn.conditions where conn.bridge.id=:bridgeId and conn.bridge.customerId=:customerId and conn.type=:type order by conn.submittedAt desc"),
         @NamedQuery(name = "CONNECTOR_V2.findByIdsWithBridgeAndConditions",
-                query = "select distinct (conn) from Connector_V2 conn left join fetch conn.bridge left join fetch conn.conditions where conn.id in (:ids)"),
+                query = "select distinct (conn) from Connector_V2 conn left join fetch conn.bridge left join fetch conn.conditions where conn.id in (:ids) and conn.type=:type"),
         @NamedQuery(name = "CONNECTOR_V2.countByBridgeIdAndCustomerId",
                 query = "select count(conn.id) from Connector_V2 conn where conn.bridge.id=:bridgeId and conn.bridge.customerId=:customerId and conn.type=:type")
 })

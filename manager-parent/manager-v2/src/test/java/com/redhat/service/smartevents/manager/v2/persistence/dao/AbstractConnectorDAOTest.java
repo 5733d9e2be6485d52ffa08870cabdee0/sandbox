@@ -25,6 +25,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResource
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.READY;
 import static com.redhat.service.smartevents.infra.v2.api.models.queries.QueryFilterInfo.QueryFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_ID;
+import static com.redhat.service.smartevents.manager.v2.TestConstants.DEFAULT_CONNECTOR_NAME;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createBridge;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createCondition;
 import static com.redhat.service.smartevents.manager.v2.utils.Fixtures.createConnector;
@@ -153,6 +154,8 @@ public abstract class AbstractConnectorDAOTest {
         // Check that no connectors are found, i.e. all the queries filter by type (the discriminator).
         assertThat(getConnectorDAO().findByShardIdToDeployOrDelete(b.getShardId())).hasSize(0);
         assertThat(getConnectorDAO().findByIdWithConditions(connector.getId())).isNull();
+        assertThat(getConnectorDAO().findByBridgeIdAndName(b.getId(), DEFAULT_CONNECTOR_NAME)).isNull();
+        assertThat(getConnectorDAO().findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(), new QueryResourceInfo(0, 100)).getTotal()).isEqualTo(0);
     }
 
     @Test

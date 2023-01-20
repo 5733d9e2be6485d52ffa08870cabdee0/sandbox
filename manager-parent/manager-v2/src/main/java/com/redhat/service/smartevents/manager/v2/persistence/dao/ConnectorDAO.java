@@ -45,7 +45,10 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
     }
 
     public ListResult<Connector> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
-        Parameters parameters = Parameters.with(Connector.BRIDGE_ID_PARAM, bridgeId).and(Bridge.CUSTOMER_ID_PARAM, customerId);
+        Parameters parameters = Parameters
+                .with(Connector.BRIDGE_ID_PARAM, bridgeId)
+                .and(Bridge.CUSTOMER_ID_PARAM, customerId)
+                .and(Connector.TYPE_PARAM, type);
         PanacheQuery<Connector> query = find("#CONNECTOR_V2.findByBridgeIdAndCustomerId", parameters);
 
         String filterName = queryInfo.getFilterInfo().getFilterName();
@@ -91,6 +94,7 @@ public abstract class ConnectorDAO implements ManagedResourceV2DAO<Connector> {
         List<String> connectorIds = (List<String>) q.getResultList();
         Query getConnectors = em.createNamedQuery("CONNECTOR_V2.findByIdsWithBridgeAndConditions");
         getConnectors.setParameter("ids", connectorIds);
+        getConnectors.setParameter(Connector.TYPE_PARAM, type);
         return (List<Connector>) getConnectors.getResultList();
     }
 }
