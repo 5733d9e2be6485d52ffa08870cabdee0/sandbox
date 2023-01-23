@@ -18,7 +18,7 @@ import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.services.RhoasServiceImpl;
 import com.redhat.service.smartevents.manager.v1.TestConstants;
@@ -30,6 +30,7 @@ import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v1.providers.ResourceNamesProviderV1;
 import com.redhat.service.smartevents.manager.v1.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v1.utils.Fixtures;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
@@ -72,7 +73,10 @@ class ProcessorServiceConnectorTest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
+
+    @Inject
+    ResourceNamesProviderV1 resourceNamesProviderV1;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -123,7 +127,7 @@ class ProcessorServiceConnectorTest {
         //There will be 2 re-tries at 5s each. Add 5s to be certain everything completes.
         await().atMost(15, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
-                    resourceNamesProvider.getProcessorConnectorName(processor.getId()));
+                    resourceNamesProviderV1.getProcessorConnectorName(processor.getId()));
 
             assertThat(connector).isNotNull();
             assertThat(connector.getError()).isNullOrEmpty();

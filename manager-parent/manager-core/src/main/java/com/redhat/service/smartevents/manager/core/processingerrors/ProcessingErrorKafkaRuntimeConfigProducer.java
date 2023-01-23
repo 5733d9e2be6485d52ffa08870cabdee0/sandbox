@@ -9,7 +9,7 @@ import javax.ws.rs.Produces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
@@ -21,7 +21,7 @@ public class ProcessingErrorKafkaRuntimeConfigProducer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingErrorKafkaRuntimeConfigProducer.class);
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
 
     @Inject
     RhoasService rhoasService;
@@ -31,7 +31,7 @@ public class ProcessingErrorKafkaRuntimeConfigProducer {
     @UnlessBuildProfile("test")
     @Identifier("processing-errors")
     public Map<String, Object> createKafkaRuntimeConfig() {
-        String topic = resourceNamesProvider.getGlobalErrorTopicName();
+        String topic = globalResourceNamesProvider.getGlobalErrorTopicName();
         rhoasService.createTopicAndGrantAccessFor(topic, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         LOGGER.info("Global error handler topic is \"{}\"", topic);
         return Map.of("topic", topic);

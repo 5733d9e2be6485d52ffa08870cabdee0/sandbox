@@ -4,7 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.v1.providers.ResourceNamesProviderV1;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 
 @ApplicationScoped
@@ -14,7 +14,7 @@ public class GatewayConfiguratorServiceImpl implements GatewayConfiguratorServic
     BridgesService bridgesService;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    ResourceNamesProviderV1 resourceNamesProviderV1;
 
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
@@ -26,7 +26,7 @@ public class GatewayConfiguratorServiceImpl implements GatewayConfiguratorServic
 
     @Override
     public String getConnectorTopicName(String processorId) {
-        return resourceNamesProvider.getProcessorTopicName(processorId);
+        return resourceNamesProviderV1.getProcessorTopicName(processorId);
     }
 
     @Override

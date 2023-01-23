@@ -18,8 +18,8 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.responses.ProcessingErrorResponse;
 import com.redhat.service.smartevents.manager.core.persistence.dao.ProcessingErrorDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.ProcessingError;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 
 import static com.redhat.service.smartevents.infra.core.api.APIConstants.RHOSE_BRIDGE_ID_HEADER;
@@ -54,7 +54,7 @@ class ProcessingErrorServiceImplTest {
     ProcessingErrorServiceImpl processingErrorService;
 
     InternalKafkaConfigurationProvider internalKafkaConfigurationProviderMock;
-    ResourceNamesProvider resourceNamesProviderMock;
+    GlobalResourceNamesProvider globalResourceNamesProviderMock;
     ProcessingErrorDAO processingErrorDAOMock;
     BridgesService bridgesServiceMock;
 
@@ -65,8 +65,8 @@ class ProcessingErrorServiceImplTest {
         when(internalKafkaConfigurationProviderMock.getClientId()).thenReturn(TEST_CLIENT_ID);
         when(internalKafkaConfigurationProviderMock.getClientSecret()).thenReturn(TEST_CLIENT_SECRET);
 
-        resourceNamesProviderMock = mock(ResourceNamesProvider.class);
-        when(resourceNamesProviderMock.getGlobalErrorTopicName()).thenReturn(TEST_GLOBAL_ERROR_TOPIC_NAME);
+        globalResourceNamesProviderMock = mock(GlobalResourceNamesProvider.class);
+        when(globalResourceNamesProviderMock.getGlobalErrorTopicName()).thenReturn(TEST_GLOBAL_ERROR_TOPIC_NAME);
 
         processingErrorDAOMock = mock(ProcessingErrorDAO.class);
         bridgesServiceMock = mock(BridgesService.class);
@@ -74,7 +74,7 @@ class ProcessingErrorServiceImplTest {
         processingErrorService = new ProcessingErrorServiceImpl();
         processingErrorService.eventBridgeManagerUrl = TEST_MANAGER_URL;
         processingErrorService.internalKafkaConfigurationProvider = internalKafkaConfigurationProviderMock;
-        processingErrorService.resourceNamesProvider = resourceNamesProviderMock;
+        processingErrorService.resourceNamesProvider = globalResourceNamesProviderMock;
         processingErrorService.processingErrorDAO = processingErrorDAOMock;
         processingErrorService.bridgesService = bridgesServiceMock;
     }

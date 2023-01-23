@@ -40,8 +40,8 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.KnativeBrokerConfi
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.BridgeRequest;
@@ -103,7 +103,7 @@ public class BridgeServiceImpl implements BridgeService {
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
 
     @V2
     @Inject
@@ -305,8 +305,8 @@ public class BridgeServiceImpl implements BridgeService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 internalKafkaConfigurationProvider.getSaslMechanism(),
-                resourceNamesProvider.getBridgeTopicName(bridge.getId()),
-                resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
+                globalResourceNamesProvider.getBridgeTopicName(bridge.getId()),
+                globalResourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
         KnativeBrokerConfigurationDTO knativeBrokerConfiguration = new KnativeBrokerConfigurationDTO(kafkaConnectionDTO);
 
         DNSConfigurationDTO dnsConfiguration = new DNSConfigurationDTO(
@@ -387,6 +387,8 @@ public class BridgeServiceImpl implements BridgeService {
     private List<Condition> createDeletedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions.add(
+                new Condition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;
@@ -395,6 +397,8 @@ public class BridgeServiceImpl implements BridgeService {
     private List<Condition> createAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(new Condition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
+        conditions
+                .add(new Condition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.MANAGER, ZonedDateTime.now(ZoneOffset.UTC)));
         conditions.add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN, null, null, null, ComponentType.SHARD, ZonedDateTime.now(ZoneOffset.UTC)));
         return conditions;
