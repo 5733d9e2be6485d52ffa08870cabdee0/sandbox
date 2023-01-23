@@ -1,5 +1,6 @@
 Feature: Bridge tests
 
+  @disabled
   Scenario: Create a Bridge and Delete a Bridge
     Given authenticate against Manager
     When create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"

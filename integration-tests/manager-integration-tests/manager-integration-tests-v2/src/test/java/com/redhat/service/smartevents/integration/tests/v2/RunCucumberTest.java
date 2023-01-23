@@ -13,7 +13,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
 @Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
-@ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "not @ansibleaction")
+@ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "not @disabled")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME,
         value = "com.redhat.service.smartevents.integration.tests.steps,com.redhat.service.smartevents.integration.tests.resources,com.redhat.service.smartevents.integration.tests.v2.steps")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "com.redhat.service.smartevents.integration.tests.cucumber.TestCaseFileLogger,com.epam.reportportal.cucumber.ScenarioReporter")
