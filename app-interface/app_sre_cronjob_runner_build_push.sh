@@ -2,7 +2,7 @@
 
 IMAGE_NAME="quay.io/app-sre/rhose-cronjob-runner"
 # the RHOSE CronJob Runner is stable, we do not need to push a new image for every commit
-IMAGE_TAG="1.0"
+IMAGE_TAG="1.1"
 
 docker build -f app-interface/cronjobs/Dockerfile.cronjobs -t "${IMAGE_NAME}:${IMAGE_TAG}"  .
 docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:latest"
