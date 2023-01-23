@@ -229,6 +229,7 @@ public class Fixtures {
     public static List<Condition> createBridgeAcceptedConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
@@ -237,6 +238,7 @@ public class Fixtures {
     public static List<Condition> createBridgePreparingConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.FALSE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
@@ -245,6 +247,7 @@ public class Fixtures {
     public static List<Condition> createBridgeReadyConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.DP_SECRET_READY_NAME, ConditionStatus.TRUE, ComponentType.SHARD));
         return conditions;
@@ -253,6 +256,7 @@ public class Fixtures {
     public static List<Condition> createBridgeProvisionConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ComponentType.SHARD));
         return conditions;
@@ -261,6 +265,7 @@ public class Fixtures {
     public static List<Condition> createBridgeDeprovisionConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.UNKNOWN, ComponentType.SHARD));
         return conditions;
@@ -269,6 +274,7 @@ public class Fixtures {
     public static List<Condition> createBridgeDeletingConditions() {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(createCondition(DefaultConditions.CP_DNS_RECORD_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
+        conditions.add(createCondition(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME, ConditionStatus.TRUE, ComponentType.MANAGER));
         conditions.add(createCondition(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ComponentType.SHARD));
         return conditions;

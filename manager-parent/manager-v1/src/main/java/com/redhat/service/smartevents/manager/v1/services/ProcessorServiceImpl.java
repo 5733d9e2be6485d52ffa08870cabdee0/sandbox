@@ -44,8 +44,8 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.ams.QuotaConfigurationProvider;
@@ -57,6 +57,7 @@ import com.redhat.service.smartevents.manager.v1.metrics.ManagerMetricsServiceV1
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v1.providers.ResourceNamesProviderV1;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
 
@@ -75,7 +76,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
+    @Inject
+    ResourceNamesProviderV1 resourceNamesProviderV1;
 
     @Inject
     ProcessorDAO processorDAO;
@@ -489,17 +492,17 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 internalKafkaConfigurationProvider.getSaslMechanism(),
                 getProcessorTopicName(processor),
-                resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
+                globalResourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
     }
 
     private String getProcessorTopicName(Processor processor) {
         switch (processor.getType()) {
             case ERROR_HANDLER:
-                return resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
+                return globalResourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
             case SOURCE:
-                return resourceNamesProvider.getProcessorTopicName(processor.getId());
+                return resourceNamesProviderV1.getProcessorTopicName(processor.getId());
             default:
-                return resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+                return globalResourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
         }
     }
 

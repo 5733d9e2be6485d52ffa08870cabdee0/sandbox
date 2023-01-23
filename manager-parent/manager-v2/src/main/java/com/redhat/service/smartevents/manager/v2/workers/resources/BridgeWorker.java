@@ -11,12 +11,13 @@ import org.slf4j.LoggerFactory;
 import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ManagedResourceV2DAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.providers.ResourceNamesProviderV2;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
 @ApplicationScoped
@@ -33,7 +34,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     RhoasService rhoasService;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
+
+    @Inject
+    ResourceNamesProviderV2 resourceNamesProviderV2;
 
     @Inject
     DnsService dnsService;
@@ -55,11 +59,19 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
                 bridge.getName(),
                 bridge.getId());
 
-        Callable<Topic> createTopicCallable = () -> rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
+        Callable<Topic> createTopicCallable = () -> rhoasService.createTopicAndGrantAccessFor(globalResourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         execute(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME,
                 bridge,
                 createTopicCallable,
+                defaultOnResult(),
+                defaultOnException());
+
+        Callable<Topic> createSourceConnectorTopicCallable = () -> rhoasService.createTopicAndGrantAccessFor(resourceNamesProviderV2.getSourceConnectorTopicName(bridge.getId()),
+                RhoasTopicAccessType.CONSUMER);
+        execute(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME,
+                bridge,
+                createSourceConnectorTopicCallable,
                 defaultOnResult(),
                 defaultOnException());
 
@@ -81,11 +93,19 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
         LOGGER.info("Deleting topics for bridge '{}' [{}]...", bridge.getName(), bridge.getId());
 
-        Callable<Void> deleteTopicCallable = () -> rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
+        Callable<Void> deleteTopicCallable = () -> rhoasService.deleteTopicAndRevokeAccessFor(globalResourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         execute(DefaultConditions.CP_KAFKA_TOPIC_DELETED_NAME,
                 bridge,
                 deleteTopicCallable,
+                defaultOnResult(),
+                defaultOnException());
+
+        Callable<Void> deleteSourceConnectorTopicCallable = () -> rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProviderV2.getSourceConnectorTopicName(bridge.getId()),
+                RhoasTopicAccessType.CONSUMER);
+        execute(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_DELETED_NAME,
+                bridge,
+                deleteSourceConnectorTopicCallable,
                 defaultOnResult(),
                 defaultOnException());
 

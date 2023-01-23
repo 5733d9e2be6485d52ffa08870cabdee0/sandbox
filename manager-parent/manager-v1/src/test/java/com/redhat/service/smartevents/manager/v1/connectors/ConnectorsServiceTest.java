@@ -20,7 +20,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
@@ -61,7 +61,7 @@ class ConnectorsServiceTest {
     GatewayConnector gatewayConnector;
 
     @InjectMock
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
 
     @Test
     @Transactional
@@ -117,7 +117,7 @@ class ConnectorsServiceTest {
         // We need to ensure the Processor looks as though it has been updated
         processor.setGeneration(1);
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(connectorEntity);
-        when(resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId())).thenReturn("TopicNameError");
+        when(globalResourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId())).thenReturn("TopicNameError");
         when(gatewayConnector.connectorPayload(any(), any(), any())).thenReturn(new TextNode("definition-updated"));
 
         connectorsService.updateConnectorEntity(processor);

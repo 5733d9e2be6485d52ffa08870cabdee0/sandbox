@@ -16,8 +16,8 @@ import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.api.models.responses.ProcessingErrorResponse;
 import com.redhat.service.smartevents.manager.core.persistence.dao.ProcessingErrorDAO;
 import com.redhat.service.smartevents.manager.core.persistence.models.ProcessingError;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Bridge;
 
 @ApplicationScoped
@@ -36,7 +36,7 @@ public class ProcessingErrorServiceImpl implements ProcessingErrorService {
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider resourceNamesProvider;
 
     @Inject
     ProcessingErrorDAO processingErrorDAO;

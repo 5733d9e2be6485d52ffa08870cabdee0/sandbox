@@ -14,7 +14,7 @@ import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpda
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.ProcessorRequest;
@@ -41,7 +41,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     RhoasService rhoasService;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
 
     @Inject
     BridgesService bridgesService;
@@ -77,11 +77,11 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         bridge = persist(bridge);
 
         // If this call throws an exception the Bridge's dependencies will be left in PROVISIONING state...
-        rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
+        rhoasService.createTopicAndGrantAccessFor(globalResourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // Create back-channel topic
-        rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()),
+        rhoasService.createTopicAndGrantAccessFor(globalResourceNamesProvider.getBridgeErrorTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // We don't need to wait for the Bridge to be READY to handle the Error Handler.
@@ -163,11 +163,11 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         deleteErrorHandlingProcessor(bridge);
 
         // If this call throws an exception the Bridge's dependencies will be left in DELETING state...
-        rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
+        rhoasService.deleteTopicAndRevokeAccessFor(globalResourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // Delete back-channel topic
-        rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()),
+        rhoasService.deleteTopicAndRevokeAccessFor(globalResourceNamesProvider.getBridgeErrorTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // Delete DNS entry

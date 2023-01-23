@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -24,6 +24,7 @@ import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
+import com.redhat.service.smartevents.manager.v2.providers.ResourceNamesProviderV2;
 import com.redhat.service.smartevents.manager.v2.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.v2.utils.Fixtures;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
@@ -54,6 +55,8 @@ class BridgeWorkerTest {
     private static final String TEST_TOPIC_NAME = "TopicName";
     private static final String TEST_ERROR_HANDLER_TOPIC_NAME = "ErrorHandlerTopicName";
 
+    private static final String TEST_SOURCE_CONNECTOR_TOPIC_NAME = "SourceConnectorTopicName";
+
     @InjectMock
     RhoasService rhoasServiceMock;
 
@@ -61,7 +64,10 @@ class BridgeWorkerTest {
     DnsService dnsServiceMock;
 
     @InjectMock
-    ResourceNamesProvider resourceNamesProviderMock;
+    GlobalResourceNamesProvider globalResourceNamesProviderMock;
+
+    @InjectMock
+    ResourceNamesProviderV2 resourceNamesProviderV2;
 
     @V2
     @InjectMock
@@ -79,8 +85,10 @@ class BridgeWorkerTest {
     @BeforeEach
     public void setup() {
         databaseManagerUtils.cleanUp();
-        when(resourceNamesProviderMock.getBridgeTopicName(any())).thenReturn(TEST_TOPIC_NAME);
-        when(resourceNamesProviderMock.getBridgeErrorTopicName(any())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
+        when(globalResourceNamesProviderMock.getBridgeTopicName(any())).thenReturn(TEST_TOPIC_NAME);
+        when(globalResourceNamesProviderMock.getBridgeErrorTopicName(any())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
+
+        when(resourceNamesProviderV2.getSourceConnectorTopicName(any())).thenReturn(TEST_SOURCE_CONNECTOR_TOPIC_NAME);
     }
 
     @Test
@@ -111,6 +119,7 @@ class BridgeWorkerTest {
 
         assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(PREPARING);
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(rhoasServiceMock, times(throwRhoasError ? 0 : 1)).createTopicAndGrantAccessFor(TEST_SOURCE_CONNECTOR_TOPIC_NAME, RhoasTopicAccessType.CONSUMER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).createDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(any());
     }
@@ -150,6 +159,7 @@ class BridgeWorkerTest {
 
         assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(DEPROVISION);
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(rhoasServiceMock, times(throwRhoasError ? 0 : 1)).deleteTopicAndRevokeAccessFor(TEST_SOURCE_CONNECTOR_TOPIC_NAME, RhoasTopicAccessType.CONSUMER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).deleteDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }

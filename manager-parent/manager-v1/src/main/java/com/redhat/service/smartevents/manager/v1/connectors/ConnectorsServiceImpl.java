@@ -18,10 +18,11 @@ import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.v1.persistence.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.v1.persistence.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.v1.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v1.providers.ResourceNamesProviderV1;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayConnector;
 import com.redhat.service.smartevents.processor.ProcessorCatalogService;
@@ -35,7 +36,10 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     ConnectorsDAO connectorsDAO;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
+
+    @Inject
+    ResourceNamesProviderV1 resourceNamesProviderV1;
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;
@@ -70,7 +74,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             return;
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
+        String errorHandlerTopicName = globalResourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
 
         persistConnectorEntity(processor, topicName, ConnectorType.SINK, action.getType(), gatewayConnector.connectorPayload(action, topicName, errorHandlerTopicName));
     }
@@ -82,12 +86,12 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             return;
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
+        String errorHandlerTopicName = globalResourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
         persistConnectorEntity(processor, topicName, ConnectorType.SOURCE, source.getType(), gatewayConnector.connectorPayload(source, topicName, errorHandlerTopicName));
     }
 
     private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {
-        String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
+        String newConnectorName = resourceNamesProviderV1.getProcessorConnectorName(processor.getId());
 
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
 
@@ -124,7 +128,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             return;
         }
         String topicName = connectorEntity.getTopicName();
-        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
+        String errorHandlerTopicName = globalResourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
         JsonNode updatedConnectionDefinition = null;
 
         if (processor.getType() == ProcessorType.SOURCE) {

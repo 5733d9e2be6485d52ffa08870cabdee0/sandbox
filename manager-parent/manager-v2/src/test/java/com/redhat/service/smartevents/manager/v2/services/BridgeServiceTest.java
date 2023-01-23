@@ -99,10 +99,11 @@ public class BridgeServiceTest {
         assertThat(retrieved.getSubmittedAt()).isEqualTo(createdBridge.getSubmittedAt());
         assertThat(retrieved.getPublishedAt()).isEqualTo(createdBridge.getPublishedAt());
         assertThat(retrieved.getOperation().getRequestedAt()).isEqualTo(createdBridge.getOperation().getRequestedAt());
-        assertThat(retrieved.getConditions()).hasSize(3);
+        assertThat(retrieved.getConditions()).hasSize(4);
         assertThat(retrieved.getConditions().stream().allMatch(x -> x.getStatus().equals(ConditionStatus.UNKNOWN))).isTrue();
         assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME))).isTrue();
         assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_KAFKA_TOPIC_READY_NAME))).isTrue();
+        assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME))).isTrue();
         assertThat(retrieved.getConditions().stream().anyMatch(x -> x.getType().equals(DefaultConditions.CP_DNS_RECORD_READY_NAME))).isTrue();
         assertThat(retrieved.getOwner()).isEqualTo(createdBridge.getOwner());
         assertThat(retrieved.getCloudProvider()).isEqualTo(createdBridge.getCloudProvider());

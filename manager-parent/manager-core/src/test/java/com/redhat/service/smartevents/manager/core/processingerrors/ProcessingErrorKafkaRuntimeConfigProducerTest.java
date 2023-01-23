@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
@@ -19,13 +19,13 @@ class ProcessingErrorKafkaRuntimeConfigProducerTest {
 
     @Test
     void test() {
-        ResourceNamesProvider resourceNamesProviderMock = mock(ResourceNamesProvider.class);
-        when(resourceNamesProviderMock.getGlobalErrorTopicName()).thenReturn(TEST_GLOBAL_ERROR_TOPIC_NAME);
+        GlobalResourceNamesProvider globalResourceNamesProviderMock = mock(GlobalResourceNamesProvider.class);
+        when(globalResourceNamesProviderMock.getGlobalErrorTopicName()).thenReturn(TEST_GLOBAL_ERROR_TOPIC_NAME);
 
         RhoasService rhoasServiceMock = mock(RhoasService.class);
 
         ProcessingErrorKafkaRuntimeConfigProducer producer = new ProcessingErrorKafkaRuntimeConfigProducer();
-        producer.resourceNamesProvider = resourceNamesProviderMock;
+        producer.globalResourceNamesProvider = globalResourceNamesProviderMock;
         producer.rhoasService = rhoasServiceMock;
 
         Map<String, Object> config = producer.createKafkaRuntimeConfig();
@@ -34,7 +34,7 @@ class ProcessingErrorKafkaRuntimeConfigProducerTest {
                 .hasSize(1)
                 .containsEntry("topic", TEST_GLOBAL_ERROR_TOPIC_NAME);
 
-        verify(resourceNamesProviderMock).getGlobalErrorTopicName();
+        verify(globalResourceNamesProviderMock).getGlobalErrorTopicName();
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_GLOBAL_ERROR_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
     }
 }
