@@ -1,9 +1,13 @@
 package com.redhat.service.smartevents.shard.operator.v2.cucumber.steps;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
+import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
@@ -11,10 +15,9 @@ import com.redhat.service.smartevents.integration.tests.context.resolver.Context
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
-import io.fabric8.kubernetes.api.model.NamespaceBuilder;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.SecretBuilder;
+import io.cucumber.java.en.Then;
+import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 
 public class KubernetesSteps {
     private TestContext context;
@@ -47,5 +50,35 @@ public class KubernetesSteps {
                 .withData(secretData)
                 .build();
         context.getClient().secrets().inNamespace(context.getNamespace()).withName(name).createOrReplace(secret);
+    }
+
+    @Then("^the Deployment \"([^\"]*)\" is ready within (\\d+) (?:minute|minutes)$")
+    public void theDeploymentIsInStateWithinMinutes(String name, int timeoutInMinutes) throws TimeoutException {
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(timeoutInMinutes))
+                .pollInterval(Duration.ofSeconds(5))
+                .until(
+                        () -> {
+                            Deployment deployment = context.getClient().apps().deployments().inNamespace(context.getNamespace()).withName(name).get();
+                            if (deployment == null) {
+                                return false;
+                            }
+                            //I am not sure if this code is valid for v2: deployment.getStatus().getConditions().stream().anyMatch(d -> d.getType().equals("Available") && d.getStatus().equals("True"))
+                            //Th PR of MGDOBR-1248 contains this implementation of the `isReadyV2` function in CustomResourceStatus: conditions.stream().allMatch(c -> ConditionStatus.True.equals(c.getStatus()))
+                            //return deployment.getStatus().getConditions().stream().allMatch(d -> d.getStatus().equals("True"));
+                            return deployment.getStatus().getConditions().stream().anyMatch(d -> d.getType().equals("Available") && d.getStatus().equals("True"));
+                        });
+    }
+
+    @Then("^the Service \"([^\"]*)\" exists within (\\d+) (?:minute|minutes)$")
+    public void theServiceExistsWithinMinutes(String name, int timeoutInMinutes) throws TimeoutException {
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(timeoutInMinutes))
+                .pollInterval(Duration.ofSeconds(5))
+                .until(
+                        () -> {
+                            Service service = context.getClient().services().inNamespace(context.getNamespace()).withName(name).get();
+                            return service != null;
+                        });
     }
 }

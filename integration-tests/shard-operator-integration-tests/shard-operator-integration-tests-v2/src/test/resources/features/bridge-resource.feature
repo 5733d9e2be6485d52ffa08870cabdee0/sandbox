@@ -3,6 +3,7 @@ Feature: BridgeResource tests
   Background:
     Given create Namespace
 
+  @ManagedBridge
   Scenario: Create bridge resource
     And create a new Kafka topic "topic1"
     And create secret "test-bridge" with data:
@@ -42,3 +43,4 @@ Feature: BridgeResource tests
           securityProtocol: PLAINTEXT
     """
     And the Ingress "test-bridge" is available within 1 minute
+    #and Broker
