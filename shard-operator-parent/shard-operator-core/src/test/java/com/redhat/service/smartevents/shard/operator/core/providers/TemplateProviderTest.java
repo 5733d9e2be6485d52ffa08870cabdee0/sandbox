@@ -17,8 +17,6 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.openshift.api.model.Route;
 
@@ -37,8 +35,6 @@ public class TemplateProviderTest {
     private static final String NAMESPACE = "my-bridge-namespace";
 
     private static final String BRIDGE_COMPONENT_NAME = "ingress";
-
-    private static final String EXECUTOR_COMPONENT_NAME = "executor";
 
     @Mock
     private HasMetadata hasMetadata;
@@ -63,70 +59,13 @@ public class TemplateProviderTest {
     }
 
     @Test
-    public void metadataIsUpdated() {
-
-        mockResourceForOwnerReference();
-
-        TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
-        assertOwnerReference(hasMetadata, deployment.getMetadata());
-        assertThat(deployment.getMetadata().getName()).isEqualTo(hasMetadata.getMetadata().getName());
-        assertThat(deployment.getMetadata().getNamespace()).isEqualTo(hasMetadata.getMetadata().getNamespace());
-
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withNameFromParent());
-        assertThat(deployment.getMetadata().getOwnerReferences()).isNull();
-        assertThat(deployment.getMetadata().getName()).isEqualTo(hasMetadata.getMetadata().getName());
-        assertThat(deployment.getMetadata().getNamespace()).isNull();
-
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withNamespaceFromParent());
-        assertThat(deployment.getMetadata().getOwnerReferences()).isNull();
-        assertThat(deployment.getMetadata().getName()).isNull();
-        assertThat(deployment.getMetadata().getNamespace()).isEqualTo(hasMetadata.getMetadata().getNamespace());
-
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME).withOwnerReferencesFromParent());
-        assertOwnerReference(hasMetadata, deployment.getMetadata());
-        assertThat(deployment.getMetadata().getName()).isNull();
-        assertThat(deployment.getMetadata().getNamespace()).isNull();
-    }
-
-    @Test
-    public void bridgeExecutorDeploymentTemplateIsProvided() {
-
-        mockResourceForOwnerReference();
-        TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(hasMetadata, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
-
-        assertOwnerReference(hasMetadata, deployment.getMetadata());
-        assertLabels(deployment.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME, EXECUTOR_COMPONENT_NAME);
-        assertThat(deployment.getSpec().getReplicas()).isEqualTo(1);
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getLivenessProbe()).isNotNull();
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getReadinessProbe()).isNotNull();
-    }
-
-    @Test
-    public void bridgeExecutorServiceTemplateIsProvided() {
-        mockResourceForOwnerReference();
-
-        TemplateProvider templateProvider = new TemplateProviderImpl();
-        Service service = templateProvider.loadBridgeExecutorServiceTemplate(hasMetadata, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
-
-        assertOwnerReference(hasMetadata, service.getMetadata());
-        assertLabels(service.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME, EXECUTOR_COMPONENT_NAME);
-        assertThat(service.getSpec().getPorts().size()).isEqualTo(1);
-        assertThat(service.getSpec().getPorts().get(0).getName()).isEqualTo("web");
-        assertThat(service.getSpec().getPorts().get(0).getPort()).isEqualTo(8080);
-        assertThat(service.getSpec().getPorts().get(0).getTargetPort().getIntVal()).isEqualTo(8080);
-        assertThat(service.getSpec().getPorts().get(0).getProtocol()).isEqualTo("TCP");
-    }
-
-    @Test
     public void bridgeIngressBrokerTemplateIsProvided() {
         mockResourceForOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         KnativeBroker broker = templateProvider.loadBridgeIngressBrokerTemplate(hasMetadata, TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME));
 
         assertOwnerReference(hasMetadata, broker.getMetadata());
-        assertLabels(broker.getMetadata(), LabelsBuilder.V2_OPERATOR_NAME, BRIDGE_COMPONENT_NAME);
+        assertLabels(broker.getMetadata(), LabelsBuilder.V2_OPERATOR_NAME);
         assertThat(broker.getMetadata().getAnnotations().get("eventing.knative.dev/broker.class")).isEqualTo("Kafka");
         assertThat(broker.getMetadata().getAnnotations().get("kafka.eventing.knative.dev/external.topic")).isBlank();
         assertThat(broker.getSpec().getConfig().getKind()).isEqualTo("ConfigMap");
@@ -135,7 +74,6 @@ public class TemplateProviderTest {
 
     @Test
     public void bridgeIngressAuthorizationPolicyTemplateIsProvided() {
-
         mockResourceForNoOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         AuthorizationPolicy authorizationPolicy = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(hasMetadata,
@@ -146,7 +84,7 @@ public class TemplateProviderTest {
         assertThat(authorizationPolicy.getMetadata().getOwnerReferences()).isNull();
         assertThat(authorizationPolicy.getMetadata().getAnnotations().get("operator-sdk/primary-resource-name")).isEqualTo(hasMetadata.getMetadata().getName());
         assertThat(authorizationPolicy.getMetadata().getAnnotations().get("operator-sdk/primary-resource-namespace")).isEqualTo(hasMetadata.getMetadata().getNamespace());
-        assertLabels(authorizationPolicy.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME, BRIDGE_COMPONENT_NAME);
+        assertLabels(authorizationPolicy.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME);
 
         // account_id
         assertThat(authorizationPolicy.getSpec().getAction()).isEqualTo("ALLOW");
@@ -167,13 +105,12 @@ public class TemplateProviderTest {
 
     @Test
     public void bridgeIngressConfigMapTemplateIsProvided() {
-
         mockResourceForOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         ConfigMap configMap = templateProvider.loadBridgeIngressConfigMapTemplate(hasMetadata, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
 
         assertOwnerReference(hasMetadata, configMap.getMetadata());
-        assertLabels(configMap.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME, BRIDGE_COMPONENT_NAME);
+        assertLabels(configMap.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME);
 
         assertThat(configMap.getData().get("default.topic.partitions")).isBlank();
         assertThat(configMap.getData().get("default.topic.replication.factor")).isBlank();
@@ -184,13 +121,12 @@ public class TemplateProviderTest {
 
     @Test
     public void bridgeIngressSecretTemplateIsProvided() {
-
         mockResourceForOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         Secret secret = templateProvider.loadBridgeIngressSecretTemplate(hasMetadata, TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME));
 
         assertOwnerReference(hasMetadata, secret.getMetadata());
-        assertLabels(secret.getMetadata(), LabelsBuilder.V2_OPERATOR_NAME, BRIDGE_COMPONENT_NAME);
+        assertLabels(secret.getMetadata(), LabelsBuilder.V2_OPERATOR_NAME);
 
         assertThat(secret.getData().get("protocol")).isBlank();
         assertThat(secret.getData().get("sasl.mechanism")).isBlank();
@@ -202,7 +138,6 @@ public class TemplateProviderTest {
 
     @Test
     public void bridgeIngressOpenshiftRouteTemplateIsProvided() {
-
         mockResourceForNoOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME)
@@ -210,14 +145,13 @@ public class TemplateProviderTest {
                 .withPrimaryResourceFromParent());
 
         assertThat(route.getMetadata().getOwnerReferences()).isNull();
-        assertLabels(route.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME, BRIDGE_COMPONENT_NAME);
+        assertLabels(route.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME);
         assertThat(route.getSpec().getTo().getKind()).isEqualTo("Service");
         assertThat(route.getSpec().getPort().getTargetPort().getStrVal()).isEqualTo("http2");
     }
 
     @Test
     public void bridgeIngressKubernetesIngressTemplateIsProvided() {
-
         mockResourceForNoOwnerReference();
         TemplateProvider templateProvider = new TemplateProviderImpl();
         Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(hasMetadata, new TemplateImportConfig(LabelsBuilder.V1_OPERATOR_NAME)
@@ -226,15 +160,15 @@ public class TemplateProviderTest {
                 .withOperatorName(LabelsBuilder.V1_OPERATOR_NAME));
 
         assertThat(ingress.getMetadata().getOwnerReferences()).isNull();
-        assertLabels(ingress.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME, BRIDGE_COMPONENT_NAME);
+        assertLabels(ingress.getMetadata(), LabelsBuilder.V1_OPERATOR_NAME);
 
         assertThat(ingress.getSpec().getRules().size()).isEqualTo(1);
         assertThat(ingress.getSpec().getRules().get(0).getHttp().getPaths().size()).isEqualTo(1);
         assertThat(ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPathType()).isEqualTo(NetworkingConstants.K8S_INGRESS_PATH_TYPE);
     }
 
-    private void assertLabels(ObjectMeta meta, String operatorName, String component) {
-        assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(component);
+    private void assertLabels(ObjectMeta meta, String operatorName) {
+        assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(BRIDGE_COMPONENT_NAME);
         assertThat(meta.getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(operatorName);
         assertThat(meta.getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(operatorName);
     }

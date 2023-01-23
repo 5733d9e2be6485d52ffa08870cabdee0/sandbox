@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
@@ -23,10 +24,12 @@ import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
+import com.redhat.service.smartevents.manager.v2.metrics.ManagerMetricsServiceV2;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ConditionDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ManagedResourceV2DAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.ManagedResourceV2;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 public abstract class AbstractWorker<T extends ManagedResourceV2> implements WorkerV2<T> {
@@ -49,6 +52,9 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
 
     @Inject
     ConditionDAO conditionDAO;
+
+    @Inject
+    ManagerMetricsServiceV2 metricsService;
 
     @Override
     public T handleWork(Work work) {
@@ -136,6 +142,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
         T managedResource = load(managedResourceId);
 
         markFailedConditions(managedResource);
+        updateMetrics(managedResource);
 
         return persist(managedResource);
     }
@@ -248,6 +255,27 @@ public abstract class AbstractWorker<T extends ManagedResourceV2> implements Wor
                 // Don't overwrite the message and the reason to keep track of the original failures (if it was recorded).
             }
         }
+    }
+
+    protected void updateMetrics(T managedResource) {
+        if (Objects.isNull(managedResource.getOperation())) {
+            LOGGER.info("Resource with id '{}' has no related Operation. Metrics cannot be updated.", managedResource.getId());
+            return;
+        }
+        metricsService.onOperationFailed(managedResource, getMetricsOperation(managedResource.getOperation()));
+    }
+
+    protected MetricsOperation getMetricsOperation(Operation operation) {
+        OperationType operationType = operation.getType();
+        switch (operationType) {
+            case CREATE:
+                return MetricsOperation.MANAGER_RESOURCE_PROVISION;
+            case UPDATE:
+                return MetricsOperation.MANAGER_RESOURCE_UPDATE;
+            case DELETE:
+                return MetricsOperation.MANAGER_RESOURCE_DELETE;
+        }
+        return null;
     }
 
     private Condition findConditionByType(String conditionType, T managedResource) {
