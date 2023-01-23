@@ -10,12 +10,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.auth.AbstractOidcClient;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.v1.api.auth.AbstractOidcClientV1;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.OidcTokensNotInitializedException;
 
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
 
 @ApplicationScoped
-public class ConnectorsOidcClient extends AbstractOidcClient {
+public class ConnectorsOidcClient extends AbstractOidcClientV1 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorsOidcClient.class);
 
@@ -45,5 +48,10 @@ public class ConnectorsOidcClient extends AbstractOidcClient {
         oidcClientConfig.setRefreshTokenTimeSkew(AbstractOidcClient.REFRESH_TOKEN_TIME_SKEW);
 
         return oidcClientConfig;
+    }
+
+    @Override
+    protected InternalPlatformException getOidcTokensNotInitializedException(String message) {
+        return new OidcTokensNotInitializedException(message);
     }
 }

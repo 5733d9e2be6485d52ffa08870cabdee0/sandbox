@@ -38,8 +38,11 @@ public class StatusUtilities {
         if (conditions.stream().noneMatch(c -> c.getComponent() == ComponentType.MANAGER) || conditions.stream().noneMatch(c -> c.getComponent() == ComponentType.SHARD)) {
             throw new IllegalStateException("Conditions must contain at least one condition for the manager and one for the shard.");
         }
+        return getManagedResourceStatus(resource.getOperation(), conditions);
+    }
 
-        switch (resource.getOperation().getType()) {
+    public static ManagedResourceStatusV2 getManagedResourceStatus(Operation operation, List<Condition> conditions) {
+        switch (operation.getType()) {
             case CREATE:
                 // The ordering of these checks is important!
                 if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
@@ -48,13 +51,10 @@ public class StatusUtilities {
                 if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatusV2.READY;
                 }
-                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
+                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.SHARD).anyMatch(c -> !c.getStatus().equals(ConditionStatus.UNKNOWN))) {
                     return ManagedResourceStatusV2.PROVISIONING;
                 }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
-                    return ManagedResourceStatusV2.PREPARING;
-                }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FALSE))) {
+                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).anyMatch(c -> !c.getStatus().equals(ConditionStatus.UNKNOWN))) {
                     return ManagedResourceStatusV2.PREPARING;
                 }
                 if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.UNKNOWN))) {
@@ -69,13 +69,10 @@ public class StatusUtilities {
                 if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatusV2.READY;
                 }
-                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
+                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.SHARD).anyMatch(c -> !c.getStatus().equals(ConditionStatus.UNKNOWN))) {
                     return ManagedResourceStatusV2.UPDATE_PROVISIONING;
                 }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
-                    return ManagedResourceStatusV2.UPDATE_PREPARING;
-                }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FALSE))) {
+                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).anyMatch(c -> !c.getStatus().equals(ConditionStatus.UNKNOWN))) {
                     return ManagedResourceStatusV2.UPDATE_PREPARING;
                 }
                 if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.UNKNOWN))) {
@@ -84,19 +81,16 @@ public class StatusUtilities {
                 break;
             case DELETE:
                 // The ordering of these checks is important!
-                if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.UNKNOWN))) {
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
+                    return ManagedResourceStatusV2.FAILED;
+                }
+                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.UNKNOWN))) {
                     return ManagedResourceStatusV2.DEPROVISION;
                 }
                 if (conditions.stream().allMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
                     return ManagedResourceStatusV2.DELETED;
                 }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FAILED))) {
-                    return ManagedResourceStatusV2.FAILED;
-                }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.TRUE))) {
-                    return ManagedResourceStatusV2.DELETING;
-                }
-                if (conditions.stream().anyMatch(c -> c.getStatus().equals(ConditionStatus.FALSE))) {
+                if (conditions.stream().filter(c -> c.getComponent() == ComponentType.SHARD).anyMatch(c -> !c.getStatus().equals(ConditionStatus.UNKNOWN))) {
                     return ManagedResourceStatusV2.DELETING;
                 }
                 break;
@@ -117,6 +111,7 @@ public class StatusUtilities {
         }
         List<Condition> errors = resource.getConditions()
                 .stream()
+                .filter(c -> c.getStatus() == ConditionStatus.FAILED)
                 .filter(c -> Objects.nonNull(c.getErrorCode()))
                 .collect(Collectors.toList());
         if (errors.isEmpty()) {

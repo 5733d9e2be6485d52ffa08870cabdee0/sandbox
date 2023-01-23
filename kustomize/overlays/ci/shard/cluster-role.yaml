@@ -23,6 +23,8 @@ rules:
     resources:
       - managedbridges
       - managedbridges/status
+      - managedprocessors
+      - managedprocessors/status
     verbs:
       - get
       - list
@@ -110,6 +112,18 @@ rules:
     resources:
       - brokers
       - triggers
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
+  - apiGroups:
+      - camel.apache.org
+    resources:
+      - integrations
     verbs:
       - get
       - list

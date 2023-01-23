@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.manager.v2.api.user.models.requests;
 
 import com.redhat.service.smartevents.manager.core.api.models.requests.AbstractBridgeRequest;
-import com.redhat.service.smartevents.manager.core.api.validators.ValidCloudProvider;
+import com.redhat.service.smartevents.manager.v2.api.validators.ValidCloudProvider;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 
 @ValidCloudProvider

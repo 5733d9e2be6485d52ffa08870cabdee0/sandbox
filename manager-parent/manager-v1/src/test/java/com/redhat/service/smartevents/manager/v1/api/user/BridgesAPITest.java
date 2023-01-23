@@ -14,15 +14,15 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.core.api.APIConstants;
 import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorDAO;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidCloudProviderException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.InvalidRegionException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.V1APIConstants;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.InvalidCloudProviderException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.InvalidRegionException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
@@ -88,6 +88,7 @@ public class BridgesAPITest {
     @SuppressWarnings("unused")
     RhoasService rhoasServiceMock;
 
+    @V1
     @Inject
     BridgeErrorDAO errorDAO;
 
@@ -199,7 +200,7 @@ public class BridgesAPITest {
                 .as(ErrorsResponse.class);
 
         // Missing name and Incomplete Error Handler definition
-        assertErrorResponses(errorsResponse, Set.of(UnclassifiedConstraintViolationException.class, ProcessorGatewayParametersMissingException.class));
+        assertErrorResponses(errorsResponse, Set.of(InternalPlatformException.class, ProcessorGatewayParametersMissingException.class));
     }
 
     @Test

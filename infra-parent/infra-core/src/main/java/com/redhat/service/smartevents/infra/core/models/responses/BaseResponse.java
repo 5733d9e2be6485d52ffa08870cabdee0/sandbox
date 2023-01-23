@@ -23,6 +23,7 @@ public abstract class BaseResponse {
             description = "The unique identifier of this resource")
     protected String id;
 
+    @NotNull
     @JsonProperty("name")
     @Schema(
             description = "The name of this resource",

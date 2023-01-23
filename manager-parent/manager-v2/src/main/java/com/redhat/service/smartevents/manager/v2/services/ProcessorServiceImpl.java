@@ -11,19 +11,21 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BadRequestException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.v2.api.models.ComponentType;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
@@ -37,11 +39,13 @@ import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.ams.QuotaConfigurationProvider;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
+import com.redhat.service.smartevents.manager.v2.metrics.ManagerMetricsServiceV2;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Operation;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
+import com.redhat.service.smartevents.manager.v2.utils.ConditionUtilities;
 import com.redhat.service.smartevents.manager.v2.utils.StatusUtilities;
 
 import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.getManagedResourceStatus;
@@ -52,6 +56,9 @@ import static com.redhat.service.smartevents.manager.v2.utils.StatusUtilities.ge
 public class ProcessorServiceImpl implements ProcessorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
+
+    @ConfigProperty(name = "event-bridge.managed-processor.deployment.timeout-seconds")
+    int managedProcessorTimeoutSeconds;
 
     @Inject
     ProcessorDAO processorDAO;
@@ -65,6 +72,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @V2
     @Inject
     WorkManager workManager;
+
+    @Inject
+    ManagerMetricsServiceV2 metricsService;
 
     @Override
     @Transactional
@@ -132,7 +142,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorDAO.persist(processor);
         workManager.schedule(processor);
 
-        // TODO: record metrics with MetricsService
+        metricsService.onOperationStart(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
                 processor.getId(),
@@ -213,7 +223,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         workManager.schedule(existingProcessor);
 
-        // TODO: record metrics with MetricsService
+        metricsService.onOperationStart(existingProcessor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
                 existingProcessor.getId(),
@@ -243,7 +253,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         workManager.schedule(processor);
 
-        // TODO: record metrics with MetricsService
+        metricsService.onOperationStart(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
                 processor.getId(),
@@ -265,7 +275,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     @Transactional
-    public Processor updateProcessorStatus(ResourceStatusDTO statusDTO) {
+    public Processor updateStatus(ResourceStatusDTO statusDTO) {
         Processor processor = processorDAO.findByIdWithConditions(statusDTO.getId());
         if (Objects.isNull(processor)) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist.", statusDTO.getId()));
@@ -277,52 +287,59 @@ public class ProcessorServiceImpl implements ProcessorService {
                     statusDTO.getGeneration());
             return processor;
         }
+
         Operation operation = processor.getOperation();
         List<Condition> conditions = processor.getConditions();
+        // Set the updated conditions to the existing Manager conditions to begin; then copy in the new Operator conditions
         List<Condition> updatedConditions = conditions.stream().filter(c -> c.getComponent() == ComponentType.MANAGER).collect(Collectors.toList());
         statusDTO.getConditions().forEach(c -> updatedConditions.add(Condition.from(c, ComponentType.SHARD)));
         processor.setConditions(updatedConditions);
 
+        // Don't do anything if the Operation is complete.
+        if (Objects.nonNull(operation.getCompletedAt())) {
+            LOGGER.info("Update for Processor with id '{}' was discarded. The Operation has already been completed.", processor.getId());
+            return processor;
+        }
+
         switch (operation.getType()) {
             case CREATE:
-                if (isOperationComplete(updatedConditions)) {
+                if (ConditionUtilities.isOperationComplete(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
                     if (Objects.isNull(processor.getPublishedAt())) {
                         processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                        // TODO: record metrics with MetricsService
-                        // metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
+                        metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                     }
+                } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                    metricsService.onOperationFailed(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                 }
                 break;
 
             case UPDATE:
-                // TODO: record metrics with MetricsService
-                // metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+                if (ConditionUtilities.isOperationComplete(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                    metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
+                } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                    metricsService.onOperationFailed(processor, MetricsOperation.MANAGER_RESOURCE_UPDATE);
+                }
                 break;
 
             case DELETE:
-                if (isOperationComplete(updatedConditions)) {
+                if (ConditionUtilities.isOperationComplete(updatedConditions)) {
                     // There is no need to check if the Processor exists as any subsequent Status Update cycle
                     // would not include the same Processor if it had been deleted. It would not have existed
                     // on the database and hence would not have been included in the Status Update cycle.
                     processorDAO.deleteById(statusDTO.getId());
-                    // TODO: record metrics with MetricsService
-                    // metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
+                    metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
+                } else if (ConditionUtilities.isOperationFailed(updatedConditions)) {
+                    operation.setCompletedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                    metricsService.onOperationFailed(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 }
                 break;
         }
 
-        statusDTO.getConditions().stream().filter(c -> Objects.nonNull(c.getErrorCode())).findFirst().ifPresent(c -> {
-            // TODO: record metrics with MetricsService
-            // metricsService.onOperationFailed(processor, operation.getMetricsOperation());
-        });
-
         return processor;
-    }
-
-    private boolean isOperationComplete(List<Condition> conditions) {
-        return conditions
-                .stream()
-                .allMatch(c -> c.getStatus() == ConditionStatus.TRUE);
     }
 
     @Override
@@ -336,6 +353,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setFlows(processor.getDefinition().getFlows());
         dto.setOperationType(processor.getOperation().getType());
         dto.setGeneration(processor.getGeneration());
+        dto.setTimeoutSeconds(managedProcessorTimeoutSeconds);
         return dto;
     }
 

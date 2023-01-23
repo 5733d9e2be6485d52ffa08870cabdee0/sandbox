@@ -4,7 +4,7 @@ kind: CronJob
 metadata:
   name: rhose-prolong-stage
 spec:
-  schedule: "0 7 * * *"
+  schedule: "0 * * * *"
   concurrencyPolicy: Forbid
   suspend: false
   jobTemplate:
@@ -22,16 +22,13 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: rhose-prolong-stage
-              image: quay.io/app-sre/ubi8-ubi:8.7
+              image: quay.io/app-sre/rhose-cronjob-runner:1.0
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/bash
                 - -c
                 - |
-                  # install prerequisites
-                  dnf copr enable -y ocm/tools
-                  dnf install -y ocm-cli jq
-
+                  # ocm and jq already installed in the image
                   ocm login --url staging --token $STAGE_TOKEN
                   
                   for CLUSTER_NAME in $(echo $CLUSTER_NAMES | sed "s/,/ /g")

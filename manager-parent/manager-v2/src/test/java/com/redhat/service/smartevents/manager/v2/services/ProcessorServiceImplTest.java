@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,15 +18,16 @@ import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BadRequestException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.BridgeLifecycleException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.NoQuotaAvailable;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.core.models.ListResult;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BadRequestException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.NoQuotaAvailable;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.v2.api.models.ConditionStatus;
 import com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
@@ -39,6 +40,7 @@ import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v2.TestConstants;
 import com.redhat.service.smartevents.manager.v2.api.user.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.v2.api.user.models.responses.ProcessorResponse;
+import com.redhat.service.smartevents.manager.v2.metrics.ManagerMetricsServiceV2;
 import com.redhat.service.smartevents.manager.v2.persistence.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Condition;
@@ -87,7 +89,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -108,6 +109,9 @@ public class ProcessorServiceImplTest {
 
     public static final QueryResourceInfo QUERY_INFO = new QueryResourceInfo(0, 100);
 
+    @ConfigProperty(name = "event-bridge.managed-processor.deployment.timeout-seconds")
+    int managedProcessorTimeoutSeconds;
+
     @Inject
     ProcessorService processorService;
 
@@ -120,6 +124,9 @@ public class ProcessorServiceImplTest {
     @V2
     @InjectMock
     WorkManager workManager;
+
+    @InjectMock
+    ManagerMetricsServiceV2 metricsService;
 
     @BeforeEach
     public void cleanUp() {
@@ -213,16 +220,22 @@ public class ProcessorServiceImplTest {
         assertThat(processor.getDefinition()).isNotNull();
 
         ArgumentCaptor<Processor> processorCaptor1 = ArgumentCaptor.forClass(Processor.class);
-        verify(processorDAO, times(1)).persist(processorCaptor1.capture());
+        verify(processorDAO).persist(processorCaptor1.capture());
         assertThat(processorCaptor1.getValue()).isEqualTo(processor);
 
         ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
-        verify(workManager, times(1)).schedule(processorCaptor2.capture());
+        verify(workManager).schedule(processorCaptor2.capture());
         assertThat(processorCaptor2.getValue()).isEqualTo(processor);
 
         assertThat(StatusUtilities.getManagedResourceStatus(processor)).isEqualTo(ACCEPTED);
         assertThat(processor.getOperation().getType()).isEqualTo(OperationType.CREATE);
         assertThat(processor.getOperation().getRequestedAt()).isNotNull();
+
+        ArgumentCaptor<Processor> processorCaptor3 = ArgumentCaptor.forClass(Processor.class);
+        ArgumentCaptor<MetricsOperation> metricsOperationCaptor = ArgumentCaptor.forClass(MetricsOperation.class);
+        verify(metricsService).onOperationStart(processorCaptor3.capture(), metricsOperationCaptor.capture());
+        assertThat(processorCaptor3.getValue()).isEqualTo(processor);
+        assertThat(metricsOperationCaptor.getValue()).isEqualTo(MetricsOperation.MANAGER_RESOURCE_PROVISION);
     }
 
     @Test
@@ -378,13 +391,19 @@ public class ProcessorServiceImplTest {
         ObjectNode updatedFlows = updatedResponse.getFlows();
         assertThat(updatedFlows.asText()).isEqualTo(newFlows.asText());
 
-        ArgumentCaptor<Processor> processorCaptor = ArgumentCaptor.forClass(Processor.class);
-        verify(workManager, times(1)).schedule(processorCaptor.capture());
-        assertThat(processorCaptor.getValue()).isEqualTo(existingProcessor);
+        ArgumentCaptor<Processor> processorCaptor1 = ArgumentCaptor.forClass(Processor.class);
+        verify(workManager).schedule(processorCaptor1.capture());
+        assertThat(processorCaptor1.getValue()).isEqualTo(existingProcessor);
 
         assertThat(StatusUtilities.getManagedResourceStatus(existingProcessor)).isEqualTo(UPDATE_ACCEPTED);
         assertThat(existingProcessor.getOperation().getType()).isEqualTo(OperationType.UPDATE);
         assertThat(existingProcessor.getOperation().getRequestedAt()).isNotNull();
+
+        ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
+        ArgumentCaptor<MetricsOperation> metricsOperationCaptor = ArgumentCaptor.forClass(MetricsOperation.class);
+        verify(metricsService).onOperationStart(processorCaptor2.capture(), metricsOperationCaptor.capture());
+        assertThat(processorCaptor2.getValue()).isEqualTo(existingProcessor);
+        assertThat(metricsOperationCaptor.getValue()).isEqualTo(MetricsOperation.MANAGER_RESOURCE_UPDATE);
     }
 
     @Test
@@ -438,15 +457,21 @@ public class ProcessorServiceImplTest {
     private void doTestDeleteProcessor(Processor processor) {
         processorService.deleteProcessor(DEFAULT_BRIDGE_ID, processor.getId(), DEFAULT_CUSTOMER_ID);
 
-        ArgumentCaptor<Processor> processorCaptor = ArgumentCaptor.forClass(Processor.class);
-        verify(workManager, times(1)).schedule(processorCaptor.capture());
+        ArgumentCaptor<Processor> processorCaptor1 = ArgumentCaptor.forClass(Processor.class);
+        verify(workManager).schedule(processorCaptor1.capture());
 
-        Processor parameter = processorCaptor.getValue();
+        Processor parameter = processorCaptor1.getValue();
         assertThat(parameter).isNotNull();
         assertThat(parameter).isEqualTo(processor);
         assertThat(StatusUtilities.getManagedResourceStatus(parameter)).isEqualTo(DEPROVISION);
         assertThat(parameter.getOperation().getType()).isEqualTo(OperationType.DELETE);
         assertThat(parameter.getOperation().getRequestedAt()).isNotNull();
+
+        ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
+        ArgumentCaptor<MetricsOperation> metricsOperationCaptor = ArgumentCaptor.forClass(MetricsOperation.class);
+        verify(metricsService).onOperationStart(processorCaptor2.capture(), metricsOperationCaptor.capture());
+        assertThat(processorCaptor2.getValue()).isEqualTo(processor);
+        assertThat(metricsOperationCaptor.getValue()).isEqualTo(MetricsOperation.MANAGER_RESOURCE_DELETE);
     }
 
     @Test
@@ -470,9 +495,12 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
+        assertThat(updated.getPublishedAt()).isNotNull();
+        assertThat(updated.getOperation().getCompletedAt()).isNotNull();
 
-        assertThat(processor.getPublishedAt()).isNotNull();
+        verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_PROVISION));
+        verify(metricsService, never()).onOperationFailed(any(), any());
     }
 
     @Test
@@ -489,13 +517,26 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        Processor updated = processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
         assertThat(updated.getPublishedAt()).isNotNull();
+        ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
+        assertThat(operationCompletedAt).isNotNull();
 
-        Processor updated2 = processorService.updateProcessorStatus(statusDTO);
+        Processor updated2 = processorService.updateStatus(statusDTO);
 
         assertThat(updated2.getPublishedAt()).isEqualTo(updated.getPublishedAt());
+        assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
+
+        verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_PROVISION));
+        verify(metricsService, never()).onOperationFailed(any(), any());
+
+        // Check the second Condition update was stored.
+        assertThat(updated2.getConditions()
+                .stream()
+                .filter(c -> c.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME) && c.getStatus().equals(ConditionStatus.TRUE))
+                .findFirst())
+                        .isPresent();
     }
 
     @Test
@@ -512,14 +553,78 @@ public class ProcessorServiceImplTest {
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        processorService.updateStatus(statusDTO);
 
         assertThat(processor.getPublishedAt()).isNull();
+        assertThat(processor.getOperation().getCompletedAt()).isNull();
     }
 
     @Test
-    @Disabled("Nothing to assert until Metrics are added back. See MGDOBR-1340.")
     void testUpdateProcessorStatus_Update() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createProvisioningProcessor(bridge);
+        Operation operation = new Operation();
+        operation.setType(OperationType.UPDATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        processor.setOperation(operation);
+        processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        Processor updated = processorService.updateStatus(statusDTO);
+
+        assertThat(updated.getPublishedAt()).isNotNull();
+        assertThat(updated.getOperation().getCompletedAt()).isNotNull();
+        verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
+        verify(metricsService, never()).onOperationFailed(any(), any());
+    }
+
+    @Test
+    void testUpdateProcessorStatus_UpdateWithSuccessiveUpdate() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createProvisioningProcessor(bridge);
+        Operation operation = new Operation();
+        operation.setType(OperationType.UPDATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        processor.setOperation(operation);
+        processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        Processor updated = processorService.updateStatus(statusDTO);
+
+        ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
+        assertThat(updated.getPublishedAt()).isNotNull();
+        assertThat(operationCompletedAt).isNotNull();
+        verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
+
+        Processor updated2 = processorService.updateStatus(statusDTO);
+
+        assertThat(updated2.getPublishedAt()).isNotNull();
+        assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
+        verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
+        verify(metricsService, never()).onOperationFailed(any(), any());
+
+        // Check the second Condition update was stored.
+        assertThat(updated2.getConditions()
+                .stream()
+                .filter(c -> c.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME) && c.getStatus().equals(ConditionStatus.TRUE))
+                .findFirst())
+                        .isPresent();
+    }
+
+    @Test
+    void testUpdateProcessorStatus_UpdateWhenIncomplete() {
         Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         Processor processor = createReadyProcessor(bridge);
         Operation operation = new Operation();
@@ -530,13 +635,16 @@ public class ProcessorServiceImplTest {
         ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
-        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        Processor updated = processorService.updateStatus(statusDTO);
 
-        assertThat(processor.getPublishedAt()).isNotNull();
+        assertThat(updated.getPublishedAt()).isNotNull();
+        assertThat(updated.getOperation().getCompletedAt()).isNull();
+        verify(metricsService, never()).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
+        verify(metricsService, never()).onOperationFailed(any(), any());
     }
 
     @Test
@@ -547,13 +655,15 @@ public class ProcessorServiceImplTest {
         ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
-        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        processorService.updateStatus(statusDTO);
 
-        verify(processorDAO, never()).deleteById(eq(processor.getId()));
+        verify(metricsService).onOperationComplete(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_DELETE));
+        verify(metricsService, never()).onOperationFailed(any(), any());
+        verify(processorDAO).deleteById(eq(processor.getId()));
     }
 
     @Test
@@ -564,13 +674,147 @@ public class ProcessorServiceImplTest {
         ResourceStatusDTO statusDTO = new ResourceStatusDTO();
         statusDTO.setId(processor.getId());
         statusDTO.setGeneration(processor.getGeneration());
-        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.TRUE, ZonedDateTime.now(ZoneOffset.UTC))));
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME, ConditionStatus.FALSE, ZonedDateTime.now(ZoneOffset.UTC))));
 
         when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
 
-        processorService.updateProcessorStatus(statusDTO);
+        processorService.updateStatus(statusDTO);
 
-        verify(processorDAO).deleteById(eq(processor.getId()));
+        verify(processorDAO, never()).deleteById(eq(processor.getId()));
+    }
+
+    @Test
+    void testUpdateProcessorStatus_CreateWithFailure() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createProvisioningProcessor(bridge);
+
+        assertThat(processor.getPublishedAt()).isNull();
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME,
+                ConditionStatus.FAILED,
+                "Reason",
+                "Message",
+                "ErrorCode",
+                ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        Processor updated = processorService.updateStatus(statusDTO);
+
+        assertThat(updated.getPublishedAt()).isNull();
+        assertThat(updated.getOperation().getCompletedAt()).isNotNull();
+        verify(metricsService, never()).onOperationComplete(any(), any());
+        verify(metricsService).onOperationFailed(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_PROVISION));
+    }
+
+    @Test
+    void testUpdateProcessorStatus_CreateWithFailureWithSuccessiveUpdate() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createProvisioningProcessor(bridge);
+
+        assertThat(processor.getPublishedAt()).isNull();
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.DP_SECRET_READY_NAME,
+                ConditionStatus.FAILED,
+                "Reason",
+                "Message",
+                "ErrorCode",
+                ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        // First failure should record metrics
+        Processor updated = processorService.updateStatus(statusDTO);
+
+        ZonedDateTime operationCompletedAt = updated.getOperation().getCompletedAt();
+        assertThat(updated.getPublishedAt()).isNull();
+        assertThat(operationCompletedAt).isNotNull();
+        verify(metricsService, never()).onOperationComplete(any(), any());
+        verify(metricsService).onOperationFailed(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_PROVISION));
+
+        // Subsequent failure should not record metrics again
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.DP_SECRET_READY_NAME,
+                ConditionStatus.TRUE,
+                ZonedDateTime.now(ZoneOffset.UTC)),
+                new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME,
+                        ConditionStatus.FAILED,
+                        "Reason",
+                        "Message",
+                        "ErrorCode",
+                        ZonedDateTime.now(ZoneOffset.UTC))));
+
+        Processor updated2 = processorService.updateStatus(statusDTO);
+
+        assertThat(updated2.getPublishedAt()).isNull();
+        assertThat(updated2.getOperation().getCompletedAt()).isEqualTo(operationCompletedAt);
+        verify(metricsService, never()).onOperationComplete(any(), any());
+        verify(metricsService).onOperationFailed(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_PROVISION));
+
+        // Check the second Condition update was stored.
+        assertThat(updated2.getConditions()
+                .stream()
+                .filter(c -> c.getType().equals(DefaultConditions.CP_DATA_PLANE_READY_NAME) && c.getStatus().equals(ConditionStatus.FAILED))
+                .findFirst())
+                        .isPresent();
+    }
+
+    @Test
+    void testUpdateProcessorStatus_UpdateWithFailure() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createReadyProcessor(bridge);
+        Operation operation = new Operation();
+        operation.setType(OperationType.UPDATE);
+        operation.setRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        processor.setOperation(operation);
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_READY_NAME,
+                ConditionStatus.FAILED,
+                "Reason",
+                "Message",
+                "ErrorCode",
+                ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        Processor updated = processorService.updateStatus(statusDTO);
+
+        assertThat(updated.getPublishedAt()).isNotNull();
+        assertThat(updated.getOperation().getCompletedAt()).isNotNull();
+        verify(metricsService, never()).onOperationComplete(any(), any());
+        verify(metricsService).onOperationFailed(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_UPDATE));
+    }
+
+    @Test
+    void testUpdateProcessorStatus_DeleteWithFailure() {
+        Bridge bridge = createReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        Processor processor = createDeprovisionProcessor(bridge);
+
+        ResourceStatusDTO statusDTO = new ResourceStatusDTO();
+        statusDTO.setId(processor.getId());
+        statusDTO.setGeneration(processor.getGeneration());
+        statusDTO.setConditions(List.of(new ConditionDTO(DefaultConditions.CP_DATA_PLANE_DELETED_NAME,
+                ConditionStatus.FAILED,
+                "Reason",
+                "Message",
+                "ErrorCode",
+                ZonedDateTime.now(ZoneOffset.UTC))));
+
+        when(processorDAO.findByIdWithConditions(processor.getId())).thenReturn(processor);
+
+        processorService.updateStatus(statusDTO);
+
+        verify(metricsService, never()).onOperationComplete(any(), any());
+        verify(metricsService).onOperationFailed(eq(processor), eq(MetricsOperation.MANAGER_RESOURCE_DELETE));
+        verify(processorDAO, never()).deleteById(any());
     }
 
     @Test
@@ -594,6 +838,7 @@ public class ProcessorServiceImplTest {
         assertThat(dto.getFlows().asText()).isEqualTo(flows.asText());
         assertThat(dto.getOperationType()).isEqualTo(processor.getOperation().getType());
         assertThat(dto.getGeneration()).isEqualTo(processor.getGeneration());
+        assertThat(dto.getTimeoutSeconds()).isEqualTo(managedProcessorTimeoutSeconds);
     }
 
     @Test

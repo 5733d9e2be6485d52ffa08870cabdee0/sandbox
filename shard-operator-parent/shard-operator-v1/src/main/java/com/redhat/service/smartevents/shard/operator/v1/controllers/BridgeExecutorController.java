@@ -18,16 +18,16 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.PrometheusNotInstalledException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningReplicaFailureException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.PrometheusNotInstalledException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ProvisioningReplicaFailureException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
@@ -36,6 +36,7 @@ import com.redhat.service.smartevents.shard.operator.v1.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
+import com.redhat.service.smartevents.shard.operator.v1.resources.ConditionTypeConstants;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -85,6 +86,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     @Inject
     ServiceMonitorService monitorService;
 
+    @V1
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 

@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.manager.core.api.user;
 
-import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.BeanParam;
@@ -16,7 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.core.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.infra.core.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.core.models.responses.PagedListResponse;
@@ -30,16 +29,15 @@ import com.redhat.service.smartevents.manager.core.persistence.models.CloudProvi
 public abstract class AbstractCloudProviderAPI {
 
     private String cloudProvidersBasePath;
-
-    @Inject
-    CloudProviderDAO cloudProviderDAO;
+    private CloudProviderDAO cloudProviderDAO;
 
     public AbstractCloudProviderAPI() {
         // For CDI
     }
 
-    public AbstractCloudProviderAPI(String cloudProvidersBasePath) {
+    public AbstractCloudProviderAPI(String cloudProvidersBasePath, CloudProviderDAO cloudProviderDAO) {
         this.cloudProvidersBasePath = cloudProvidersBasePath;
+        this.cloudProviderDAO = cloudProviderDAO;
     }
 
     @APIResponses(value = {
@@ -68,11 +66,13 @@ public abstract class AbstractCloudProviderAPI {
 
         CloudProvider cloudProvider = cloudProviderDAO.findById(id);
         if (cloudProvider == null) {
-            throw new ItemNotFoundException("Cloud Provider with id '" + id + "' does not exist.");
+            throw getItemNotFoundException("Cloud Provider with id '" + id + "' does not exist.");
         }
 
         return Response.ok(CloudProviderResponse.from(cloudProvider, buildCloudProviderHref(cloudProvider))).build();
     }
+
+    protected abstract ExternalUserException getItemNotFoundException(String message);
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",

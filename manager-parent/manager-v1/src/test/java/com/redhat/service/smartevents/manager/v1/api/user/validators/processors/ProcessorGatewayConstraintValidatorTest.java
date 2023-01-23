@@ -19,8 +19,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.verification.VerificationMode;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersNotValidException;
 import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorGatewayParametersNotValidException;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Source;

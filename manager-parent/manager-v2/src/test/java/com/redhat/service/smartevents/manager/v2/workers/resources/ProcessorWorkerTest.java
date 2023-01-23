@@ -80,7 +80,7 @@ public class ProcessorWorkerTest {
 
         Processor retrieved = processorDAO.findByIdWithConditions(processor.getId());
 
-        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatusV2.PROVISIONING);
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatusV2.PREPARING);
         verify(workManagerMock, never()).reschedule(any());
     }
 
@@ -105,7 +105,7 @@ public class ProcessorWorkerTest {
 
         Processor retrieved = processorDAO.findByIdWithConditions(processor.getId());
 
-        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatusV2.DELETING);
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(ManagedResourceStatusV2.DEPROVISION);
         verify(workManagerMock, never()).reschedule(any());
     }
 

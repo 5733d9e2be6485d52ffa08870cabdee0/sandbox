@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.core.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.v1.api.V1;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.manager.core.models.ManagedResource;
 import com.redhat.service.smartevents.manager.core.workers.Work;
@@ -27,8 +27,8 @@ import com.redhat.service.smartevents.manager.v1.models.ManagedResourceV1;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
-import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
-import static com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
+import static com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
+import static com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
 import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.ACCEPTED;
 import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETED;
 import static com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1.DELETING;
@@ -57,6 +57,7 @@ public abstract class AbstractWorker<T extends ManagedResourceV1> implements Wor
     @Inject
     WorkManager workManager;
 
+    @V1
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
 

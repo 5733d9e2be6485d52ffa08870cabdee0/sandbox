@@ -28,17 +28,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.core.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ForbiddenRequestException;
+import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.V2APIConstants;
+import com.redhat.service.smartevents.infra.v2.api.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ConditionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ResourceStatusDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.SinkConnectorDTO;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Bridge;
+import com.redhat.service.smartevents.manager.v2.persistence.models.Connector;
 import com.redhat.service.smartevents.manager.v2.persistence.models.Processor;
 import com.redhat.service.smartevents.manager.v2.services.BridgeService;
 import com.redhat.service.smartevents.manager.v2.services.ProcessorService;
+import com.redhat.service.smartevents.manager.v2.services.SinkConnectorService;
 
 import io.quarkus.security.Authenticated;
 
@@ -69,8 +73,12 @@ public class ShardAPI {
     ProcessorService processorService;
 
     @Inject
+    SinkConnectorService sinkConnectorService;
+
+    @Inject
     ShardService shardService;
 
+    @V2
     @Inject
     IdentityResolver identityResolver;
 
@@ -159,13 +167,53 @@ public class ShardAPI {
         return Response.ok().build();
     }
 
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = SinkConnectorDTO.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(hidden = true, summary = "Get Sink Connectors to be processed by a shard.", description = "Get Sink Connectors to be processed by a shard.")
+    @GET
+    @Path("sinks")
+    public Response getSinkConnectors() {
+        String shardId = identityResolver.resolve(jwt);
+        failIfNotAuthorized(shardId);
+        LOGGER.debug("Request from Shard for Sink Connectors to deploy or delete.");
+        List<Connector> connectors = sinkConnectorService.findByShardIdToDeployOrDelete(shardId);
+        LOGGER.debug("Found {} Sink Connector(s) to deploy or delete", connectors.size());
+        return Response.ok(connectors
+                .stream()
+                .map(sinkConnectorService::toDTO)
+                .collect(toList()))
+                .build();
+    }
+
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200"),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(hidden = true, summary = "Update Sink Connector's status.", description = "Update Sink Connector's status.")
+    @PUT
+    @Path("sinks")
+    public Response updateConnectorsStatus(List<ResourceStatusDTO> statusDTOs) {
+        String shardId = identityResolver.resolve(jwt);
+        failIfNotAuthorized(shardId);
+        throw new RuntimeException("Not implemented yet exception https://issues.redhat.com/browse/MGDOBR-1380");
+    }
+
     private void updateProcessorStatus(ResourceStatusDTO statusDTO) {
         try {
             LOGGER.debug("Processing update from Shard for Processor with id '{}' and generation '{}' with conditions '{}'",
                     statusDTO.getId(),
                     statusDTO.getGeneration(),
                     logConditions(statusDTO.getConditions()));
-            processorService.updateProcessorStatus(statusDTO);
+            processorService.updateStatus(statusDTO);
         } catch (Exception e) {
             LOGGER.warn("Failed to process update from Shard for Processor with id '{}' and generation '{}' with conditions '{}'",
                     statusDTO.getId(),
@@ -182,7 +230,7 @@ public class ShardAPI {
                     statusDTO.getId(),
                     statusDTO.getGeneration(),
                     logConditions(statusDTO.getConditions()));
-            bridgesService.updateBridgeStatus(statusDTO);
+            bridgesService.updateStatus(statusDTO);
         } catch (Exception e) {
             LOGGER.warn("Failed to process update from Shard for Bridge with id '{}' and generation '{}' with conditions '{}'",
                     statusDTO.getId(),

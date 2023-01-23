@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 import com.redhat.service.smartevents.integration.tests.common.TimeUtils;
-import com.redhat.service.smartevents.integration.tests.context.ShardContext;
+import com.redhat.service.smartevents.integration.tests.context.TestContext;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -21,9 +21,9 @@ import io.fabric8.kubernetes.api.model.networking.v1.IngressList;
  */
 public class KubernetesSteps {
 
-    private ShardContext context;
+    private TestContext context;
 
-    public KubernetesSteps(ShardContext context) {
+    public KubernetesSteps(TestContext context) {
         this.context = context;
     }
 

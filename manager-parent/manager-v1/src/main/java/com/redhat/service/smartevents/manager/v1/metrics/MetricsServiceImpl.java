@@ -64,7 +64,7 @@ public class MetricsServiceImpl implements ManagerMetricsServiceV1 {
     }
 
     private boolean isOperationSuccessful(ManagedResourceV1 managedResource, MetricsOperation operation) {
-        if (MetricsOperation.MANAGER_RESOURCE_PROVISION == operation || MetricsOperation.MANAGER_RESOURCE_MODIFY == operation) {
+        if (MetricsOperation.MANAGER_RESOURCE_PROVISION == operation || MetricsOperation.MANAGER_RESOURCE_UPDATE == operation) {
             return ManagedResourceStatusV1.READY == managedResource.getStatus();
         }
 
@@ -92,7 +92,7 @@ public class MetricsServiceImpl implements ManagerMetricsServiceV1 {
         switch (operation) {
             case MANAGER_RESOURCE_PROVISION:
                 return Duration.between(managedResource.getSubmittedAt(), ZonedDateTime.now(ZoneOffset.UTC));
-            case MANAGER_RESOURCE_MODIFY:
+            case MANAGER_RESOURCE_UPDATE:
                 return Duration.between(managedResource.getModifiedAt(), ZonedDateTime.now(ZoneOffset.UTC));
             case MANAGER_RESOURCE_DELETE:
                 return Duration.between(managedResource.getDeletionRequestedAt(), ZonedDateTime.now(ZoneOffset.UTC));

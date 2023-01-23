@@ -1,7 +1,10 @@
 package com.redhat.service.smartevents.shard.operator.v2.converters;
 
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,14 +19,18 @@ public class ConditionConverter {
     }
 
     private static ConditionDTO fromConditionToConditionDTO(Condition condition) {
-        ConditionDTO conditionDTO = new ConditionDTO(condition.getType(),
+        return new ConditionDTO(condition.getType(),
                 ConditionStatus.fromString(condition.getStatus().name()),
                 condition.getReason(),
                 condition.getMessage(),
-                condition.getErrorCode());
-        if (condition.getLastTransitionTime() != null) {
-            conditionDTO.setLastTransitionTime(condition.getLastTransitionTime().toInstant().atZone(ZoneOffset.UTC));
+                condition.getErrorCode(),
+                fromDate(condition.getLastTransitionTime()));
+    }
+
+    private static ZonedDateTime fromDate(Date date) {
+        if (Objects.isNull(date)) {
+            return null;
         }
-        return conditionDTO;
+        return date.toInstant().atZone(ZoneOffset.UTC);
     }
 }

@@ -1,0 +1,4 @@
+FROM registry.access.redhat.com/ubi8/ubi:8.7
+
+RUN dnf copr enable -y ocm/tools
+RUN dnf install -y ocm-cli jq

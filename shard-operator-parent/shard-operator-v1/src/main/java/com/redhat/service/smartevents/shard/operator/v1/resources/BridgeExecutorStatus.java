@@ -7,14 +7,12 @@ import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
-import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 import com.redhat.service.smartevents.shard.operator.core.utils.DeploymentStatusUtils;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 
-public class BridgeExecutorStatus extends CustomResourceStatus {
+public class BridgeExecutorStatus extends BaseResourceStatus {
 
     public static final String SECRET_AVAILABLE = "SecretAvailable";
     public static final String IMAGE_NAME_CORRECT = "ImageNameCorrect";

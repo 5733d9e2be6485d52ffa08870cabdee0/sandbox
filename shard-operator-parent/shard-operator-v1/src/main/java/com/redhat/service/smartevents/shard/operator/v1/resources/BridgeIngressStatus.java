@@ -5,8 +5,6 @@ import java.util.HashSet;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.core.resources.ConditionTypeConstants;
-import com.redhat.service.smartevents.shard.operator.core.resources.CustomResourceStatus;
 
 /**
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>
@@ -14,7 +12,7 @@ import com.redhat.service.smartevents.shard.operator.core.resources.CustomResour
  * This status MUST implement the status best practices as defined by the
  * <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties">Kubernetes API Conventions</a>
  */
-public class BridgeIngressStatus extends CustomResourceStatus {
+public class BridgeIngressStatus extends BaseResourceStatus {
 
     public static final String SECRET_AVAILABLE = "SecretAvailable";
     public static final String CONFIG_MAP_AVAILABLE = "ConfigMapAvailable";

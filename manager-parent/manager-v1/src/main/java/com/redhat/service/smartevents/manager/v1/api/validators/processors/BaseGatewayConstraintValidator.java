@@ -7,10 +7,10 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorGatewayUnclassifiedException;
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorMissingGatewayException;
 import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorGatewayUnclassifiedException;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorMissingGatewayException;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Gateway;
 import com.redhat.service.smartevents.manager.core.api.validators.BaseConstraintValidator;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;

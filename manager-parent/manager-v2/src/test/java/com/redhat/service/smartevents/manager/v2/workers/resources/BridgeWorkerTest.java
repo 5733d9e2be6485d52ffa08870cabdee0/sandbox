@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.v2.api.V2;
-import com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
 import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
@@ -35,9 +34,8 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.DELETING;
+import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.DEPROVISION;
 import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PREPARING;
-import static com.redhat.service.smartevents.infra.v2.api.models.ManagedResourceStatusV2.PROVISIONING;
 import static com.redhat.service.smartevents.manager.v2.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -94,11 +92,7 @@ class BridgeWorkerTest {
 
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
-    void testProvisionWorkWithKnownResource(
-            ManagedResourceStatusV2 status,
-            boolean throwRhoasError,
-            boolean throwDnsError,
-            boolean isWorkComplete) {
+    void testProvisionWorkWithKnownResource(boolean throwRhoasError, boolean throwDnsError, boolean isWorkComplete) {
         Bridge bridge = createAndPersistDefaultAcceptedBridge();
 
         Work work = makeWork(bridge);
@@ -115,7 +109,7 @@ class BridgeWorkerTest {
 
         Bridge retrieved = bridgeDAO.findByIdWithConditions(bridge.getId());
 
-        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(status);
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(PREPARING);
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).createDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(any());
@@ -130,19 +124,16 @@ class BridgeWorkerTest {
 
     private static Stream<Arguments> provisionWorkWithKnownResourceParams() {
         return Stream.of(
-                Arguments.of(PROVISIONING, false, false, true),
-                Arguments.of(PREPARING, true, false, false),
-                Arguments.of(PREPARING, false, true, false),
-                Arguments.of(PREPARING, true, true, false));
+                Arguments.of(false, false, true),
+                Arguments.of(true, false, false),
+                Arguments.of(false, true, false),
+                Arguments.of(true, true, false));
     }
 
     @Transactional
     @ParameterizedTest
     @MethodSource("deletionWorkWithKnownResourceParams")
-    void testDeletionWorkWithKnownResource(ManagedResourceStatusV2 status,
-            boolean throwRhoasError,
-            boolean throwDnsError,
-            boolean isWorkComplete) {
+    void testDeletionWorkWithKnownResource(boolean throwRhoasError, boolean throwDnsError, boolean isWorkComplete) {
         Bridge bridge = createAndPersistDefaultDeprovisionBridge();
 
         Work work = makeWork(bridge);
@@ -157,7 +148,7 @@ class BridgeWorkerTest {
 
         Bridge retrieved = worker.handleWork(work);
 
-        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(status);
+        assertThat(StatusUtilities.getManagedResourceStatus(retrieved)).isEqualTo(DEPROVISION);
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).deleteDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(work);
@@ -181,9 +172,9 @@ class BridgeWorkerTest {
 
     private static Stream<Arguments> deletionWorkWithKnownResourceParams() {
         return Stream.of(
-                Arguments.of(DELETING, false, false, true),
-                Arguments.of(DELETING, false, true, false),
-                Arguments.of(DELETING, true, false, false),
-                Arguments.of(DELETING, true, true, false));
+                Arguments.of(false, false, true),
+                Arguments.of(false, true, false),
+                Arguments.of(true, false, false),
+                Arguments.of(true, true, false));
     }
 }

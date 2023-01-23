@@ -2,8 +2,8 @@ package com.redhat.service.smartevents.infra.v1.api.models.transformations;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.smartevents.infra.core.exceptions.definitions.user.ProcessorTemplateDefinitionException;
 import com.redhat.service.smartevents.infra.core.validations.ValidationResult;
+import com.redhat.service.smartevents.infra.v1.api.exceptions.definitions.user.ProcessorTemplateDefinitionException;
 
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.TemplateException;

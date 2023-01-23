@@ -9,7 +9,6 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.exceptions.BridgeError;
 
 import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
 
@@ -36,17 +35,6 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     public final Optional<Condition> getConditionByType(final String conditionType) {
         // o(1) operation since we are fetching by our hash key
         return conditions.stream().filter(c -> conditionType.equals(c.getType())).findFirst();
-    }
-
-    @JsonIgnore
-    public final boolean isReady() {
-        return conditions.stream().anyMatch(c -> ConditionTypeConstants.READY.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
-    }
-
-    @JsonIgnore
-    public final boolean isAugmentingTrueOrUnknown() {
-        return conditions.stream()
-                .anyMatch(c -> ConditionTypeConstants.AUGMENTING.equals(c.getType()) && (ConditionStatus.True.equals(c.getStatus()) || ConditionStatus.Unknown.equals(c.getStatus())));
     }
 
     @JsonIgnore
@@ -102,10 +90,30 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     }
 
     @JsonIgnore
-    public final void setStatusFromBridgeError(BridgeError bridgeError) {
-        markConditionFalse(ConditionTypeConstants.READY,
-                bridgeError.getReason(),
-                bridgeError.getReason(),
-                bridgeError.getCode());
+    public final boolean isConditionTypeFailed(final String conditionType, final String reason) {
+        return getConditions().stream().anyMatch(c -> conditionType.equals(c.getType())
+                && Objects.equals(c.getReason(), reason)
+                && ConditionStatus.Failed.equals(c.getStatus()));
     }
+
+    public void markConditionFailed(final String conditionType, final String reason, final String message, final String errorCode) {
+        final Optional<Condition> condition = this.getConditionByType(conditionType);
+        if (condition.isPresent()) {
+            condition.get().setMessage(message);
+            condition.get().setErrorCode(errorCode);
+            condition.get().setReason(reason);
+            condition.get().setStatus(ConditionStatus.Failed);
+            condition.get().setLastTransitionTime(new Date());
+            this.conditions.add(condition.get());
+        }
+    }
+
+    public void markConditionFailed(final String conditionType, final String reason, final String message) {
+        markConditionFailed(conditionType, reason, message, null);
+    }
+
+    public void markConditionFailed(final String conditionType) {
+        markConditionFailed(conditionType, null, "", null);
+    }
+
 }

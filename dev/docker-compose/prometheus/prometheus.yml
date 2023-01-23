@@ -1,4 +1,4 @@
-# A scrape configuration containing exactly one endpoint to scrape:
+# A scrape configuration containing exactly two endpoints to scrape:
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: 'manager-app'
@@ -8,6 +8,16 @@ scrape_configs:
     metrics_path: /q/metrics
 
     static_configs:
-      - targets: ['localhost:8080']
+      - targets: [ 'localhost:8080' ]
 
         #['host.docker.internal:8180']
+
+  - job_name: 'shard-app'
+
+    scrape_interval: 10s
+
+    metrics_path: /q/metrics
+
+    static_configs:
+      # See /dev/bin/shard-run.sh for port configuration
+      - targets: [ 'localhost:1337' ]

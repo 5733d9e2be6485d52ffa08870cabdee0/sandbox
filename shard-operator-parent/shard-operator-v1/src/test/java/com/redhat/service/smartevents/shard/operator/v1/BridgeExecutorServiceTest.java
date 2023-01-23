@@ -13,14 +13,15 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.v1.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderV1;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
@@ -48,6 +49,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -81,8 +83,9 @@ public class BridgeExecutorServiceTest {
     @InjectMock
     ManagerClient managerClient;
 
+    @V1
     @InjectMock
-    TemplateProvider templateProvider;
+    TemplateProviderV1 templateProvider;
 
     @InjectMock
     OperatorMetricsService metricsService;
@@ -96,6 +99,7 @@ public class BridgeExecutorServiceTest {
         when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorServiceTemplate(any(), any())).thenCallRealMethod();
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // Far from ideal... but each test assumes there are no other BridgeExecutor instances in existence.
         // Unfortunately, however, some tests only check that provisioning either progressed to a certain
@@ -386,6 +390,7 @@ public class BridgeExecutorServiceTest {
         reset(templateProvider);
         when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);

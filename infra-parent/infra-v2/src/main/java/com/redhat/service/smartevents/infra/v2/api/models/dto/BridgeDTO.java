@@ -1,154 +1,59 @@
 package com.redhat.service.smartevents.infra.v2.api.models.dto;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BridgeDTO {
-    @JsonProperty("id")
-    private String id;
+public class BridgeDTO extends BaseResourceDTO {
 
-    @JsonProperty("name")
-    private String name;
+    @JsonProperty("dnsConfiguration")
+    private DNSConfigurationDTO dnsConfiguration;
+    @JsonProperty("knativeBrokerConfiguration")
+    private KnativeBrokerConfigurationDTO knativeBrokerConfiguration;
 
-    @JsonProperty("endpoint")
-    private String endpoint;
-
-    @JsonProperty("tlsCertificate")
-    private String tlsCertificate;
-
-    @JsonProperty("tlsKey")
-    private String tlsKey;
-
-    @JsonProperty("customerId")
-    private String customerId;
-
-    @JsonProperty("owner")
-    private String owner;
-
-    @JsonProperty("kafkaConnection")
-    private KafkaConnectionDTO kafkaConnection;
-
-    @JsonProperty("operation")
-    private OperationType operationType;
-
-    @JsonProperty("generation")
-    private long generation;
+    @JsonProperty("sourceConfiguration")
+    private SourceConfigurationDTO sourceConfiguration;
 
     public BridgeDTO() {
     }
 
-    public BridgeDTO(String id, String name, String endpoint, String tlsCertificate, String tlsKey, String customerId, String owner, KafkaConnectionDTO kafkaConnection, OperationType operationType) {
-        this.id = id;
-        this.name = name;
-        this.endpoint = endpoint;
-        this.tlsCertificate = tlsCertificate;
-        this.tlsKey = tlsKey;
-        this.customerId = customerId;
-        this.owner = owner;
-        this.kafkaConnection = kafkaConnection;
-        this.operationType = operationType;
+    public BridgeDTO(String id,
+            String name,
+            String customerId,
+            String owner,
+            DNSConfigurationDTO dnsConfiguration,
+            KnativeBrokerConfigurationDTO knativeBrokerConfiguration,
+            SourceConfigurationDTO sourceConfiguration,
+            OperationType operationType,
+            int timeoutSeconds) {
+        super(id, name, customerId, owner, operationType, timeoutSeconds);
+        this.dnsConfiguration = dnsConfiguration;
+        this.knativeBrokerConfiguration = knativeBrokerConfiguration;
+        this.sourceConfiguration = sourceConfiguration;
     }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
+    public DNSConfigurationDTO getDnsConfiguration() {
+        return dnsConfiguration;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setDnsConfiguration(DNSConfigurationDTO dnsConfiguration) {
+        this.dnsConfiguration = dnsConfiguration;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public KnativeBrokerConfigurationDTO getKnativeBrokerConfiguration() {
+        return knativeBrokerConfiguration;
     }
 
-    public void setTlsCertificate(String tlsCertificate) {
-        this.tlsCertificate = tlsCertificate;
+    public void setKnativeBrokerConfiguration(KnativeBrokerConfigurationDTO knativeBrokerConfiguration) {
+        this.knativeBrokerConfiguration = knativeBrokerConfiguration;
     }
 
-    public void setTlsKey(String tlsKey) {
-        this.tlsKey = tlsKey;
+    public SourceConfigurationDTO getSourceConfiguration() {
+        return sourceConfiguration;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setSourceConfiguration(SourceConfigurationDTO sourceConfiguration) {
+        this.sourceConfiguration = sourceConfiguration;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
-        this.kafkaConnection = kafkaConnection;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public String getTlsCertificate() {
-        return tlsCertificate;
-    }
-
-    public String getTlsKey() {
-        return tlsKey;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public KafkaConnectionDTO getKafkaConnection() {
-        return kafkaConnection;
-    }
-
-    public OperationType getOperationType() {
-        return operationType;
-    }
-
-    public void setOperationType(OperationType operationType) {
-        this.operationType = operationType;
-    }
-
-    public long getGeneration() {
-        return generation;
-    }
-
-    public void setGeneration(long generation) {
-        this.generation = generation;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        BridgeDTO bridgeDTO = (BridgeDTO) o;
-        return id.equals(bridgeDTO.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
 }

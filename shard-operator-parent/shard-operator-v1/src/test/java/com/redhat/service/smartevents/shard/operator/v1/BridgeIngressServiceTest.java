@@ -13,16 +13,17 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.core.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.core.metrics.MetricsOperation;
+import com.redhat.service.smartevents.infra.v1.api.V1;
 import com.redhat.service.smartevents.infra.v1.api.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV1;
 import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.core.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
-import com.redhat.service.smartevents.shard.operator.core.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.v1.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.v1.providers.TemplateProviderV1;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.v1.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.v1.utils.Constants;
@@ -46,6 +47,7 @@ import static com.redhat.service.smartevents.shard.operator.v1.utils.AwaitilityU
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -78,8 +80,9 @@ public class BridgeIngressServiceTest {
     @InjectMock
     ManagerClient managerClient;
 
+    @V1
     @InjectMock
-    TemplateProvider templateProvider;
+    TemplateProviderV1 templateProvider;
 
     @InjectMock
     OperatorMetricsService metricsService;
@@ -96,6 +99,7 @@ public class BridgeIngressServiceTest {
         when(templateProvider.loadBridgeIngressBrokerTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressKubernetesIngressTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressOpenshiftRouteTemplate(any(), any())).thenCallRealMethod();
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // Far from ideal... but each test assumes there are no other BridgeIngress instances in existence.
         // Unfortunately, however, some tests only check that provisioning either progressed to a certain
@@ -297,6 +301,7 @@ public class BridgeIngressServiceTest {
         reset(templateProvider);
         when(templateProvider.loadBridgeIngressSecretTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressConfigMapTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+        doCallRealMethod().when(templateProvider).updateMetadata(any(), any(), any());
 
         // When
         bridgeIngressService.createBridgeIngress(dto);

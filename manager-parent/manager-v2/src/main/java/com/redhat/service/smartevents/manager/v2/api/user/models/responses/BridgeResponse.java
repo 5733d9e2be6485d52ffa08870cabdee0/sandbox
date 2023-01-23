@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.manager.v2.api.user.models.responses;
 
-import javax.validation.constraints.NotNull;
-
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,13 +9,6 @@ import com.redhat.service.smartevents.manager.core.api.models.responses.BaseMana
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BridgeResponse extends BaseManagedResourceResponse<ManagedResourceStatusV2> {
-
-    @JsonProperty("name")
-    @NotNull
-    @Schema(
-            description = "The name of the bridge",
-            example = "bridge1")
-    protected String name;
 
     @JsonProperty("endpoint")
     @Schema(

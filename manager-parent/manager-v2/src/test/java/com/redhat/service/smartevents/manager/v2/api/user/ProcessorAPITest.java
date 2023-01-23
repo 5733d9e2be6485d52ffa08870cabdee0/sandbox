@@ -113,8 +113,8 @@ public class ProcessorAPITest {
         assertThat(errors.getItems()).hasSize(1);
 
         ErrorResponse error = errors.getItems().get(0);
-        assertThat(error.getId()).isEqualTo("21");
-        assertThat(error.getCode()).isEqualTo("OPENBRIDGE-21");
+        assertThat(error.getId()).isEqualTo("1");
+        assertThat(error.getCode()).isEqualTo("OPENBRIDGE-1");
         assertThat(error.getReason()).contains("Processor flows cannot be null");
     }
 
