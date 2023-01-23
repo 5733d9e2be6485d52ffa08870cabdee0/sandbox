@@ -44,8 +44,8 @@ public class ProcessorResourceSteps {
                 });
     }
 
-    @Then("^the BridgeExecutor \"([^\"]*)\" is in condition \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
-    public void theBridgeExecutorIsInConditionWithinMinutes(String name, String condition, int timeoutInMinutes){
+    @Then("^the ProcessorResource \"([^\"]*)\" is in condition \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    public void theProcessorResourceIsInConditionWithinMinutes(String name, String condition, int timeoutInMinutes){
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutInMinutes))
                 .pollInterval(Duration.ofSeconds(5))

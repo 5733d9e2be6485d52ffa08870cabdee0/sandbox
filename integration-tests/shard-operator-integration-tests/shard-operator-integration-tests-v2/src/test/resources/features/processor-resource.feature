@@ -28,4 +28,4 @@ Feature: ManagedProcessor tests
     Then the ProcessorResource "processor-name" exists within 3 minute
     And the Deployment "processor-name" is ready within 3 minute
     #And the Service "processor-name" exists within 3 minute
-    #And the BridgeExecutor "processor-name" is in condition "Ready" within 3 minutes
+    #And the ProcessorResource "processor-name" is in condition "Ready" within 3 minutes

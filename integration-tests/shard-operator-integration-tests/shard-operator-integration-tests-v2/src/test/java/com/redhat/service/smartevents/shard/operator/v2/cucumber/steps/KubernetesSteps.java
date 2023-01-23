@@ -63,9 +63,6 @@ public class KubernetesSteps {
                             if (deployment == null) {
                                 return false;
                             }
-                            //I am not sure if this code is valid for v2: deployment.getStatus().getConditions().stream().anyMatch(d -> d.getType().equals("Available") && d.getStatus().equals("True"))
-                            //Th PR of MGDOBR-1248 contains this implementation of the `isReadyV2` function in CustomResourceStatus: conditions.stream().allMatch(c -> ConditionStatus.True.equals(c.getStatus()))
-                            //return deployment.getStatus().getConditions().stream().allMatch(d -> d.getStatus().equals("True"));
                             return deployment.getStatus().getConditions().stream().anyMatch(d -> d.getType().equals("Available") && d.getStatus().equals("True"));
                         });
     }
