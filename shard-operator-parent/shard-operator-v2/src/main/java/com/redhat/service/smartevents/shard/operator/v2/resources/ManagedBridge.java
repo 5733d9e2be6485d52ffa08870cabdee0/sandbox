@@ -56,7 +56,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
         private String bridgeName;
         private String customerId;
         private String owner;
-        private KNativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec;
+        private KnativeBrokerConfigurationSpec knativeBrokerConfigurationSpec;
         private DNSConfigurationSpec dnsConfigurationSpec;
         private long generation;
         private SourceConfigurationSpec sourceConfigurationSpec;
@@ -95,8 +95,8 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             return this;
         }
 
-        public Builder withKnativeBrokerConfigurationSpec(KNativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec) {
-            this.kNativeBrokerConfigurationSpec = kNativeBrokerConfigurationSpec;
+        public Builder withKnativeBrokerConfigurationSpec(KnativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec) {
+            this.knativeBrokerConfigurationSpec = kNativeBrokerConfigurationSpec;
             return this;
         }
 
@@ -127,7 +127,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             managedBridgeSpec.setId(bridgeId);
             managedBridgeSpec.setName(bridgeName);
             managedBridgeSpec.setDnsConfiguration(this.dnsConfigurationSpec);
-            managedBridgeSpec.setkNativeBrokerConfiguration(this.kNativeBrokerConfigurationSpec);
+            managedBridgeSpec.setKnativeBrokerConfiguration(this.knativeBrokerConfigurationSpec);
             managedBridgeSpec.setGeneration(this.generation);
             managedBridgeSpec.setSourceConfigurationSpec(this.sourceConfigurationSpec);
 
@@ -146,7 +146,7 @@ public class ManagedBridge extends CustomResource<ManagedBridgeSpec, ManagedBrid
             requireNonNull(StringUtils.emptyToNull(this.bridgeId), "[ManagedBridge] Id can't be null");
             requireNonNull(StringUtils.emptyToNull(this.bridgeName), "[ManagedBridge] Name can't be null");
             requireNonNull(this.dnsConfigurationSpec, "[ManagedBridge] DnsConfigurationSpec can't be null");
-            requireNonNull(this.kNativeBrokerConfigurationSpec, "[ManagedBridge] kNativeBrokerConfigurationSpec can't be null");
+            requireNonNull(this.knativeBrokerConfigurationSpec, "[ManagedBridge] kNativeBrokerConfigurationSpec can't be null");
         }
     }
 }

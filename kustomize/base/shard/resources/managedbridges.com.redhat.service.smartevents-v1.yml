@@ -25,42 +25,33 @@ spec:
                 properties:
                   host:
                     type: string
-                  tls:
-                    properties:
-                      key:
-                        type: string
-                      certificate:
-                        type: string
-                    type: object
                 type: object
               owner:
                 type: string
               customerId:
                 type: string
-              kNativeBrokerConfiguration:
+              name:
+                type: string
+              knativeBrokerConfiguration:
                 properties:
                   kafkaConfiguration:
                     properties:
-                      saslMechanism:
-                        type: string
-                      password:
-                        type: string
-                      numberOfPartitions:
-                        type: integer
                       bootstrapServers:
-                        type: string
-                      user:
                         type: string
                       topic:
                         type: string
-                      numberOfReplicas:
-                        type: integer
-                      securityProtocol:
+                    type: object
+                type: object
+              sourceConfigurationSpec:
+                properties:
+                  kafkaConfiguration:
+                    properties:
+                      bootstrapServers:
+                        type: string
+                      topic:
                         type: string
                     type: object
                 type: object
-              name:
-                type: string
               generation:
                 type: integer
             type: object
@@ -82,6 +73,7 @@ spec:
                       - "False"
                       - "True"
                       - Unknown
+                      - Failed
                       type: string
                     message:
                       type: string

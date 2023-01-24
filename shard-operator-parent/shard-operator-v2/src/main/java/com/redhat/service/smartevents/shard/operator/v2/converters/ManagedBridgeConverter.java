@@ -11,8 +11,8 @@ import com.redhat.service.smartevents.infra.v2.api.models.dto.DNSConfigurationDT
 import com.redhat.service.smartevents.infra.v2.api.models.dto.KnativeBrokerConfigurationDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.SourceConfigurationDTO;
 import com.redhat.service.smartevents.shard.operator.v2.resources.DNSConfigurationSpec;
-import com.redhat.service.smartevents.shard.operator.v2.resources.KNativeBrokerConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.KafkaConfigurationSpec;
+import com.redhat.service.smartevents.shard.operator.v2.resources.KnativeBrokerConfigurationSpec;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.SourceConfigurationSpec;
 
@@ -20,7 +20,7 @@ public class ManagedBridgeConverter {
 
     public static ManagedBridge fromBridgeDTOToManageBridge(BridgeDTO bridgeDTO, String namespace) {
         DNSConfigurationSpec dns = fromDNSConfigurationDTOToDNSConfigurationSpec(bridgeDTO.getDnsConfiguration());
-        KNativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec = fromKnativeBrokerConfigurationToKnativeBrokerConfigurationSpec(bridgeDTO.getKnativeBrokerConfiguration());
+        KnativeBrokerConfigurationSpec kNativeBrokerConfigurationSpec = fromKnativeBrokerConfigurationToKnativeBrokerConfigurationSpec(bridgeDTO.getKnativeBrokerConfiguration());
         SourceConfigurationSpec sourceConfigurationSpec = fromSourceConfigurationToSourceConfigurationSpec(bridgeDTO.getSourceConfiguration());
 
         return new ManagedBridge.Builder()
@@ -55,10 +55,10 @@ public class ManagedBridgeConverter {
         return new SourceConfigurationSpec(sourceKafkaConfigurationSpec);
     }
 
-    private static KNativeBrokerConfigurationSpec fromKnativeBrokerConfigurationToKnativeBrokerConfigurationSpec(KnativeBrokerConfigurationDTO knativeBrokerConfiguration) {
+    private static KnativeBrokerConfigurationSpec fromKnativeBrokerConfigurationToKnativeBrokerConfigurationSpec(KnativeBrokerConfigurationDTO knativeBrokerConfiguration) {
         KafkaConnectionDTO knativeBrokerKafkaConnectionDTO = knativeBrokerConfiguration.getKafkaConnection();
         KafkaConfigurationSpec knativeBrokerKafkaConfigurationSpec = fromKafkaConnectionDTOToKafkaConfigurationSpec(knativeBrokerKafkaConnectionDTO);
-        return new KNativeBrokerConfigurationSpec(knativeBrokerKafkaConfigurationSpec);
+        return new KnativeBrokerConfigurationSpec(knativeBrokerKafkaConfigurationSpec);
     }
 
     private static KafkaConfigurationSpec fromKafkaConnectionDTOToKafkaConfigurationSpec(KafkaConnectionDTO kafkaConnectionDTO) {
