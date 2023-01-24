@@ -2,3 +2,7 @@ FROM registry.access.redhat.com/ubi8/ubi:8.7
 
 RUN dnf copr enable -y ocm/tools
 RUN dnf install -y ocm-cli jq
+
+RUN useradd -ms /bin/bash cronjobuser
+USER cronjobuser
+WORKDIR /home/cronjobuser

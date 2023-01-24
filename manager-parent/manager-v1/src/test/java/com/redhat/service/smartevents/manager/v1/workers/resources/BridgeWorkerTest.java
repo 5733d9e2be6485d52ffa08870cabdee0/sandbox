@@ -21,7 +21,7 @@ import com.redhat.service.smartevents.infra.v1.api.models.ManagedResourceStatusV
 import com.redhat.service.smartevents.infra.v1.api.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.v1.api.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.RhoasService;
 import com.redhat.service.smartevents.manager.core.workers.Work;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
@@ -76,7 +76,7 @@ class BridgeWorkerTest {
     DnsService dnsServiceMock;
 
     @InjectMock
-    ResourceNamesProvider resourceNamesProviderMock;
+    GlobalResourceNamesProvider globalResourceNamesProviderMock;
 
     @InjectMock
     ProcessorService processorServiceMock;
@@ -97,8 +97,8 @@ class BridgeWorkerTest {
     @BeforeEach
     public void setup() {
         databaseManagerUtils.cleanUp();
-        when(resourceNamesProviderMock.getBridgeTopicName(any())).thenReturn(TEST_TOPIC_NAME);
-        when(resourceNamesProviderMock.getBridgeErrorTopicName(any())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
+        when(globalResourceNamesProviderMock.getBridgeTopicName(any())).thenReturn(TEST_TOPIC_NAME);
+        when(globalResourceNamesProviderMock.getBridgeErrorTopicName(any())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
         when(processorServiceMock.getErrorHandler(anyString(), anyString())).thenReturn(Optional.empty());
     }
 

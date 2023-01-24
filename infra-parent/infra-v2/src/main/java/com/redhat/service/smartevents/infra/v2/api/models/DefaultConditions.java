@@ -5,11 +5,13 @@ public final class DefaultConditions {
     public static final String CP_CONTROL_PLANE_READY_NAME = "ControlPlaneReady";
     public static final String CP_DATA_PLANE_READY_NAME = "DataPlaneReady";
     public static final String CP_KAFKA_TOPIC_READY_NAME = "KafkaTopicReady";
+    public static final String CP_SOURCE_CONNECTOR_KAFKA_TOPIC_READY_NAME = "SourceConnectorKafkaTopicReady";
     public static final String CP_DNS_RECORD_READY_NAME = "DnsRecordReady";
 
     public static final String CP_CONTROL_PLANE_DELETED_NAME = "ControlPlaneDeleted";
     public static final String CP_DATA_PLANE_DELETED_NAME = "DataPlaneDeleted";
     public static final String CP_KAFKA_TOPIC_DELETED_NAME = "KafkaTopicDeleted";
+    public static final String CP_SOURCE_CONNECTOR_KAFKA_TOPIC_DELETED_NAME = "SourceConnectorKafkaTopicDeleted";
     public static final String CP_DNS_RECORD_DELETED_NAME = "DnsRecordDeleted";
 
     public static final String CP_CONNECTOR_READY_NAME = "ConnectorReady";

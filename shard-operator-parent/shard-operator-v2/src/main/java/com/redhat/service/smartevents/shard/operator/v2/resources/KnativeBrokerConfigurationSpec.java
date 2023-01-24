@@ -1,14 +1,14 @@
 package com.redhat.service.smartevents.shard.operator.v2.resources;
 
-public class KNativeBrokerConfigurationSpec {
+public class KnativeBrokerConfigurationSpec {
 
     KafkaConfigurationSpec kafkaConfiguration;
 
-    public KNativeBrokerConfigurationSpec() {
+    public KnativeBrokerConfigurationSpec() {
 
     }
 
-    public KNativeBrokerConfigurationSpec(KafkaConfigurationSpec kafkaConfiguration) {
+    public KnativeBrokerConfigurationSpec(KafkaConfigurationSpec kafkaConfiguration) {
         this.kafkaConfiguration = kafkaConfiguration;
     }
 

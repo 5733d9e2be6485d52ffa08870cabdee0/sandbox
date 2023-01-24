@@ -38,8 +38,8 @@ import com.redhat.service.smartevents.infra.v1.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v1.api.models.gateways.Action;
 import com.redhat.service.smartevents.infra.v1.api.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.core.dns.DnsService;
+import com.redhat.service.smartevents.manager.core.providers.GlobalResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.smartevents.manager.core.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.core.services.ShardService;
 import com.redhat.service.smartevents.manager.core.workers.WorkManager;
 import com.redhat.service.smartevents.manager.v1.api.models.requests.BridgeRequest;
@@ -85,7 +85,7 @@ public class BridgesServiceImpl implements BridgesService {
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    GlobalResourceNamesProvider globalResourceNamesProvider;
 
     @Inject
     ShardService shardService;
@@ -347,8 +347,8 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 internalKafkaConfigurationProvider.getSaslMechanism(),
-                resourceNamesProvider.getBridgeTopicName(bridge.getId()),
-                resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
+                globalResourceNamesProvider.getBridgeTopicName(bridge.getId()),
+                globalResourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());

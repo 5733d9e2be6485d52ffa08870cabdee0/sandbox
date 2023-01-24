@@ -20,9 +20,11 @@ spec:
             cronjob: rhose-prolong-stage
         spec:
           restartPolicy: OnFailure
+          serviceAccount: registry-rhose-appsre
+          serviceAccountName: registry-rhose-appsre
           containers:
             - name: rhose-prolong-stage
-              image: quay.io/app-sre/rhose-cronjob-runner:1.0
+              image: quay.io/app-sre/rhose-cronjob-runner:1.1
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/bash

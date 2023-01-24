@@ -94,10 +94,18 @@ public class ManagedBridgeServiceTest {
 
         assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, encode(dnsConfiguration.getTlsCertificate()));
         assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.TLS_KEY_SECRET, encode(dnsConfiguration.getTlsKey()));
+
+        assertManagedBridgeResourceLabels(bridgeDTO, secret);
     }
 
     private String encode(String value) {
         return encoder.encodeToString(value.getBytes());
+    }
+
+    private void assertManagedBridgeResourceLabels(BridgeDTO bridgeDTO, HasMetadata hasMetadata) {
+        assertThat(hasMetadata.getMetadata().getLabels()).containsEntry(LabelsBuilder.BRIDGE_ID_LABEL, bridgeDTO.getId());
+        assertThat(hasMetadata.getMetadata().getLabels()).containsEntry(LabelsBuilder.BRIDGE_NAME_LABEL, bridgeDTO.getName());
+        assertThat(hasMetadata.getMetadata().getLabels()).containsEntry(LabelsBuilder.CUSTOMER_ID_LABEL, bridgeDTO.getCustomerId());
     }
 
     @Test
@@ -123,6 +131,7 @@ public class ManagedBridgeServiceTest {
                     assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_BOOTSTRAP_SERVERS_CONFIGMAP).length()).isGreaterThan(0);
                     assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP).length()).isGreaterThan(0);
                     assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP).length()).isGreaterThan(0);
+                    assertManagedBridgeResourceLabels(bridgeDTO, configMap);
 
                     KnativeBroker knativeBroker = fetchBridgeKnativeBroker(bridgeDTO);
                     assertThat(knativeBroker).isNotNull();
@@ -130,6 +139,7 @@ public class ManagedBridgeServiceTest {
                     assertThat(knativeBroker.getSpec().getConfig().getKind().length()).isGreaterThan(0);
                     assertThat(knativeBroker.getSpec().getConfig().getNamespace().length()).isGreaterThan(0);
                     assertThat(knativeBroker.getSpec().getConfig().getApiVersion().length()).isGreaterThan(0);
+                    assertManagedBridgeResourceLabels(bridgeDTO, knativeBroker);
                     kubernetesResourcePatcher.patchReadyKnativeBroker(knativeBroker.getMetadata().getName(), knativeBroker.getMetadata().getNamespace());
 
                     AuthorizationPolicy authorizationPolicy = fetchBridgeIngressAuthorizationPolicy(bridgeDTO);
@@ -144,11 +154,13 @@ public class ManagedBridgeServiceTest {
                     assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0).length()).isGreaterThan(0);
                     assertThat(authorizationPolicy.getSpec().getSelector().getMatchLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL))
                             .isEqualTo(istioGatewayProvider.getIstioGatewayService().getMetadata().getLabels().get(Constants.BRIDGE_INGRESS_AUTHORIZATION_POLICY_SELECTOR_LABEL));
+
+                    assertManagedBridgeResourceLabels(bridgeDTO, authorizationPolicy);
                 });
     }
 
     @Test
-    public void Test_compare_bridges_with_differences() {
+    public void compareBridgesWithDifferences() {
         BridgeDTO newBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
         ManagedBridge newManagedBridge = Fixtures.createManagedBridge(newBridgeDTO, namespaceProvider.getNamespaceName(newBridgeDTO.getId()));
 
@@ -160,7 +172,7 @@ public class ManagedBridgeServiceTest {
     }
 
     @Test
-    public void Test_compare_bridges_with_no_differences() {
+    public void compareBridgesWithNoDifferences() {
         BridgeDTO newBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
         ManagedBridge newManagedBridge = Fixtures.createManagedBridge(newBridgeDTO, namespaceProvider.getNamespaceName(newBridgeDTO.getId()));
 
@@ -171,7 +183,7 @@ public class ManagedBridgeServiceTest {
     }
 
     @Test
-    public void TestFetchAllManagedBridges() {
+    public void fetchAllManagedBridges() {
 
         // setup
         BridgeDTO bridgeDTO1 = Fixtures.createBridge(OperationType.CREATE);
