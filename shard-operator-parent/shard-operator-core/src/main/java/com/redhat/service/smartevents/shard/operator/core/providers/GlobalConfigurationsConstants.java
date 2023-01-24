@@ -16,8 +16,8 @@ public class GlobalConfigurationsConstants {
 
     public static final String KNATIVE_KAFKA_PROTOCOL_SECRET = "protocol";
     public static final String KNATIVE_KAFKA_SASL_MECHANISM_SECRET = "sasl.mechanism";
-    public static final String KNATIVE_KAFKA_USER_SECRET = "user";
-    public static final String KNATIVE_KAFKA_PASSWORD_SECRET = "password";
+    public static final String KAFKA_USER_SECRET = "user";
+    public static final String KAFKA_PASSWORD_SECRET = "password";
     public static final String KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET = "bootstrap.servers";
     public static final String KNATIVE_KAFKA_TOPIC_NAME_SECRET = "topic.name";
 

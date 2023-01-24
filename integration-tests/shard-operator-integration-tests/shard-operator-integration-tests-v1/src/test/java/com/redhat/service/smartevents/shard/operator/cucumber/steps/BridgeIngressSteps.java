@@ -84,8 +84,8 @@ public class BridgeIngressSteps {
     private Secret buildDefaultSecret(BridgeIngress bridgeIngress) {
         Map<String, String> data = new HashMap<>();
         data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET, Utils.getSystemProperty("it.shard.kafka.bootstrap.servers"));
-        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Utils.getSystemProperty("it.shard.kafka.user"));
-        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Utils.getSystemProperty("it.shard.kafka.password"));
+        data.put(GlobalConfigurationsConstants.KAFKA_USER_SECRET, Utils.getSystemProperty("it.shard.kafka.user"));
+        data.put(GlobalConfigurationsConstants.KAFKA_PASSWORD_SECRET, Utils.getSystemProperty("it.shard.kafka.password"));
         data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Utils.getSystemProperty("it.shard.kafka.protocol"));
         data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Utils.getSystemProperty("it.shard.kafka.sasl.mechanism"));
         data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Utils.getSystemProperty("it.shard.kafka.topic.name"));

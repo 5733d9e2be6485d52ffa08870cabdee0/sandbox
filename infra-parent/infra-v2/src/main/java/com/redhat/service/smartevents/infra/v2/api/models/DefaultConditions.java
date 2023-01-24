@@ -21,6 +21,8 @@ public final class DefaultConditions {
     public static final String DP_AUTHORISATION_POLICY_READY_NAME = "AuthorisationPolicyReady";
     public static final String DP_NETWORK_RESOURCE_READY_NAME = "NetworkResourceReady";
 
+    public static final String KAFKA_SOURCE_READY_NAME = "KafkaSourceReady";
+
     public static final String DP_BRIDGE_DELETED_NAME = "BridgeDeleted";
 
     public static final String DP_PROCESSOR_DELETED_NAME = "ProcessorDeleted";

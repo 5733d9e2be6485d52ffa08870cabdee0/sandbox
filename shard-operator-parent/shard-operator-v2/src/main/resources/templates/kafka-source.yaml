@@ -1,0 +1,32 @@
+apiVersion: sources.knative.dev/v1beta1
+kind: KafkaSource
+metadata:
+  name: rhoc-kafka-source
+spec:
+  net:
+    tls:
+      enable: true
+    sasl:
+      enable: true
+      user:
+        secretKeyRef:
+          name: rhoc-kafka-secret
+          key: user
+      password:
+        secretKeyRef:
+          name: rhoc-kafka-secret
+          key: password
+      type:
+        secretKeyRef:
+          name: rhoc-kafka-secret
+          key: sasl.mechanism
+  consumerGroup: knative-group
+  bootstrapServers:
+    - 'rhose-loca-c--o--mmk-hbcp-irvga.bf2.kafka.rhcloud.com:443'
+  topics:
+    - 'vajain_rhoc_topic'
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: rhose-topic-broker

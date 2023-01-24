@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.shard.operator.core.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.TestSupport;
-import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
+import com.redhat.service.smartevents.shard.operator.v2.resources.camel.CamelIntegration;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;

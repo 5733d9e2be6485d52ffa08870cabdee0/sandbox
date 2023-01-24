@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v2.resources;
+package com.redhat.service.smartevents.shard.operator.v2.resources.camel;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,6 +6,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.ConditionStatus;
+import com.redhat.service.smartevents.shard.operator.v2.resources.BaseResourceStatus;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CamelIntegrationStatus extends BaseResourceStatus {

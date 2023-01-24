@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.v2.resources;
+package com.redhat.service.smartevents.shard.operator.v2.resources.camel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

@@ -25,9 +25,9 @@ import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.ManagedProcessorService;
-import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessorStatus;
+import com.redhat.service.smartevents.shard.operator.v2.resources.camel.CamelIntegration;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;

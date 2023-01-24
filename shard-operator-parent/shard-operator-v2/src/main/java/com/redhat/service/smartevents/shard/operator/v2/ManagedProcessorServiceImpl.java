@@ -15,8 +15,8 @@ import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedProcessorConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProviderV2;
-import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
+import com.redhat.service.smartevents.shard.operator.v2.resources.camel.CamelIntegration;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 

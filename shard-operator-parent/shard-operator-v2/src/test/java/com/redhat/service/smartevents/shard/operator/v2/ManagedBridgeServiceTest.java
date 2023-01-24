@@ -84,8 +84,8 @@ public class ManagedBridgeServiceTest {
         KafkaConnectionDTO kafkaConfiguration = bridgeDTO.getKnativeBrokerConfiguration().getKafkaConnection();
 
         assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, encode(kafkaConfiguration.getSecurityProtocol()));
-        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, encode(kafkaConfiguration.getClientId()));
-        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, encode(kafkaConfiguration.getClientSecret()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KAFKA_USER_SECRET, encode(kafkaConfiguration.getClientId()));
+        assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KAFKA_PASSWORD_SECRET, encode(kafkaConfiguration.getClientSecret()));
         assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, encode(kafkaConfiguration.getSaslMechanism()));
         assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, encode(kafkaConfiguration.getTopic()));
         assertThat(secret.getData()).containsEntry(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET, encode(kafkaConfiguration.getBootstrapServers()));

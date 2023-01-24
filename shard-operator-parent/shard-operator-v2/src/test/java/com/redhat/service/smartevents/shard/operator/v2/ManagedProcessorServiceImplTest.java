@@ -13,9 +13,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.v2.api.models.OperationType;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
+import com.redhat.service.smartevents.shard.operator.v2.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.client.KubernetesClient;

@@ -63,6 +63,9 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
             condition.get().setStatus(ConditionStatus.False);
             condition.get().setLastTransitionTime(new Date());
             this.conditions.add(condition.get());
+        } else {
+            Condition newCondition = new Condition(conditionType, ConditionStatus.False);
+            this.conditions.add(newCondition);
         }
     }
 
@@ -82,6 +85,9 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
             condition.get().setStatus(ConditionStatus.True);
             condition.get().setLastTransitionTime(new Date());
             this.conditions.add(condition.get());
+        } else {
+            Condition newCondition = new Condition(conditionType, ConditionStatus.True);
+            this.conditions.add(newCondition);
         }
     }
 
@@ -116,4 +122,8 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
         markConditionFailed(conditionType, null, "", null);
     }
 
+    public void removeCondition(String conditionType) {
+        final Optional<Condition> condition = this.getConditionByType(conditionType);
+        condition.ifPresent(conditions::remove);
+    }
 }

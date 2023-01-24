@@ -119,8 +119,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         Secret expected = templateProvider.loadBridgeIngressSecretTemplate(bridgeIngress, TemplateImportConfig.withDefaults(LabelsBuilder.V1_OPERATOR_NAME));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET,
                 Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getBootstrapServers().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientId().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientSecret().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientId().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientSecret().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getTopic().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSaslMechanism().getBytes()));

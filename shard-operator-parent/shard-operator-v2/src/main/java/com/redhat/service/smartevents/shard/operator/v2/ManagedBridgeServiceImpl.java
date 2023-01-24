@@ -17,6 +17,8 @@ import com.redhat.service.smartevents.infra.core.api.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.v2.api.V2;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.v2.api.models.dto.DNSConfigurationDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.KnativeBrokerConfigurationDTO;
+import com.redhat.service.smartevents.infra.v2.api.models.dto.SourceConfigurationDTO;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.core.providers.IstioGatewayProvider;
@@ -25,7 +27,6 @@ import com.redhat.service.smartevents.shard.operator.core.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.core.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
-import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
 import com.redhat.service.smartevents.shard.operator.v2.converters.ManagedBridgeConverter;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.v2.providers.TemplateProviderV2;
@@ -36,10 +37,19 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
+import static com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants.KAFKA_PASSWORD_SECRET;
+import static com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants.KAFKA_USER_SECRET;
+import static com.redhat.service.smartevents.shard.operator.core.providers.GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET;
+import static com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder.V2_OPERATOR_NAME;
+
 @ApplicationScoped
 public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedBridgeServiceImpl.class);
+
+    private static final String KNATIVE_BROKER_SECRET_NAME = "knative-broker-secret";
+    private static final String DNS_CONFIGURATION_SECRET_NAME = "dns-configuration-secret";
+    public static final String SOURCE_CONFIGURATION_SECRET_NAME = "source-configuration-secret";
 
     @Inject
     NamespaceProvider namespaceProvider;
@@ -78,37 +88,89 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
                     .withName(expected.getMetadata().getName())
                     .createOrReplace(expected);
 
-            createOrUpdateBridgeSecret(expected, bridgeDTO);
+            createOrUpdateKnativeBrokerConfigurationSecret(expected, bridgeDTO.getKnativeBrokerConfiguration());
+            createOrUpdateDNSConfigurationSecret(expected, bridgeDTO.getDnsConfiguration());
+            createOrUpdateSourceConfigurationSecret(expected, bridgeDTO.getSourceConfiguration());
         }
     }
 
-    private void createOrUpdateBridgeSecret(ManagedBridge managedBridge, BridgeDTO bridgeDTO) {
-        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(managedBridge, TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME));
+    private void createOrUpdateKnativeBrokerConfigurationSecret(ManagedBridge managedBridge, KnativeBrokerConfigurationDTO knativeBrokerConfiguration) {
 
-        KafkaConnectionDTO kafkaConnection = bridgeDTO.getKnativeBrokerConfiguration().getKafkaConnection();
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET,
-                Base64.getEncoder().encodeToString(kafkaConnection.getBootstrapServers().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientId().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientSecret().getBytes()));
+        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(managedBridge, new TemplateImportConfig(V2_OPERATOR_NAME)
+                .withNamespaceFromParent()
+                .withOwnerReferencesFromParent());
+        expected.getMetadata().setName(KNATIVE_BROKER_SECRET_NAME);
+        KafkaConnectionDTO kafkaConnection = knativeBrokerConfiguration.getKafkaConnection();
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientId().getBytes()));
+        expected.getData().put(KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientSecret().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getSecurityProtocol().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getTopic().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getSaslMechanism().getBytes()));
-
-        DNSConfigurationDTO dnsConfiguration = bridgeDTO.getDnsConfiguration();
-        expected.getData().put(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, Base64.getEncoder().encodeToString(dnsConfiguration.getTlsCertificate().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.TLS_KEY_SECRET, Base64.getEncoder().encodeToString(dnsConfiguration.getTlsKey().getBytes()));
+        expected.getData().put(KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getSaslMechanism().getBytes()));
 
         Secret existing = kubernetesClient
                 .secrets()
                 .inNamespace(managedBridge.getMetadata().getNamespace())
-                .withName(managedBridge.getMetadata().getName())
+                .withName(KNATIVE_BROKER_SECRET_NAME)
                 .get();
 
         if (existing == null || !expected.getData().equals(existing.getData())) {
             kubernetesClient
                     .secrets()
                     .inNamespace(managedBridge.getMetadata().getNamespace())
-                    .withName(managedBridge.getMetadata().getName())
+                    .withName(KNATIVE_BROKER_SECRET_NAME)
+                    .createOrReplace(expected);
+            LOGGER.info("Create/Update Secret with name '{}' for ManagedBridge with id '{}' in namespace '{}'.", expected.getMetadata().getName(), managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
+        }
+    }
+
+    private void createOrUpdateDNSConfigurationSecret(ManagedBridge managedBridge, DNSConfigurationDTO dnsConfiguration) {
+        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(managedBridge, new TemplateImportConfig(V2_OPERATOR_NAME)
+                .withNamespaceFromParent()
+                .withOwnerReferencesFromParent());
+        expected.getMetadata().setName(DNS_CONFIGURATION_SECRET_NAME);
+        expected.getData().put(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, Base64.getEncoder().encodeToString(dnsConfiguration.getTlsCertificate().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.TLS_KEY_SECRET, Base64.getEncoder().encodeToString(dnsConfiguration.getTlsKey().getBytes()));
+
+        Secret existing = kubernetesClient
+                .secrets()
+                .inNamespace(managedBridge.getMetadata().getNamespace())
+                .withName(DNS_CONFIGURATION_SECRET_NAME)
+                .get();
+
+        if (existing == null || !expected.getData().equals(existing.getData())) {
+            kubernetesClient
+                    .secrets()
+                    .inNamespace(managedBridge.getMetadata().getNamespace())
+                    .withName(DNS_CONFIGURATION_SECRET_NAME)
+                    .createOrReplace(expected);
+            LOGGER.info("Create/Update Secret with name '{}' for ManagedBridge with id '{}' in namespace '{}'.", expected.getMetadata().getName(), managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
+        }
+    }
+
+    private void createOrUpdateSourceConfigurationSecret(ManagedBridge managedBridge, SourceConfigurationDTO sourceConfiguration) {
+
+        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(managedBridge, new TemplateImportConfig(V2_OPERATOR_NAME)
+                .withNamespaceFromParent()
+                .withOwnerReferencesFromParent());
+        expected.getMetadata().setName(SOURCE_CONFIGURATION_SECRET_NAME);
+        KafkaConnectionDTO kafkaConnection = sourceConfiguration.getKafkaConnection();
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientId().getBytes()));
+        expected.getData().put(KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getClientSecret().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getSecurityProtocol().getBytes()));
+        expected.getData().put(KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString(kafkaConnection.getSaslMechanism().getBytes()));
+
+        Secret existing = kubernetesClient
+                .secrets()
+                .inNamespace(managedBridge.getMetadata().getNamespace())
+                .withName(SOURCE_CONFIGURATION_SECRET_NAME)
+                .get();
+
+        if (existing == null || !expected.getData().equals(existing.getData())) {
+            kubernetesClient
+                    .secrets()
+                    .inNamespace(managedBridge.getMetadata().getNamespace())
+                    .withName(SOURCE_CONFIGURATION_SECRET_NAME)
                     .createOrReplace(expected);
             LOGGER.info("Create/Update Secret with name '{}' for ManagedBridge with id '{}' in namespace '{}'.", expected.getMetadata().getName(), managedBridge.getMetadata().getName(),
                     managedBridge.getMetadata().getNamespace());
@@ -137,7 +199,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
 
     @Override
     public ConfigMap fetchOrCreateBridgeConfigMap(ManagedBridge managedBridge, Secret secret) {
-        ConfigMap expected = templateProvider.loadBridgeIngressConfigMapTemplate(managedBridge, TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME));
+        ConfigMap expected = templateProvider.loadBridgeIngressConfigMapTemplate(managedBridge, TemplateImportConfig.withDefaults(V2_OPERATOR_NAME));
 
         expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP, GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_VALUE_CONFIGMAP); // TODO: move to DTO?
         expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP, GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_VALUE_CONFIGMAP); // TODO: move to DTO?
@@ -170,7 +232,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     @Override
     public KnativeBroker fetchOrCreateKnativeBroker(ManagedBridge managedBridge, ConfigMap configMap) {
 
-        KnativeBroker expected = templateProvider.loadBridgeIngressBrokerTemplate(managedBridge, TemplateImportConfig.withDefaults(LabelsBuilder.V2_OPERATOR_NAME));
+        KnativeBroker expected = templateProvider.loadBridgeIngressBrokerTemplate(managedBridge, TemplateImportConfig.withDefaults(V2_OPERATOR_NAME));
         expected.getSpec().getConfig().setName(configMap.getMetadata().getName());
         expected.getSpec().getConfig().setNamespace(configMap.getMetadata().getNamespace());
         expected.getMetadata().getAnnotations().replace(GlobalConfigurationsConstants.KNATIVE_BROKER_EXTERNAL_TOPIC_ANNOTATION_NAME,
@@ -207,7 +269,7 @@ public class ManagedBridgeServiceImpl implements ManagedBridgeService {
     @Override
     public AuthorizationPolicy fetchOrCreateBridgeAuthorizationPolicy(ManagedBridge managedBridge, String path) {
         AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(managedBridge,
-                new TemplateImportConfig(LabelsBuilder.V2_OPERATOR_NAME).withNameFromParent()
+                new TemplateImportConfig(V2_OPERATOR_NAME).withNameFromParent()
                         .withPrimaryResourceFromParent());
         /**
          * https://github.com/istio/istio/issues/37221

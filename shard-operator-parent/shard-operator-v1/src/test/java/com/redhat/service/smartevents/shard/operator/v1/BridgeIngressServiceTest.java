@@ -128,8 +128,8 @@ public class BridgeIngressServiceTest {
         assertThat(secret).isNotNull();
         assertThat(secret.getMetadata().getName()).isEqualTo(bridgeIngress.getMetadata().getName());
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET).length()).isGreaterThan(0);
-        assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_USER_SECRET).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_PASSWORD_SECRET).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET).length()).isGreaterThan(0);

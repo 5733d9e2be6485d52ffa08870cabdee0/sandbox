@@ -20,9 +20,11 @@ import com.redhat.service.smartevents.shard.operator.core.resources.istio.author
 import com.redhat.service.smartevents.shard.operator.core.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.core.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.core.utils.LabelsBuilder;
+import com.redhat.service.smartevents.shard.operator.v2.KafkaSourceService;
 import com.redhat.service.smartevents.shard.operator.v2.ManagedBridgeService;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridge;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedBridgeStatus;
+import com.redhat.service.smartevents.shard.operator.v2.resources.knative.KafkaSource;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -44,6 +46,7 @@ import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditio
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_KNATIVE_BROKER_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_NETWORK_RESOURCE_READY_NAME;
 import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.DP_SECRET_READY_NAME;
+import static com.redhat.service.smartevents.infra.v2.api.models.DefaultConditions.KAFKA_SOURCE_READY_NAME;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.V2_RECONCILER_LABEL_SELECTOR)
@@ -71,6 +74,9 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
+
+    @Inject
+    KafkaSourceService kafkaSourceService;
 
     @Override
     public UpdateControl<ManagedBridge> reconcile(ManagedBridge managedBridge, Context context) {
@@ -123,6 +129,22 @@ public class ManagedBridgeController implements Reconciler<ManagedBridge>,
             LOGGER.info("Ingress networking resource for ManagedBridge with id '{}' in namespace '{}' is ready.", managedBridge.getMetadata().getName(),
                     managedBridge.getMetadata().getNamespace());
             status.markConditionTrue(DP_NETWORK_RESOURCE_READY_NAME);
+        }
+
+        // Create/Update KafkaSource
+        KafkaSource kafkaSource = kafkaSourceService.fetchOrCreateKafkaSource(managedBridge, knativeBroker);
+        if (kafkaSource == null) {
+            status.removeCondition(KAFKA_SOURCE_READY_NAME);
+        } else if (kafkaSource.getStatus().isReady()) {
+            LOGGER.info("kafka Source for ManagedBridge with id '{}' in namespace '{}' is ready.", managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
+            status.markConditionTrue(KAFKA_SOURCE_READY_NAME);
+        } else {
+            LOGGER.info("kafka Source for ManagedBridge with id '{}' in namespace '{}' is not ready.",
+                    managedBridge.getMetadata().getName(),
+                    managedBridge.getMetadata().getNamespace());
+            status.markConditionFalse(KAFKA_SOURCE_READY_NAME);
+            return handleFailure(managedBridge);
         }
 
         if (isBridgeStatusChange(managedBridge)) {

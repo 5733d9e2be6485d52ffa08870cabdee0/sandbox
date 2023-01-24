@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.shard.operator.v2.TestSupport;
 import com.redhat.service.smartevents.shard.operator.v2.providers.NamespaceProvider;
-import com.redhat.service.smartevents.shard.operator.v2.resources.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.resources.ManagedProcessor;
+import com.redhat.service.smartevents.shard.operator.v2.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.v2.utils.V2KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
