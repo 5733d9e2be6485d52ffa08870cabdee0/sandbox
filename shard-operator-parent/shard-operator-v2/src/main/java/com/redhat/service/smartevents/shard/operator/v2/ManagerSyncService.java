@@ -19,14 +19,14 @@ public class ManagerSyncService {
     @Inject
     ManagedProcessorSyncService managedProcessorSyncService;
 
-    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    @Scheduled(cron = "${event-bridge.scheduler.cron.v2.expr}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     public void syncUpdatesFromManager() {
         LOGGER.debug("Fetching updates from Manager for Bridges to deploy and delete");
         managedBridgeSyncService.syncManagedBridgeWithManager();
         managedProcessorSyncService.syncManagedProcessorWithManager();
     }
 
-    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    @Scheduled(cron = "${event-bridge.scheduler.cron.v2.expr}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     public void syncStatusBackToManager() {
         LOGGER.debug("Sending back status from Operator to Manager");
         managedBridgeSyncService.syncManagedBridgeStatusBackToManager();
