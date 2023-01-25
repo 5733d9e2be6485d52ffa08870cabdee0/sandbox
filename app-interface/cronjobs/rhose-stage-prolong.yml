@@ -4,9 +4,11 @@ kind: CronJob
 metadata:
   name: rhose-prolong-stage
 spec:
-  schedule: "0 * * * *"
+  schedule: "0 9 * * *"
   concurrencyPolicy: Forbid
   suspend: false
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     metadata:
       labels:
