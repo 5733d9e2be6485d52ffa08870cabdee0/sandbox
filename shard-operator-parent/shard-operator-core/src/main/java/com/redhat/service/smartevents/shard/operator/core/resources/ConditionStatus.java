@@ -25,4 +25,5 @@ public enum ConditionStatus {
     ConditionStatus(String status) {
         this.status = status;
     }
+
 }
