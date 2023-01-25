@@ -15,7 +15,7 @@ abstract class BaseResourceStatus extends CustomResourceStatus {
 
     @JsonIgnore
     public final boolean isReady() {
-        return getConditions().stream().allMatch(c -> ConditionStatus.True.equals(c.getStatus()));
+        return getConditions().stream().allMatch(c -> ConditionStatus.TRUE.equals(c.getStatus()));
     }
 
 }

@@ -79,7 +79,7 @@ public class BridgeExecutorControllerTest {
         assertThat(bridgeExecutor.getStatus()).isNotNull();
         assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
         assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.FALSE);
             assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE);
         });
     }
@@ -120,7 +120,7 @@ public class BridgeExecutorControllerTest {
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.READY).get().getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE).get().getStatus()).isEqualTo(ConditionStatus.False);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE).get().getStatus()).isEqualTo(ConditionStatus.FALSE);
     }
 
     @Test
@@ -139,7 +139,7 @@ public class BridgeExecutorControllerTest {
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.READY).get().getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE).get().getStatus()).isEqualTo(ConditionStatus.False);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE).get().getStatus()).isEqualTo(ConditionStatus.FALSE);
     }
 
     @Test

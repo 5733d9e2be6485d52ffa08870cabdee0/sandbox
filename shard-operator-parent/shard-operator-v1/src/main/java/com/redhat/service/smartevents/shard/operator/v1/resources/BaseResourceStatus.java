@@ -16,13 +16,13 @@ abstract class BaseResourceStatus extends CustomResourceStatus {
 
     @JsonIgnore
     public final boolean isReady() {
-        return getConditions().stream().anyMatch(c -> ConditionTypeConstants.READY.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
+        return getConditions().stream().anyMatch(c -> ConditionTypeConstants.READY.equals(c.getType()) && ConditionStatus.TRUE.equals(c.getStatus()));
     }
 
     @JsonIgnore
     public final boolean isAugmentingTrueOrUnknown() {
         return getConditions().stream()
-                .anyMatch(c -> ConditionTypeConstants.AUGMENTING.equals(c.getType()) && (ConditionStatus.True.equals(c.getStatus()) || ConditionStatus.Unknown.equals(c.getStatus())));
+                .anyMatch(c -> ConditionTypeConstants.AUGMENTING.equals(c.getType()) && (ConditionStatus.TRUE.equals(c.getStatus()) || ConditionStatus.UNKNOWN.equals(c.getStatus())));
     }
 
     @JsonIgnore

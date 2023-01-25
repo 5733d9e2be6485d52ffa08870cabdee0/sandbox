@@ -39,19 +39,19 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
 
     @JsonIgnore
     public final boolean isConditionTypeTrue(final String conditionType) {
-        return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
+        return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.TRUE.equals(c.getStatus()));
     }
 
     @JsonIgnore
     public final boolean isConditionTypeFalse(final String conditionType) {
-        return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.False.equals(c.getStatus()));
+        return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.FALSE.equals(c.getStatus()));
     }
 
     @JsonIgnore
     public final boolean isConditionTypeFalse(final String conditionType, final String reason) {
         return conditions.stream().anyMatch(c -> conditionType.equals(c.getType())
                 && Objects.equals(c.getReason(), reason)
-                && ConditionStatus.False.equals(c.getStatus()));
+                && ConditionStatus.FALSE.equals(c.getStatus()));
     }
 
     public void markConditionFalse(final String conditionType, final String reason, final String message, final String errorCode) {
@@ -60,7 +60,7 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
             condition.get().setMessage(message);
             condition.get().setErrorCode(errorCode);
             condition.get().setReason(reason);
-            condition.get().setStatus(ConditionStatus.False);
+            condition.get().setStatus(ConditionStatus.FALSE);
             condition.get().setLastTransitionTime(new Date());
             this.conditions.add(condition.get());
         }
@@ -79,7 +79,7 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
         if (condition.isPresent()) {
             condition.get().setMessage("");
             condition.get().setReason(reason);
-            condition.get().setStatus(ConditionStatus.True);
+            condition.get().setStatus(ConditionStatus.TRUE);
             condition.get().setLastTransitionTime(new Date());
             this.conditions.add(condition.get());
         }
@@ -93,7 +93,7 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     public final boolean isConditionTypeFailed(final String conditionType, final String reason) {
         return getConditions().stream().anyMatch(c -> conditionType.equals(c.getType())
                 && Objects.equals(c.getReason(), reason)
-                && ConditionStatus.Failed.equals(c.getStatus()));
+                && ConditionStatus.FAILED.equals(c.getStatus()));
     }
 
     public void markConditionFailed(final String conditionType, final String reason, final String message, final String errorCode) {
@@ -102,7 +102,7 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
             condition.get().setMessage(message);
             condition.get().setErrorCode(errorCode);
             condition.get().setReason(reason);
-            condition.get().setStatus(ConditionStatus.Failed);
+            condition.get().setStatus(ConditionStatus.FAILED);
             condition.get().setLastTransitionTime(new Date());
             this.conditions.add(condition.get());
         }

@@ -108,19 +108,19 @@ public class ManagedBridgeControllerTest {
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(managedBridge.getStatus()).isNotNull();
         assertThat(managedBridge.getStatus().getConditionByType(DP_SECRET_READY_NAME)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.TRUE);
         });
         assertThat(managedBridge.getStatus().getConditionByType(DP_CONFIG_MAP_READY_NAME)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.TRUE);
         });
         assertThat(managedBridge.getStatus().getConditionByType(DP_KNATIVE_BROKER_READY_NAME)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.FALSE);
         });
         assertThat(managedBridge.getStatus().getConditionByType(DP_AUTHORISATION_POLICY_READY_NAME)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.UNKNOWN);
         });
         assertThat(managedBridge.getStatus().getConditionByType(DP_NETWORK_RESOURCE_READY_NAME)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.UNKNOWN);
         });
     }
 

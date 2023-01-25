@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.core.resources;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * Condition status values may be True, False, Unknown or Failed.
  * The absence of a condition should be interpreted the same as Unknown. How controllers handle Unknown depends on the Condition in question.
@@ -8,8 +10,19 @@ package com.redhat.service.smartevents.shard.operator.core.resources;
  *      Properties</a>
  */
 public enum ConditionStatus {
-    True,
-    False,
-    Unknown,
-    Failed;
+    TRUE("True"),
+    FALSE("False"),
+    UNKNOWN("Unknown"),
+    FAILED("Failed");
+
+    String status;
+
+    @JsonValue
+    public String serialize() {
+        return status;
+    }
+
+    ConditionStatus(String status) {
+        this.status = status;
+    }
 }

@@ -22,11 +22,11 @@ public class ManagedBridgeStatus extends BaseResourceStatus {
 
     private static Set<Condition> getCreationConditions() {
         Set<Condition> conditions = new HashSet<>();
-        conditions.add(new Condition(DP_SECRET_READY_NAME, ConditionStatus.Unknown));
-        conditions.add(new Condition(DP_CONFIG_MAP_READY_NAME, ConditionStatus.Unknown));
-        conditions.add(new Condition(DP_KNATIVE_BROKER_READY_NAME, ConditionStatus.Unknown));
-        conditions.add(new Condition(DP_AUTHORISATION_POLICY_READY_NAME, ConditionStatus.Unknown));
-        conditions.add(new Condition(DP_NETWORK_RESOURCE_READY_NAME, ConditionStatus.Unknown));
+        conditions.add(new Condition(DP_SECRET_READY_NAME, ConditionStatus.UNKNOWN));
+        conditions.add(new Condition(DP_CONFIG_MAP_READY_NAME, ConditionStatus.UNKNOWN));
+        conditions.add(new Condition(DP_KNATIVE_BROKER_READY_NAME, ConditionStatus.UNKNOWN));
+        conditions.add(new Condition(DP_AUTHORISATION_POLICY_READY_NAME, ConditionStatus.UNKNOWN));
+        conditions.add(new Condition(DP_NETWORK_RESOURCE_READY_NAME, ConditionStatus.UNKNOWN));
         return conditions;
     }
 

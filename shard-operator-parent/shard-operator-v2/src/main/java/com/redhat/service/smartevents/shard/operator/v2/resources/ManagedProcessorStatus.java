@@ -12,7 +12,7 @@ public class ManagedProcessorStatus extends BaseResourceStatus {
 
     private static Set<Condition> getCreationConditions() {
         Set<Condition> conditions = new HashSet<>();
-        conditions.add(new Condition(CAMEL_INTEGRATION_AVAILABLE, ConditionStatus.Unknown));
+        conditions.add(new Condition(CAMEL_INTEGRATION_AVAILABLE, ConditionStatus.UNKNOWN));
         return conditions;
     }
 

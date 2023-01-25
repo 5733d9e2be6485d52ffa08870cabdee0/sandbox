@@ -12,8 +12,8 @@ public class FooResourceStatus extends BaseResourceStatus {
     public FooResourceStatus() {
         super(new HashSet<>() {
             {
-                add(new Condition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.Unknown));
-                add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.Unknown));
+                add(new Condition(DefaultConditions.CP_CONTROL_PLANE_READY_NAME, ConditionStatus.UNKNOWN));
+                add(new Condition(DefaultConditions.CP_DATA_PLANE_READY_NAME, ConditionStatus.UNKNOWN));
             }
         });
     }

@@ -166,7 +166,7 @@ public class ManagedBridgeServiceTest {
 
         BridgeDTO oldBridgeDTO = Fixtures.createBridge(OperationType.CREATE);
         ManagedBridge oldManagedBridge = Fixtures.createManagedBridge(oldBridgeDTO, namespaceProvider.getNamespaceName(oldBridgeDTO.getId()));
-        oldManagedBridge.getStatus().getConditionByType(DP_SECRET_READY_NAME).get().setStatus(ConditionStatus.True);
+        oldManagedBridge.getStatus().getConditionByType(DP_SECRET_READY_NAME).get().setStatus(ConditionStatus.TRUE);
         boolean status = managedBridgeService.compareBridgeStatus(newManagedBridge, oldManagedBridge);
         assertThat(status).isFalse();
     }

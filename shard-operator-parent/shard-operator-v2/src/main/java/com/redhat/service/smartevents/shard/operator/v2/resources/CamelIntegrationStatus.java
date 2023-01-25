@@ -17,10 +17,10 @@ public class CamelIntegrationStatus extends BaseResourceStatus {
 
     private static Set<Condition> getCreationConditions() {
         Set<Condition> conditions = new HashSet<>();
-        conditions.add(new Condition(INTEGRATION_KIT_AVAILABLE, ConditionStatus.Unknown));
-        conditions.add(new Condition(INTEGRATION_PLATFORM_AVAILABLE, ConditionStatus.Unknown));
-        conditions.add(new Condition(KNATIVE_SERVICE_AVAILABLE, ConditionStatus.Unknown));
-        conditions.add(new Condition(KNATIVE_SERVICE_READY, ConditionStatus.Unknown));
+        conditions.add(new Condition(INTEGRATION_KIT_AVAILABLE, ConditionStatus.UNKNOWN));
+        conditions.add(new Condition(INTEGRATION_PLATFORM_AVAILABLE, ConditionStatus.UNKNOWN));
+        conditions.add(new Condition(KNATIVE_SERVICE_AVAILABLE, ConditionStatus.UNKNOWN));
+        conditions.add(new Condition(KNATIVE_SERVICE_READY, ConditionStatus.UNKNOWN));
         return conditions;
     }
 
