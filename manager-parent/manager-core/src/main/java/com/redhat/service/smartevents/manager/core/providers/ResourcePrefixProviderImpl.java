@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.core.providers;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -14,6 +15,11 @@ public class ResourcePrefixProviderImpl implements ResourcePrefixProvider {
     String resourcePrefix;
 
     private String validatedResourcePrefix;
+
+    @PostConstruct
+    void init() {
+        validate();
+    }
 
     public ResourcePrefixProviderImpl() {
     }
