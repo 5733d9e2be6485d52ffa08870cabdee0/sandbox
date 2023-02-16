@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   # Replace the version with whatever version you want to install
-  name: serverless-operator-v1-25-0
+  name: serverless-operator-v1-26-0
   namespace: openshift-marketplace
 spec:
   displayName: Serverless Operator
