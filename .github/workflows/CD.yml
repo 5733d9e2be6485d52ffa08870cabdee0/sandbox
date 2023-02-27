@@ -29,6 +29,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
+      - name: Install pip packages
+        run: pip install pyyaml
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
@@ -71,6 +73,7 @@ jobs:
           echo "Building and pushing docker image for Fleet Manager"
           docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME-jvm manager-parent/manager/
           docker push $FLEET_MANAGER_CONTAINER_NAME-jvm
+          python .github/scripts/patch_kustomize_images.py $FLEET_MANAGER_CONTAINER_NAME-jvm fleet_manager
 
       # run only if 'shard-operator' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Fleet Shard
@@ -79,6 +82,7 @@ jobs:
           echo "Building and pushing docker image for Fleet Shard"
           docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm shard-operator-parent/shard-operator/
           docker push $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm
+          python .github/scripts/patch_kustomize_images.py $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm fleet_shard
 
       # run only if 'executor' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Executor
@@ -87,6 +91,7 @@ jobs:
           echo "Building and pushing docker image for Executor"
           docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME-jvm executor/
           docker push $EXECUTOR_CONTAINER_NAME-jvm
+          python .github/scripts/patch_kustomize_images.py $EXECUTOR_CONTAINER_NAME-jvm executor
 
       # Build shard operator if 'shard-operator' or any 'general' modules have changed
       - name: Build Minikube Fleet Shard
@@ -100,3 +105,15 @@ jobs:
           echo "Building and pushing docker image for Fleet Shard with Minikube profile"
           docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm shard-operator-parent/shard-operator/
           docker push $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm
+      - name: Create Pull Request
+        if: steps.filter.outputs.manager == 'true' || steps.filter.outputs.shard-operator == 'true' || steps.filter.outputs.executor == 'true'
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: Update kustomization images ${{ github.sha }}
+          title: Update kustomization images ${{ github.sha }}
+          body: Update kustomization images ${{ github.sha }}
+          base: main
+          labels: automated-pr
+          branch: update-kustomization-images-${{ github.sha }}
+          delete-branch: true
+
